@@ -1,0 +1,119 @@
+﻿@using Domain.Customer.Models @using Domain.Enums
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@model CompanyUserViewModel
+@{
+    Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Self Signup Users</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">@PortalContext.Current.UserCompany.CompanyName Users </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Full Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Date of Sign Up
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Email Address
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Mobile Number
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Status
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    foreach (UserViewModel item in Model.UserList)
+                                    {
+                                        <tr class="gradeA odd">
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.FullName)
+                                            </td>
+                                            <td class="">
+                                                @{
+                                                    var signUpDate = item.CreatedOn.ToShortDateString();
+                                                }
+                                                @Html.DisplayFor(modelItem => signUpDate)
+                                            </td>
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.EmailAddress)
+                                            </td>
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.MobileNumber)
+                                            </td>
+                                            <td class="">
+                                                @Html.CheckBoxFor(modelItem => item.Status, new { @Id = "item_status_" + item.Id, @class = "UserStatus" })
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" language="javascript">
+    $(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+    });
+
+    //function setUserId(id) {
+    //    document.getElementById('hdUserId').value = id;
+    //}
+
+    $('.UserStatus').click(function () {
+        var id = $(this).attr('id').split('_')[2];
+        var status = $(this).is(":checked");
+        var actionUrl = "ChangeCustomerSelfSignUpApproveStatus?userId=" + id + "&status=" + status + "";
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: {},
+            success: function (data) {
+            },
+            error: function (data) {
+            }
+        });
+    });
+
+    //$('.UserExpireStatus').click(function () {
+    //    var id = $(this).attr('id').split('_')[2];
+    //    var status = $(this).is(":checked");
+    //    var actionUrl = "ChangeCompanyUserExpiryStatus?userId=" + id + "&status=" + status + "";
+    //    $.ajax({
+    //        type: "POST",
+    //        url: actionUrl,
+    //        data: {},
+    //        success: function (data) {
+    //        },
+    //        error: function (data) {
+    //        }
+    //    });
+    //});
+</script>

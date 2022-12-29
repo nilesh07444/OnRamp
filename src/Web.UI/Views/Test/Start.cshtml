@@ -1,0 +1,272 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Ramp.Security.Authorization;
+@using Common.Web
+@using System.Threading
+@using Web.UI.Code.Extensions
+@using Domain.Customer
+@using Common.Enums
+@model TestModel
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+
+<style>
+    .fancybox-inner {
+        overflow: hidden !important;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12" data-bind="if:data.EnableTimer">
+        <h2> Time left : <span data-bind="text:ko.unwrap($root.timer.time),css:$root.timer.critical"></span></h2>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-12" data-bind="with:data">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <span data-bind="text:Title"></span>
+                <!-- ko if:EnableTimer -->
+                <span data-bind="text:ko.unwrap(Duration) + ' Minutes'" class="pull-right"></span>
+                <!-- /ko -->
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="AllQuestions" data-bind="foreach:ContentModels">
+                            <label class="QuestionLabelButton">
+                                <button type="button" class="btn btn-circle" data-bind="css:{'btn-info' : !ko.unwrap(State.UnAnswered) && !ko.unwrap(State.ViewLater),'btn-warning' : ko.unwrap(State.ViewLater),'btn-danger' : ko.unwrap(State.UnAnswered) && !ko.unwrap(State.ViewLater) }, click:$root.paging.goTo.bind()">
+                                    <span data-bind="text:$root.content.find($data) + 1"></span>
+                                </button>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="list-group" data-bind="foreach:ContentModels">
+                            <div class="wizard-step" data-bind="css:{hidden : !$root.content.isSelected($data)}">
+                                <h4 data-bind="text:'Question ' + ($root.content.find($data) + 1) + ':'"></h4>
+                                <blockquote>
+                                    <p data-bind="text:Question"></p>
+                                    <!-- ko foreach:Answers-->
+                                    <!-- ko if:ko.unwrap(State.Selected)-->
+                                    <footer>Answer: <span data-bind="text:Option"></span></footer>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                </blockquote>
+                                <br />
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="well well-sm">
+                                            <div style="max-height:150px;overflow-y:auto !important">
+                                                <div class="list-group" data-bind="foreach:Answers">
+                                                    <a href="javascript:void(0)" class="list-group-item" data-bind="click:$parent.handlers.setAnswer.bind(),css:{active : ko.unwrap(State.Selected)}">
+                                                        <p class="list-group-item-text" data-bind="text:Option"></p>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="input-group-sm pull-right">
+                                            <label class="control-label">View Later</label>
+                                            <input type="checkbox" data-bind="checked : State.ViewLater" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- ko foreach:Attachments -->
+                                    <div class="col-sm-4" data-bind="if:ko.unwrap(Type).indexOf('Image') == 0">
+                                        <a data-bind="fancybox:{ autoSize:true, aspectRatio: true, fitToView: true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                                            <img class="img-responsive center-block" data-bind="attr:{src:Url,title:Description}" />
+                                        </a>
+                                    </div>
+                                    <div class="col-sm-4" data-bind="if:ko.unwrap(Type).indexOf('Video') == 0">
+                                        <a data-bind="fancybox:{ helpers:{ media:{} }, autoSize:true, aspectRatio: true, fitToView: true}, attr:{ title:Description }" class="fancybox.iframe">
+                                            <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                            <div class="content center-block">
+                                                <video controls style="max-width: 100%; max-height: 100%">
+                                                    <source data-bind="attr:{ src:Url }" type="video/mp4" />
+                                                    Your browser does not support the HTML 5 video tag.
+                                                </video>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-sm-4" data-bind="if:ko.unwrap(Type).indexOf('Audio') == 0">
+                                        <a data-bind="fancybox:{ helpers:{ media:{} }}" class="fancybox.iframe" title="Click To Hear Audio">
+                                            <img class="img-responsive attachment" src="@Url.Content("~/Content/images/OR_AudioIcon_v3.png")" />
+                                            <div class="content center-block">
+                                                <audio controls style="width:100%">
+                                                    <source data-bind="attr:{ src:Url }" type="audio/mp3" />
+                                                    Your browser does not support the HTML 5 audio tag.
+                                                </audio>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wizard-step wizard-confirmation" data-bind="visible:ko.unwrap($root.paging.showFinishTest())">
+                            <h4>Would you like to submit the test?</h4>
+                            <div class="alert alert-info">
+                                * Please review any unattempted questions before submitting. If you are happy to proceed, Click the “Finish Test” button.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 wizard-nav" data-bind="with:$root.paging">
+                        <input type="button" class="btn btn-sm btn-primary" data-bind="disable:isFirst(),click:previous.bind()" value="<< Previous" />
+                        <input type="button" class="btn btn-sm btn-primary" data-bind="click:next.bind(),hidden:ko.unwrap(showFinishTest)" value="Next >>" />
+                        <input type="button" data-bind="confirm: {message : 'Are you sure?',delegate : $root.submit,cancellationToken : $root.submitting},visible:ko.unwrap(showFinishTest),css:{'disabled' : ko.unwrap($root.submitting)}" class="btn btn-sm Submit" value="Finish Test" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var vm = new app.data.previewController(@Html.ToJson(Model),@Html.ToJson(ViewBag.Links as IDictionary<string, string>));
+    vm.timer = {
+        instance: {},
+        clock: {},
+        interval: parseInt(@ViewBag.TestTimeLeftInterval),
+        time: ko.observable(),
+        timeMomment: ko.observable(),
+        slipCheck : ko.observable(),
+        update: function (data, statuscode, xhr) {
+            vm.timer.slipCheck(moment(xhr.responseText, 'H:mm:ss'));
+            var duration = moment.duration(ko.unwrap(vm.timer.timeMomment).diff(ko.unwrap(vm.timer.slipCheck)));
+            if (duration.subtract(60,'seconds') > 0) {
+                //cheat detected
+                vm.timer.timeMomment(ko.unwrap(vm.timer.slipCheck));
+            }
+        },
+        cancel: function (xhr) {
+            if (xhr.status === 400) {
+                if (vm.timer.instance)
+                    window.clearInterval(vm.timer.instance);
+                vm.submit();
+            }
+        },
+        initialize: function () {
+            vm.timer.time('@ViewBag.Duration');
+            vm.timer.slipCheck(moment(vm.timer.time(), 'H:mm:ss'));
+            if (ko.unwrap(vm.data.EnableTimer)) {
+                if ("@Thread.CurrentPrincipal.IsInStandardUserRole()" === "True") {
+                    vm.timer.instance = window.setInterval(function () {
+                        $.get(vm.links['test:timeleft']).done(vm.timer.update).fail(vm.timer.cancel);
+                    }, vm.timer.interval);
+                }
+                vm.timer.clock = window.setInterval(function () {
+                    var current = moment(vm.timer.time(), 'H:mm:ss').subtract(1, 'seconds');
+                    vm.timer.timeMomment(current);
+                    vm.timer.time(current.format('H:mm:ss'));
+                    if (current.seconds() === 0 && current.minutes() === 0 && current.hours() === 0) {
+                        window.clearInterval(vm.timer.clock);
+                        vm.submit();
+                    }
+                }, 1000);
+            }
+        },
+        critical: function () {
+            if (ko.unwrap(vm.timer.time)) {
+                var time = ko.unwrap(vm.timer.time).split(':');
+                if (time.length == 3) {
+                    if (time[0] == '0' || time[0] == '00')
+                        if (time[1] < '10')
+                            return 'label-danger';
+                }
+            }
+            return 'label-info';
+        }
+    };
+    vm.content.initialize = function () {
+        vm.data.IntroductionContent(null);
+        $.each(ko.unwrap(vm.data.ContentModels), function () {
+            var q = this;
+            q.State.UnAnswered(true);
+            q.handlers = {
+                setAnswer: function (answer) {
+                    if (answer != undefined) {
+                        $.each(ko.unwrap(q.Answers), function () {
+                            var a = this;
+                            a.State.Selected(false);
+                        });
+                        answer.State.Selected(true);
+                        q.CorrectAnswerId(ko.unwrap(answer.Id));
+                        q.State.UnAnswered(false);
+                        q.State.ViewLater(false);
+                    }
+                }
+            }
+            q.CorrectAnswerId(null);
+        });
+        if (ko.unwrap(vm.data.ContentModels).length > 0)
+            vm.content.set(ko.unwrap(vm.data.ContentModels)[0]);
+    }
+    vm.paging.showFinishTest = ko.observable();
+    vm.paging.goTo = function(content) {
+        var entry = vm.content.find(content);
+        vm.paging.showFinishTest(false);
+        vm.content.selected(ko.unwrap(vm.data.ContentModels)[entry]);
+    };
+    vm.paging.next = function () {
+        if (!vm.paging.isLast()) {
+            var entry = vm.content.find(vm.content.selected);
+            vm.content.selected(ko.unwrap(vm.data.ContentModels)[entry + 1]);
+        } else {
+            vm.paging.showFinishTest(true);
+            vm.content.selected(null);
+        }
+    };
+    vm.paging.previous = function () {
+        if (!vm.paging.isFirst() && !ko.unwrap(vm.paging.showFinishTest)) {
+            var entry = vm.content.find(vm.content.selected);
+            vm.content.selected(ko.unwrap(vm.data.ContentModels)[entry - 1]);
+        } else if (ko.unwrap(vm.paging.showFinishTest)) {
+            vm.paging.showFinishTest(false);
+            vm.content.selected(ko.unwrap(vm.data.ContentModels)[ko.unwrap(vm.data.ContentModels).length - 1]);
+        } else  {
+            vm.content.selected(null);
+        }
+    };
+    vm.content.valid = function () {
+        return false;
+    }
+    vm.initialize();
+    vm.timer.initialize();
+    vm.enums = {};
+    vm.enums.documentType = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)));
+    vm.submit = function () {
+        if (ko.unwrap(vm.submitting))
+            return;
+        
+        vm.submitting(true);
+        $.post(vm.links['test:ended'], ko.mapping.toJS(vm.data)).done(function (response,status,xhr) {
+            vm.redirect(vm.links['test:review'] + '/' + xhr.responseText);
+        }).fail(function() {
+            notif({
+                msg: 'Failed to submit test answers, retrying in 5 seconds',
+                type: 'error'
+            });
+            window.setTimeout(vm.submit(), 5000);
+        }).always(function () {
+            vm.submitting(false);
+        });
+    };
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>
+
+
+

@@ -1,0 +1,81 @@
+﻿@using Domain.Customer;
+@using Web.UI.Code.Extensions;
+@model  List<Ramp.Contracts.ViewModel.DocumentListModel>
+<style>
+    .document-icon {
+        max-width: 60px;
+    }
+
+</style>
+
+<table id="tblRecylce" class="dataTable table-hover table-fixed" style="width:100%;">
+    <thead>
+        <tr>
+            <th class="col-lg-1">Type </th>
+            <th class="col-lg-2">Title</th>
+            <th class="col-lg-3">Date Deleted</th>
+            <th class="col-lg-2">Option</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+            <tr>
+                <td>
+                    @if (item.DocumentType == DocumentType.Memo) {
+                        <img title="Memo" alt="Memo" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                    }
+                    @if (item.DocumentType == DocumentType.Checklist) {
+                        <img title="Checklist" alt="Checklist" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)" />
+                    }
+                    @if (item.DocumentType == DocumentType.Test) {
+                        <img title="Test" alt="Test" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                    }
+                    @if (item.DocumentType == DocumentType.TrainingManual) {
+                        <img title="Training Manual" alt="Training Manual" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                    }
+                    @if (item.DocumentType == DocumentType.Policy) {
+                        <img title="Policy" alt="Policy" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                    }
+                </td>
+                <td>
+                    @item.Title
+                </td>
+                
+                <td>
+                    @item.LastEditDate
+                </td>
+   
+
+                <td>
+                        <div class="btn-group-xs">
+                            <button  class="btn btn-default btn-option restoreCss" role="@item.Title"  id="@(item.Id+"_"+item.DocumentType.ToString() )" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-ok-circle"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@(item.Id+"_"+item.DocumentType.ToString() )" class=""> Restore</a>
+                            </button>
+                            
+                        </div>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+<script>
+     
+    $(function () {
+
+        $('#tblRecylce').dataTable({
+            bDeferRender: true,
+            bDestroy: true,
+         bFilter: false,
+            bPaginate: false,
+            dom: 'rt<"bottom"flp><"clear">', "language": {
+      "emptyTable": "You dont have any deleted documents available."
+    },
+            initComplete: function () {
+                $(this.api().table().container()).find('input[type="search"]').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+            }
+        });
+    });
+    
+</script>

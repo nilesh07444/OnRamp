@@ -1,0 +1,245 @@
+﻿@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Web.UI.Code.Extensions
+@using System.Threading
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Company User Login Stats Report</h1>
+        <div class="form-group input-group">
+            <p>
+                This report allows you to contrast OnRamp portal user activity / usage for portals that you are authorised to manage.
+            </p>
+        </div>
+    </div>
+</div>
+<br />
+<br />
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"> User Stats
+                <br />
+                <br />
+             </div>
+            <div class="panel-body">
+                <br />
+                <br />
+                <div class="form-group col-lg-3">
+                    <div class="input-group date" id='FromDate'>
+                        @Html.Label("From Date")
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type='text' id="inputFromDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-lg-3">
+                    <div class="input-group date" id='ToDate'>
+                        @Html.Label("To Date")
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type='text' id="inputToDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-lg-3">
+                    <div class="input-group date">
+                        <label></label>
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="View Report" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="ChartDiv">
+                <div class="panel-heading">
+                    Company Login Percentage Stats
+                </div>
+                <div class="panel-body" id="TableData">
+                    <div class="col-lg-12" style="display: none; text-align: center;" id="divNoData">
+                        <label id="lblNoData">No Data Found</label>
+                    </div>
+
+                    <div id="morris-bar-chart">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('#ToDate').datetimepicker();
+        $('#FromDate').datetimepicker();
+    });
+</script>
+
+<script type="text/javascript">
+    $("#btnView").click(function () {
+        $('#LoadingImageDiv').show();
+        if ($('#inputFromDate').val() != "" && $('#inputToDate').val() != "") {
+            var frmDateInstance = new Date($('#inputFromDate').val());
+            var toDateInstance = new Date($('#inputToDate').val());
+            if (frmDateInstance > toDateInstance) {
+                $('#LoadingImageDiv').hide();
+                notif({
+                    msg: "<b>Error :</b> From date cannot be greater than To Date ",
+                    type: "error",
+                });
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("LoadBarChartToGetUsersStats", "ProvisionalMgmt", "ProvisionalManagement"))",
+                    data: {
+                        fromDate: $('#inputFromDate').val(),
+                        toDate: $('#inputToDate').val(),
+                    },
+                    success: function (data) {
+                        $('#LoadingImageDiv').hide();
+                        $('#ChartDiv').hide();
+                        $('#divNoData').hide();
+                        $('#morris-bar-chart').empty();
+                        var frequencyList = data.UserFrequencyList;
+                        if (frequencyList.length == 0) {
+                            $('#ChartDiv').fadeIn();
+                            $('#divNoData').show();
+                        } else {
+                            $('#ChartDiv').fadeIn();
+                            ShowTable(frequencyList);
+                            var colorArray = ['rgb(77, 167, 77)', 'rgb(37, 119, 181)', 'rgb(167, 179, 188)', '#62CBB2', '#AACB62', '#D58281',
+                            '#CBC062', '#71D0AC', '#85C2D6', '#CE94DB', '#9A94DB', '#BCA3E0', '#8DCD6A', '#71D087', '#A271D0', '#75A8D1', '#85D6D3',
+                            '#B89EFF', '#7C70FF', '#2974FF', '#4DB5FF', '#4DEDFF', '#8FCBFF', '#8FEEFF', '#00ADAD', '#00BD32', '#0077C7', '#0044B3', '#24FFD3'];
+                            // var colorArray = [167, 119, 179];
+
+                            Morris.Bar({
+                                element: 'morris-bar-chart',
+                                data: frequencyList,
+                                xkey: 'CompanyName',
+                                ykeys: ['TotalLoginPercentageOfSystem'],
+                                yLabelFormat: function (y) { return y.toString() + '%'; },
+                                labels: ['Login Percentage'],
+                                barColors: function (row, series, type) {
+                                    if (type === 'bar') {
+                                        /*var r = Math.floor((255 * row.y) / 100),
+                                              g = Math.floor((255 * (100 - row.y)) / 100),
+                                              b = 0;
+                                         return 'rgb(' + r + ',' +g + ',' +b + ')';*/
+
+                                        /*var rint = Math.round(0xffffff * Math.random());
+                                         return 'rgb(' + (rint >> 16) + ',' + (rint >> 8 & 255) + ',' + (rint & 255) + ')';*/
+
+                                        // return "#" + Math.random().toString(16).slice(2, 8);
+                                        // return '#' + Math.floor(Math.random() * 16758883).toString(16);
+                                        //    return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6);
+
+                                        var rand = colorArray[Math.floor(Math.random() * colorArray.length)];
+                                        return rand; //'rgb(' + rand + ',' + rand + ',' + 77 + ')';
+                                        // return "#"+((1<<24)*Math.random()|0).toString(16);
+                                    } else {
+                                        return '#000';
+                                    }
+                                },
+                                hideHover: 'auto',
+                                gridIntegers: true,
+                                ymin: 0,
+                                resize: true,
+                                barShape: 'soft'
+                            });
+                        }
+                    },
+                    error: function (data) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            }
+        } else {
+            $('#LoadingImageDiv').hide();
+            if ($('#inputFromDate').val() == "" && $('#inputToDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select From Date & To Date",
+                    type: "error",
+                });
+            } else if ($('#inputToDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select To Date",
+                    type: "error",
+                });
+            } else if ($('#inputFromDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select From Date",
+                    type: "error",
+                });
+            }
+        }
+    });
+
+    function ShowTable(data) {
+        var parentTableDiv = $('<div class="table-responsive">');
+        var parentTable = $('<table class="table table-hover">');
+        var thead = $('<thead>');
+        var headTr = $('<tr>');
+        var headCompanyNameTh = $('<th>');
+        var headTotalLoginPercentageTh = $('<th>');
+
+        //Add heading to table
+        headCompanyNameTh.append("Company");
+        headTotalLoginPercentageTh.append("Percentage");
+
+        //Append headings to <tr> tag
+        headTr.append(headCompanyNameTh);
+        headTr.append(headTotalLoginPercentageTh);
+
+        //Append headTr to <thead> tag
+        thead.append(headTr);
+
+        //Append thead to <table> tag
+        parentTable.append(thead);
+
+        //Append parentTable to table <div> tag
+        parentTableDiv.append(parentTable);
+        var tableBody = $('<tbody>');
+        for (var i = 0; i < data.length; i++) {
+            var innerTr = $('<tr>');
+            var innerUserNameTd = $('<td>');
+            innerUserNameTd.append(data[i].CompanyName);
+            var innerTotalLoginsTd = $('<td>');
+            innerTotalLoginsTd.append(data[i].TotalLoginPercentageOfSystem);
+            innerTr.append(innerUserNameTd);
+            innerTr.append(innerTotalLoginsTd);
+            tableBody.append(innerTr);
+        }
+        parentTable.append(tableBody);
+
+        $('#TableData').empty();
+        $('#TableData').append(parentTableDiv);
+
+        var label = $('<div class="alert alert-success">');
+        label.append("Bar Chart");
+
+        $('#TableData').append(parentTableDiv);
+        $('#TableData').append(label);
+        var div = $(' <div id="morris-bar-chart">');
+        $('#TableData').append(div);
+
+    }
+</script>

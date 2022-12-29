@@ -1,0 +1,293 @@
+﻿@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+
+@model Ramp.Contracts.ViewModel.TestHistoryReportViewModel
+
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<style>
+    .big{
+        max-width:none;
+    }
+    .input-big{
+        width:100%;
+    }
+  
+</style>
+<div class="row">
+    <div class="col-lg-12">
+        @*<h1 class="page-header">@ViewBag.Title</h1>*@
+        <h1 class="page-header">Test History Report</h1>
+        @Html.Label("Description :")
+        <div class="form-group input-group">
+            <p>
+                The Test History Report allows you to pull historical records on all Tests written in the OnRamp System.
+                You can customise the report to filter based on particular Playbooks, Groups and Date Ranges.
+            </p>
+            <p>
+                Please select options below to view the report.
+            </p>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info">
+    <div class="panel-heading">OnRamp Online Training Portal</div>
+    <div class="panel-body">
+        @using (Html.BeginForm(null, null, FormMethod.Get, new { @id = "test" }))
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group col-md-2 col-md-offset-4">
+                        <div class="input-group date" id='FromDate'>
+                            @Html.Label("From Date")
+                            <div class="form-group input-group input-big">
+                                <input type='text' name="From" id="inputFromDate" class="form-control" value="@Request.Params["From"]" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <div class="input-group date" id='ToDate'>
+                            @Html.Label("To Date")
+                            <div class="form-group input-group input-big">
+                                <input type='text' name="To" id="inputFromDate" class="form-control" value="@Request.Params["To"]" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+
+                @if (Model.Companies.Any())
+                {
+                    <div class="form-group col-md-3">
+                        <div class="input-group date input-big" id='CompanyId'>
+                            @Html.Label("Company")
+                            <div class="form-group input-group input-big">
+                                @Html.DropDownList("CompanyId", Model.Companies.ToSelectList(c => c.Id.ToString(), c => c.CompanyName), "Select Company", new { @class = "form-control big", onchange = "this.form.submit();" })
+                            </div>
+                        </div>
+                    </div>
+
+
+                    if (Model.TrainingGuides != null)
+                    {
+                        <div class="form-group col-md-3">
+                            <div class="input-group date input-big" id='TrainingGuideId'>
+                                @Html.Label("Playbook")
+                                <div class="form-group input-group input-big">
+                                    @Html.DropDownList("TrainingGuideId", Model.TrainingGuides.ToSelectList(c => c.TrainingGuidId.ToString(), c => c.Title), "Select Guide", new { @class = "form-control big", onchange = "this.form.submit();" })
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    if (Model.Groups != null)
+                    {
+                        <div class="form-group col-md-3">
+                            <div class="input-group date input-big " id='GroupId'>
+                                @Html.Label("Group")
+                                <div class="form-group input-group input-big">
+                                    @Html.DropDownList("GroupId", Model.Groups.ToSelectList(c => c.GroupId.ToString(), c => c.Title), "Select Group", new { @class = "form-control big", onchange = "this.form.submit();"  })
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    if (Model.Users != null)
+                    {
+                        <div class="form-group col-md-3">
+                            <div class="input-group date input-big" id='UserId'>
+                                @Html.Label("User")
+                                <div class="form-group input-group input-big">
+                                    @Html.DropDownList("UserId", Model.Users.ToSelectList(c => c.Id.ToString(), c => c.FullName), "Select User", new { @class = "form-control big", onchange = "this.form.submit();" })
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    if (Model.TrainingGuides != null)
+                    {
+                        <div class="form-group col-md-4">
+                            <div class="input-group date input-big " id='TrainingGuideId'>
+                                @Html.Label("Playbook")
+                                <div class="form-group input-group input-big">
+                                    @Html.DropDownList("TrainingGuideId", Model.TrainingGuides.ToSelectList(c => c.TrainingGuidId.ToString(), c => c.Title), "Select Guide", new { @class = "form-control big", onchange = "this.form.submit();" })
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    if (Model.Groups != null)
+                    {
+                        <div class="form-group col-md-4">
+                            <div class="input-group date input-big" id='GroupId'>
+                                @Html.Label("Group")
+                                <div class="form-group input-group input-big">
+                                    @Html.DropDownList("GroupId", Model.Groups.ToSelectList(c => c.GroupId.ToString(), c => c.Title), "Select Group", new { @class = "form-control big", onchange = "this.form.submit();" })
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    if (Model.Users != null)
+                    {
+                        <div class="form-group col-md-4">
+                            <div class="input-group date input-big" id='UserId'>
+                                @Html.Label("User")
+                                <div class="form-group input-group input-big">
+                                    @Html.DropDownList("UserId", Model.Users.ToSelectList(c => c.Id.ToString(), c => c.FullName), "Select User", new { @class = "form-control big", onchange = "this.form.submit();" })
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model.Data.Items.Any())
+{
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            Summary
+            <a href="#" class="export default pull-right" data-exportformid="test">Export To CSV</a>
+        </div>
+        <table class="table table-striped">
+            <tr>
+                <th>
+                    Date
+                </th>
+                <th>
+                    Version
+                </th>
+                <th>
+                    User
+                </th>
+                <th>
+                    Result
+                </th>
+                <th>
+                </th>
+            </tr>
+            @foreach (var result in Model.Data.Items)
+            {
+                <tr>
+                    <td>
+                        @result.Date
+                    </td>
+                    <td>
+                        @result.Version
+                    </td>
+                    <td>
+                        @result.User.Name
+                    </td>
+                    <td>
+                        @result.Result/@result.MaxResult (@result.Percentage %)
+                    </td>
+                    @if (result.Passed)
+                    {
+                        <td>
+                            Passed
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="danger">
+                            Failed
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+
+        <div id="divTable" style="display:none">
+            <table>
+                <tr>
+                    <td>Full Name</td>
+                    <td>Employee Number</td>
+                    <td>Group</td>
+                    <td>Playbook Name</td>
+                    <td>Test Name</td>
+                    <td>Percentage</td>
+                    <td>Test Result</td>
+
+                    <td>Test Score</td>
+                </tr>
+                @foreach (var result in Model.Data.Items)
+                {
+                    <tr>
+                        <td>@result.User.Name.Trim()</td>
+                        <td>@result.User.EmployeeNo</td>
+                        <td>@result.User.GroupName.Trim()</td>
+                        <td>@result.PlaybookName.Trim()</td>
+                        <td>@result.TestName.Trim()</td>
+                        <td>@result.Result/@result.MaxResult (@(result.Result / result.MaxResult * 100)%)</td>
+                        @if (result.Passed)
+                        {
+                            <td>Passed</td>
+                        }
+                        else
+                        {
+                            <td class="danger">Failed</td>
+                        }
+                        <td>@result.MarksObtain</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#ToDate').datetimepicker({
+            defaultDate: new Date(),
+            format: 'DD MMM YYYY'
+        });
+        $('#FromDate').datetimepicker({
+            defaultDate: moment().subtract(7, 'days'),
+            format: 'DD MMM YYYY'
+        });
+
+        $('#ToDate').on('dp.change', function () {
+            $(this).closest('form').submit();
+        });
+
+        $('#FromDate').on('dp.change', function () {
+            $(this).closest('form').submit();
+        });
+
+        // This must be a hyperlink
+        $(".export").on('click', function (event) {
+
+            var formid = $(this).data('exportformid');
+            var form = $('#' + formid);
+            var data = form.serialize();
+            window.location = '@Url.Action("TestHistoryReportToCSV")?' + data;
+        });
+    });
+</script>

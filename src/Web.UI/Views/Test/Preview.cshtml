@@ -1,0 +1,153 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Ramp.Security.Authorization;
+@using Common.Web
+@using System.Threading
+@using Web.UI.Code.Extensions
+@using Domain.Customer
+@using Common.Enums
+@model TestModel
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    string checkuser = "StandardUser";
+
+    var isGlobal = Request["isGlobal"];
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+        checkuser = "admin";
+
+
+    }
+    else
+    {
+        checkuser = "StandardUser";
+
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+<link href="~/Content/Areas/Document/Preview.css" rel="stylesheet" />
+<style>
+    .form-horizontal .control-label{
+        text-align:left;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12" data-bind="with:data">
+        
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4>Title: <span data-bind="text:ko.unwrap(Title)"></span></h4>
+                
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="center-block" data-bind="with:CoverPicture">
+                            <img class="img-responsive" data-bind="attr:{src:Url}" style="max-height:300px" />
+                            <hr />
+                        </div>
+                        <div class="form-horizontal">
+            
+                            <div class="form-group" data-bind="if:EnableTimer">
+                                <label class="control-label col-sm-4">Test Duration:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static" data-bind="text:ko.unwrap(Duration) + ' Minutes'"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">Test Pass Marks:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static" data-bind="text:ko.unwrap(PassMarks) + ' %'"></p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-4">Pass Points:</label>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static" data-bind="text:ko.unwrap(Points)"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h4>Introduction</h4>
+                        <div class="well">
+                            <p class="form-group-static" data-bind="text:IntroductionContent"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                       <button type="button" class="btn btn-success btn-lg" data-bind="click:$root.takeTest.bind()">Click here to start the test</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="disclaimerModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Information</h4>
+            </div>
+            <div class="modal-body">
+                <span>By agreeing to this message, you acccept that when your test session expires you will not be able to complete your test, please ensure that you have a stable internet connection before you begin with this test.</span>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" data-dismiss="modal" id="Accept" class="btn btn-primary">I Agree</button>
+                        <button type="button" id="btnNotAccept" data-dismiss="modal" class="btn btn-default" value="Send">I Disagree</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+     @{ 
+        (ViewBag.Links as IDictionary<string, string>).Add("test:start", Url.Action("Start", "Test", new { Area = "" }));
+    }
+    var vm = new app.data.previewController(@Html.ToJson(Model),@Html.ToJson(ViewBag.Links as IDictionary<string, string>));
+    vm.feedback = null;
+    vm.takeTest = function () {
+       // alert(vm.links['test:start'] + '/' + ko.unwrap(vm.data.Id)+ "?isGlobal=@ViewBag.GloballyAccessed")
+       // vm.redirect(vm.links['test:start'] + '/' + ko.unwrap(vm.data.Id)+ "?isGlobal=@ViewBag.GloballyAccessed");
+        window.location.assign(vm.links['test:start'] + '/' + ko.unwrap(vm.data.Id) + "?isGlobal=@ViewBag.GloballyAccessed");
+    }
+    vm.enums = {};
+    vm.enums.documentType= @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)));
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+
+    $(function () {
+
+        $("#disclaimerModal").modal('show');
+         var check = '@checkuser';
+        $("#btnNotAccept").click(function () {
+           
+            if ('@isGlobal' === 'True' || '@isGlobal' === 'true' || '@isGlobal' === true) {
+                window.location.assign("/Document/GlobalDocuments");
+            } else {
+                window.location.assign("/Document/MyDocuments");
+            }
+        });
+        $("#closeModal").click(function () {
+            
+            if (check === 'admin') {
+                window.location.assign("/Document/Index");
+            } else {
+                window.location.assign("/Document/MyDocuments");
+            }
+
+        });
+    });
+</script>
+
+
+

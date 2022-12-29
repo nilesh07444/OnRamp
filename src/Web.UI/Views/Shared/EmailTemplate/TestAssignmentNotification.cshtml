@@ -1,0 +1,39 @@
+﻿@using Web.UI.Helpers
+@model Ramp.Contracts.ViewModel.AssignmentNotificationViewModel
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<style type="text/css">
+    h2, p, h4{
+        font-family:Calibri;
+    }
+</style>
+
+<h2>Test Notification</h2>
+<p>
+    Dear @Model.CustomerUserFirstName,
+
+    <br />
+    <br />
+    @{
+        string reference;
+        if (!string.IsNullOrEmpty(Model.Title))
+        {
+            reference = Model.Title;
+        }
+        else
+        {
+            reference = Model.ReferenceId;
+        }
+
+    }
+    Please note the test for <strong>@reference</strong> has been assigned to you.
+    <br />
+    <br />
+    Click <a href="@Url.ActionWithAbsoluteUrl("~/ManageTrainingTest/ManageTrainingTest/TakeTrainingTest?trainingTestId=" + @Model.Id)">here</a> to take the test.
+    <br />
+    <br />
+</p>
+
+<img src="@Url.ActionWithAbsoluteUrl("~/images/powered.png")" alt="Powered by ONRAMP" />
+  

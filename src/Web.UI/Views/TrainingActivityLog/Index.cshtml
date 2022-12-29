@@ -1,0 +1,358 @@
+﻿@model  List<Ramp.Contracts.ViewModel.TrainingActivityModel>
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+
+<head>
+   
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <style>
+
+        .btn-option {
+            margin-bottom: 5px;
+        }
+
+        .table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+        
+        vertical-align: middle !important;
+        
+        }
+
+
+
+
+
+
+    </style>
+
+</head>
+
+<body>
+ <div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">Training Activity Logging Management</h3>
+    </div>
+</div>
+    
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+  
+                <div class="panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        Training Activity Logging Management
+                        <a id="AddTrainingActivityLog" style="border-left: solid 1px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer "><i class="glyphicon glyphicon-plus"></i></a>
+                        <div class="pull-right">
+                            <form class="form-inline">
+                                <div class="input-group" style="width: 170px;">
+                                    <select class="selectpicker" multiple id="ddlFilter">
+
+                                        <optgroup label="Training Types">
+                                            @foreach (var item in (ViewBag.TrainingActivityTypeList)) {
+                                                <option value="@item">@item</option>
+                                            }
+
+                                        </optgroup>
+
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="txtSearch" placeholder="Training Activity Search" data-bind="" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" id="btnSearch"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+             
+                        @Html.Partial("~/Views/TrainingActivityLog/_TrainingActivityLogList.cshtml", Model)
+                  
+                </div>
+
+            </div>
+        </div>
+
+    <div class="modal fade" id="AddTrainingActivityModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close closeCss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Create a Training Activity </h4>
+                </div>
+                <div class="modal-body" id="divAddTrainingActivity">
+
+                </div>
+
+            </div>
+        </div>
+    </div>   
+    <div class="modal fade" id="ViewDocTrainingActivityModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close closeCss" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Training Activity Documents </h4>
+                </div>
+                <div class="modal-body" id="divViewDocTrainingActivity">
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ViewTraineesModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Training Activity Trainees</h4>
+                </div>
+                <div class="modal-body" id="divViewTrainees">
+
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="ViewTrainersModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Training Activity Trainers</h4>
+                </div>
+                <div class="modal-body" id="divViewTrainers">
+
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="DeleteTrainingModal" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Delete Training Activity Log</h4>
+                </div>
+                <div class="modal-body">
+                    <span>You are sure to delete your training activity log?</span>
+                    <input type="hidden" id="hdnTrainingLogId" />
+                    <input type="hidden" id="hdnTrainingName" />
+
+                    <div class="modal-footer">
+                        <div class="text-right">
+                            <div class="">
+                                <button type="button" id="btnDeleteTrainingLog" data-dismiss="modal" class="btn btn-primary" value="Remove">Confirm</button>
+                                <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    
+    @if (ViewBag.Message != null) {
+        @:  <script>notif({ msg: "<b>Success :</b> @ViewBag.Message", type: "success", multiline: true });</script>
+    }
+
+</body>
+
+    <script>
+    $(function () {
+      
+            $(document).on('click', '.closeCss', function () {
+            window.location.reload();
+        });
+
+        $('#btnSearch').click(function () {
+            var searchTxt = $('#txtSearch').val();
+            if (searchTxt != null && searchTxt != '' && searchTxt!=undefined);
+            {
+                var filter = $('#ddlFilter').val();
+            var trainingActiivity = $.get("@Url.Action("FilterTrainingActivityLog", "TrainingActivityLog", new { Area = "" })",{
+                filters: filter.toString(),
+                searchText: searchTxt
+
+            });
+
+            trainingActiivity.done(function (data) {
+
+                $("#divTrainingActivityLog").html(data);
+            });
+            trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+            }
+        });
+
+        $('#ddlFilter').change(function () {
+            var filter = $(this).val();
+            if(filter !=null && filter!='' && filter!=undefined);
+            {
+                var searchTxt = $('#txtSearch').val();
+            var trainingActiivity = $.get("@Url.Action("FilterTrainingActivityLog", "TrainingActivityLog", new { Area = "" })",{
+                filters: filter.toString(),
+                searchText: searchTxt
+
+            });
+
+            trainingActiivity.done(function (data) {
+
+                $("#divTrainingActivityLog").html(data);
+            });
+            trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+            }
+        });
+
+        $(document).on('click', '.RemoveTrainingActivityCss', function () {
+            var id = $(this).attr('id');
+            var name = $(this).attr('role');
+            $('#hdnTrainingLogId').val(id);
+            $('#hdnTrainingName').val(name);
+            $('#spnTitle').text(name);
+            $('#DeleteTrainingModal').modal('show');
+
+        });
+        $(document).on('click', '#btnDeleteTrainingLog', function () {
+            var id = $('#hdnTrainingLogId').val();
+                  var trainingActiivity = $.get("@Url.Action("DeleteTrainingActivityLog", "TrainingActivityLog", new { Area = "" })/" + id);
+            trainingActiivity.done(function (data) {
+
+                $("#divTrainingActivityLog").html(data);
+
+                notif({ msg: "<b>Success :</b> " + $('#hdnTrainingName').val()+" Training Activity has been successfully Removed", type: "success", multiline: true });
+                setTimeout(function () { window.location.reload(); }, 1000);
+                });
+            trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+        });
+
+        $(document).on('click', '.ViewTraineesCss', function () {
+            var id = $(this).attr('id');
+
+                var trainingActiivity = $.get("@Url.Action("ViewTrainees", "TrainingActivityLog", new { Area = "" })/" + id);
+            trainingActiivity.done(function (data) {
+
+                $("#divViewTrainees").html(data);
+                $('#ViewTraineesModal').modal('show');
+            });
+                trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+
+        });
+         $(document).on('click', '.ViewTrainersCss', function () {
+            var id = $(this).attr('id');
+
+                var trainingActiivity = $.get("@Url.Action("ViewTrainers", "TrainingActivityLog", new { Area = "" })/" + id);
+            trainingActiivity.done(function (data) {
+
+                $("#divViewTrainers").html(data);
+                $('#ViewTrainersModal').modal('show');
+            });
+                trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+
+        });
+
+        /*************this one is used to Edit Training Activity Log *****************/
+        $(document).on('click', '.TrainingActivityCss', function () {
+            var id = $(this).attr('id');
+            var trainingActiivity = $.get("@Url.Action("AddEditTrainingActivityLog", "TrainingActivityLog", new { Area = "" })/"+id);
+            trainingActiivity.done(function (data) {
+
+                $("#divAddTrainingActivity").html(data);
+                $('#AddTrainingActivityModal').modal('show');
+            });
+            trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+
+        });
+
+
+        /*************this one is used to View Training Activity Log Documents*****************/
+        $(document).on('click', '.TrainingDocCss', function () {
+            var id = $(this).attr('id');
+            var trainingActiivity = $.get("@Url.Action("ViewDocsTrainingActivityLog", "TrainingActivityLog", new { Area = "" })/"+id);
+            trainingActiivity.done(function (data) {
+
+                $("#divViewDocTrainingActivity").html(data);
+                $('#ViewDocTrainingActivityModal').modal('show');
+            });
+            trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+
+        });
+
+        /*************this one is used to Add Training Activity Log *****************/
+        $(document).on('click', '#AddTrainingActivityLog', function () {
+
+            var trainingActiivity = $.get("@Url.Action("AddEditTrainingActivityLog", "TrainingActivityLog", new { Area = "" })", {
+                id: ""
+                });
+            trainingActiivity.done(function (data) {
+
+                $("#divAddTrainingActivity").html(data);
+                $('#AddTrainingActivityModal').modal('show');
+            });
+            trainingActiivity.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            trainingActiivity.always(function () {
+
+                });
+        });
+
+    });
+    </script>

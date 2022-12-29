@@ -1,0 +1,83 @@
+﻿@model  List<Ramp.Contracts.ViewModel.TrainingActivityModel>
+
+<div class="panel-body">
+    <table id="tblTrainingActivityLog" class="table table-hover table-fixed">
+        <thead>
+            <tr role="row">
+                <th class="">Title</th>
+                <th class="col-lg-2">Description</th>
+                <th class="">Type </th>
+
+                <th class="col-lg-2">Cost Implication </th>
+                <th class="col-lg-2">Last Edited </th>
+                <th class="col-lg-3">Options</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr role="row">
+                    <td>
+                        @item.Title
+                    </td>
+                    <td>@item.Description</td>
+                    <td>
+                        @item.TrainingActivityType.ToString()
+                    </td>
+
+                    <td>
+                        @string.Format("R {0}", item.CostImplication)
+                    </td>
+                    <td>
+                        @item.LastEditDate
+                    </td>
+
+                    <td>
+
+                        <div class="btn-group-xs">
+                            <button class="btn btn-default btn-option TrainingActivityCss" style="color:#262626; background-color:#f9f9f9" id="@item.Id">
+                                <span class="glyphicon glyphicon-edit"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void'> Edit</a>
+                            </button>
+                            <button class="btn btn-default btn-option RemoveTrainingActivityCss" style="color:#262626; background-color:#f9f9f9" id="@item.Id" role="@item.Title">
+                                <span class="glyphicon glyphicon-trash"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void'> Remove </a>
+                            </button>
+                            <button class="btn btn-default btn-option ViewTraineesCss" style="color:#262626; background-color:#f9f9f9" id="@item.Id">
+                                <span class="glyphicon glyphicon-eye-open"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void'> View Trainees </a>
+                            </button>
+                            <button class="btn btn-default btn-option ViewTrainersCss" style="color:#262626; background-color:#f9f9f9" id="@item.Id">
+                                <span class="glyphicon glyphicon-eye-open"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void'> View Trainers </a>
+                            </button>
+                            <button class="btn btn-default btn-option TrainingDocCss" style="color:#262626; background-color:#f9f9f9" id="@item.Id">
+                                <span class="glyphicon glyphicon-edit"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void'> View Documents</a>
+                            </button>
+                        </div>
+
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+</div>
+
+
+<script>
+
+    $(function () {
+
+        $('#tblTrainingActivityLog').dataTable({
+            bDeferRender: true,
+            bDestroy: true,
+            bFilter: false,
+            bPaginate: false,
+            dom: 'rt<"bottom"flp><"clear">',
+            initComplete: function () {
+                $(this.api().table().container()).find('input[type="search"]').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+            }
+        });
+    });
+
+
+</script>

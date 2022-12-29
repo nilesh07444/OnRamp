@@ -1,0 +1,73 @@
+﻿div.hopscotch-bubble .hopscotch-bubble-close {
+    top: -2px !important;
+    right: 5px !important;
+}
+
+div.hopscotch-bubble .hopscotch-bubble-number {
+    padding: 0px !important;
+}
+
+.trophy p {
+    margin: 0;
+}
+
+.assignMarks label, input, .trophy input, button {
+    display: inline-block;
+}
+
+.input-group {
+    width: 281px;
+}
+
+.question_remove {
+    color: white;
+}
+
+.img-upload .video-upload {
+    padding-left: 0;
+}
+
+.image-thumbnail, .video-thumbnail {
+    width: 50%;
+}
+.answer thead > tr > th {
+    padding: 0;
+    padding-bottom: 7px;
+}
+.possible {
+    width: 70%;
+}
+textarea {
+    width: 100%;
+    max-width: 100%;
+}
+.upload-detail-20 {
+    width: 20%;
+}
+.upload-detail-40 {
+    width: 40%;
+}
+.upload-thumbnail {
+    max-height: 100px;
+    margin: auto;
+}
+.upload-action {
+    margin: auto;
+}
+.modal-title, .model-body-header {
+    text-align: center;
+}
+.trophy-image {
+    max-height: 100px;
+    max-width: 100px;
+    height: 150px;
+    margin: auto;
+}
+.trophy-lable {
+    overflow: hidden;
+    max-width: 200px;
+    display: block;
+}
+#LoadingImageDiv {
+    z-index: 1000;
+}

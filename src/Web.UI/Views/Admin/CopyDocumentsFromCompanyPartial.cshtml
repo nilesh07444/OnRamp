@@ -1,0 +1,26 @@
+﻿@using Ramp.Contracts.ViewModel
+@model IEnumerable<DocumentListModel>
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = null;
+}
+
+@if (Model.Any())
+{
+    foreach (var item in Model)
+    {
+        <div class="alert alert-success" style="padding: 6px; width: 283px;">
+           <span>@item.DocumentType.ToString():</span> <label style="width:90%;">@item.Title [@item.ReferenceId]</label>
+            <label class="checkbox-inline" style="float: right">
+                <input name="selector[]" class="CustomerCompany" type="checkbox" value="@item.DocumentType:@item.Id">
+            </label>
+        </div>
+    }
+}
+else
+{
+    <div id="NoRecordFoundDiv" class="alert alert-danger" style="padding: 6px; width: 283px;">
+        <label>No documents found</label>
+    </div>
+}

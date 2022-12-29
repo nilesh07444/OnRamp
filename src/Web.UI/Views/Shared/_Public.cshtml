@@ -1,0 +1,513 @@
+﻿@using Ramp.Security.Authorization
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Domain.Models
+@{
+    var version = System.Reflection.Assembly.GetAssembly(typeof(Web.UI.App_Start.RampSecurityConfig)).GetName().Version.ToString();
+    var portalContext = Html.GetPortalContext();
+    var footerLogoUrl = Url.Content("~/images/powered.PNG");
+    if (portalContext != null && portalContext.UserCompany != null)
+    {
+        if (portalContext.UserCompany.CustomerConfigurations.Count > 0)
+        {
+            var customerConfiguration = portalContext.UserCompany.CustomerConfigurations;
+            var footerImage = customerConfiguration.Where(x => x.Type == CustomerConfigurationType.FooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault();
+            if (footerImage != null && footerImage.UploadModel != null)
+            {
+                footerLogoUrl = "data:image/png;base64," + Convert.ToBase64String(footerImage.UploadModel.Data);
+            }
+        }
+    }
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv=“X-UA-Compatible” content="IE=11" />
+    <title>OnRamp Online Training Portal</title>
+    @Styles.Render("~/bundles/css")
+    <link href="~/Content/admin.css?v=@version" rel="stylesheet" />
+    @Scripts.Render("~/bundles/js")
+    <script src="~/Scripts/app/app.common.js?v=@version"></script>
+    <script src="~/Scripts/app/app.datamodel.js?v=@version"></script>
+    <script src="~/Scripts/app/app.viewmodel.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.common.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.ajaxprefilter.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.editortemplates.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.extenders.js?v=@version"></script>
+    <script src="~/Scripts/app/extensions.validation.js?v=@version"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+
+    @if (HttpContext.Current.IsDebuggingEnabled)
+    {
+        <link rel="stylesheet" href="~/Content/ContentTools/build/content-tools.min.css" />
+        <link rel="stylesheet" href="~/Content/fancyBox/source/jquery.fancybox.css" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ContentTools@1.6.8/build/content-tools.min.css" />
+        <link rel="stylesheet" href="~/Content/hopscotch/dist/css/hopscotch.min.css" />
+        <link rel="stylesheet" href="~/Content/fancyBox/source/jquery.fancybox.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+    }
+
+    @{
+        var EnabledTrainingActivityLoggingModule = false;
+        if (PortalContext.Current != null && PortalContext.Current.UserCompany != null)
+        {
+            EnabledTrainingActivityLoggingModule = PortalContext.Current.UserCompany.EnableTrainingActivityLoggingModule;
+        }
+    }
+    @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.ApplyCustomCss && File.Exists(Server.MapPath("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css")))
+    {
+        var customCssPath = Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css");
+        <link id="ApplyCustomCss" href="@customCssPath" rel="stylesheet" />
+    }
+
+    @RenderSection("scripts", false)
+    @Html.Partial("_NotifyPartial")
+    @if (PortalContext.Current != null)
+    {
+        <style>
+            @Html.Raw(PortalContext.Current.EmbedCss())
+        </style>
+    }
+
+    <script type="text/javascript">
+        var tour = {
+            id: 'hello-hopscotch',
+            steps: [],
+            showPrevButton: true,
+            scrollTopMargin: 100
+        };
+        var tour1 = {
+            id: 'hello-hopscotch',
+            steps: [],
+            showPrevButton: true,
+            scrollTopMargin: 100
+        };
+
+        $(function() {
+            var respondTimeout = null;
+            var timeOutInterval = null;
+            var secondsRemaining = 30;
+            var useTestDuraionTimeout = false;
+            if (window.hasOwnProperty('startTest_TestDuration'))
+                useTestDuraionTimeout = true;
+
+            function TimeoutFunction() {
+                if ($.fancybox.isOpen) {
+                    reEnlistTimeoutInterval();
+                    return;
+                }
+                if (window.hasOwnProperty('AutoSave'))
+                    AutoSave();
+                secondsRemaining = 30;
+                $('#timeout').modal('show');
+                var interval = window.setInterval(function() {
+                        secondsRemaining--;
+                        if (secondsRemaining < 0)
+                            window.clearInterval(interval);
+                        $('#timeout_remainingSeconds').html(secondsRemaining);
+                    },
+                    1000);
+
+                respondTimeout = window.setTimeout(function() {
+                        $('#timeout_logOut').trigger('click');
+                        window.clearInterval(interval);
+                    },
+                    60 * 1000 * .5);
+            }
+
+            $('.dropdown-link').on('click',
+                function() {
+                    if ($(this).attr('href'))
+                        if ($(this).attr('href') !== '')
+                            window.location.href = $(this).attr('href');
+                });
+            $('#timeout_keepAlive').bind('click',
+                function() {
+                    window.clearTimeout(respondTimeout);
+                    $('#timeout').modal('hide');
+                });
+            $('#timeout_logOut').bind('click',
+                function() {
+                    $('#timeout').modal('hide');
+                    if (window.hasOwnProperty('ContentTools')) {
+                        var e = ContentTools.EditorApp.get();
+                        if (e != null)
+                            e.destroy();
+                    }
+                    window.location.href = '@Url.Action("LogOff", "Account", new {Area = ""})';
+                });
+            timeOutInterval = window.setInterval(TimeoutFunction,
+                60 * 1000 * (useTestDuraionTimeout ? ko.unwrap(vm.details.TestDuration) : 20));
+            $(window).on('click', reEnlistTimeoutInterval);
+            $(window).on('keyup', reEnlistTimeoutInterval);
+            $(window).on('scroll', reEnlistTimeoutInterval);
+
+            function reEnlistTimeoutInterval() {
+                window.clearInterval(timeOutInterval);
+                timeOutInterval = window.setInterval(TimeoutFunction,
+                    60 * 1000 * (useTestDuraionTimeout ? ko.unwrap(vm.details.TestDuration) : 10));
+            }
+        });
+
+
+    </script>
+    <script type="text/javascript">
+        function isInViewport(element, offsetTop, offsetBottom) {
+            if (!$(element))
+                return false;
+            var elementTop = $(element).offset().top + offsetTop
+            var elementBottom = elementTop + $(element).outerHeight() + offsetBottom;
+
+            var viewportTop = $(window).scrollTop();
+            var viewportBottom = viewportTop + $(window).height();
+
+            return elementBottom > viewportTop && elementTop < viewportBottom;
+        };
+        function _adjustPageFooter() {
+            var style = $('#allNavigation').attr('style')
+                ? $('#allNavigation').attr('style')
+                : $('#midMenu').attr('style');
+            var hidden = style ? style.indexOf('display: none') : false;
+            if (hidden)
+                $('#wrapper').attr('style', 'min-height:82%');
+            else
+                $('#wrapper').attr('style', '');
+
+        };
+        function _adjustNav() {
+            if (!isInViewport($('#midMenu'), -50, -25) && !$('#allNavigation').hasClass('navbar-fixed-top')) {
+                $('#allNavigation').toggleClass('navbar-fixed-top');
+                $('#nav2').toggleClass('navbar-fixed-top');
+            } else if (isInViewport($('#nav2'), -50, -25) && !$('#nav2').hasClass('navbar-fixed-top')) {
+                $('#allNavigation').toggleClass('navbar-fixed-top');
+                $('#nav2').toggleClass('navbar-fixed-top');
+            }
+        }
+        function _adjustBuildMenu() {
+            var menu = $('#buildMenu');
+            if (menu.length) {
+                if (!isInViewport($('footer'), $('footer').outerHeight(), 0) && !$('#buildMenu').hasClass('navbar-fixed-bottom')) {
+                    $('#buildMenu').toggleClass('navbar-fixed-bottom');
+                    $('#buildMenu').toggleClass('custom-build-menu');
+                } else if (isInViewport($('footer'), $('footer').outerHeight(), 0) && $('#buildMenu').hasClass('navbar-fixed-bottom')) {
+                    $('#buildMenu').toggleClass('navbar-fixed-bottom');
+                    $('#buildMenu').toggleClass('custom-build-menu');
+                }
+            }
+        }
+        function _loadCustomerCss() {
+            $('#ApplyCustomCss').attr("href",
+                Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css"));
+        }
+
+        $(document).ready(function () {
+            _adjustPageFooter();
+            $(window).on('resize', _adjustPageFooter);
+            _adjustNav();
+            $(window).on('resize', _adjustNav);
+            $(window).on('scroll', _adjustNav);
+            _adjustBuildMenu();
+            $(window).on('resize', _adjustBuildMenu);
+            $(window).on('scroll', _adjustBuildMenu);
+        });
+    </script>
+
+    @*New Script*@
+
+    <script type="text/javascript">
+        //<![CDATA[
+        if (typeof jQuery == 'undefined') {
+            document.write(
+                unescape("%3Cscript src='/script/JS/jquery-1.6.2.min.js' type='text/javascript' %3E%3C/script%3E"));
+        } //]]></script>
+    <script type="text/javascript" language="Javascript" src="~/Scripts/navbarmenu.min.js"></script>
+    <script type="text/javascript" language="Javascript">
+        //<![CDATA[
+        var notificationAlert = new NotificationAlert('ctl00_MemberMenu_Messages_NotificationCount',
+            'Notifications',
+            '/script/Membership/Ajax/NotificationList.aspx');
+        notificationAlert.initialise();
+        var oSrchFlt = false, oSrchBox = false, srchBoxFoc = false;
+        $(document).ready(function () {
+            if (InitWatermark) InitWatermark('sb_tb', 'Document Search');
+            var sbar = $('#sb_tb');
+            var sfilter = $('#SearchFilter');
+            if (sbar && sfilter) {
+                sfilter.removeClass('popup');
+                sfilter.hide();
+                sfilter.removeClass('open');
+                sbar.blur(function () {
+                    if (!oSrchFlt) {
+                        sfilter.hide();
+                        sfilter.removeClass('open');
+                    }
+                    srchBoxFoc = false;
+                });
+                sbar.focus(function () {
+                    oSrchFlt = false;
+                    srchBoxFoc = true;
+                    sfilter.show();
+                    sfilter.addClass('open');
+                });
+                sbar.mouseleave(function () { oSrchBox = false; });
+                sbar.mouseover(function () { oSrchBox = true; });
+                sfilter.mouseleave(function () {
+                    oSrchFlt = false;
+                    if (!srchBoxFoc && !oSrchBox) {
+                        sfilter.hide();
+                        sfilter.removeClass('open');
+                    }
+                });
+                sfilter.mouseover(function () { oSrchFlt = true; });
+            }
+        });
+
+        //]]>
+    </script>
+
+    <script type="text/javascript">
+
+         function closeFeedbackModal() {
+             $('#feedbackModal').modal('hide');
+             }
+        // Textbox change Event
+        $(function () {
+
+             $('#feedbackLink').click(function () {
+
+        var promise = $.get("@Url.Action("CustomerUserSurvey", "CustomerMgmt", new { area= "CustomerManagement" })");
+
+            promise.done(function (data) {
+                $('#divFeedback').html(data);
+                $('#feedbackModal').modal('show');
+            });
+            promise.fail(function (jqXHR, textStatus, errorThrown) {
+                console.error(errorThrown);
+            });
+            promise.always(function () {
+
+            });
+
+        });
+
+
+            $("#myProfileLink").click(
+                function () {
+
+                    var promise = $.get("@Url.Action("EditMyProfile", "Account", new { area= "", id = Thread.CurrentPrincipal.GetId() })");
+
+                    promise.done(function (data) {
+
+                        $("#myProfileModal").modal("show");
+                        $('#divMyProfile').html(data);
+                    });
+                    promise.fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error(errorThrown);
+
+                    });
+                    promise.always(function () {
+
+
+                    });
+                });
+
+            $("#btnMyProfileModalClose").click(function () {
+                $("#myProfileModal").modal("hide");
+
+            })
+
+            $('#sb_tb').on('keyup', function (event) {
+                if (event.keyCode == 13) {
+                    $('#searchId').trigger('click');
+                }
+            });
+            $('#searchId').click(function() {
+                var filter = $('#sb_tb').val();
+                if (filter == "") {
+                    //alert(search);
+                } else {
+                    var search = $('input[name=sbo]:checked').val();
+                    // search function call
+                    SearchResult(filter, search);
+                }
+                //alert(search);
+            });
+
+            // Radio button change Event.
+
+            $('input[name=sbo]').change(function() {
+
+                var filter = $('#sb_tb').val();
+                if (filter == "") {
+                    //alert(search);
+                } else {
+                    var search = $('input[name=sbo]:checked').val();
+                    // search function call
+                    //  SearchResult(filter, search);
+                }
+
+            });
+
+            $('#sb_tb').change(function() {
+                var filter = $('#sb_tb').val();
+                if (filter == "") {
+                    //alert(search);
+                } else {
+                    var search = $('input[name=sbo]:checked').val();
+                    // search function call
+                    SearchResult(filter, search);
+                }
+                //alert(search);
+            });
+            $("#btnClose").on('click',
+                function() {
+                    $('#LoadingImageDiv').hide();
+                    $('#mpopBody').hide();
+                    //$('#myModal').popup("close");
+                    $('#mySearchModal').modal('hide');
+
+                });
+            @if (PortalContext.Current != null && SessionManager.GetSessionInformation() != null
+                 && PortalContext.Current.ShouldShowDisclaimer(SessionManager.GetSessionInformation().UserHasAcceptedDisclaimer, SessionManager.GetSessionInformation().DisclaimerAcknowledged))
+            {
+                SessionManager.GetSessionInformation().DisclaimerAcknowledged = true;
+
+                @Html.Raw("showDisclaimer();")
+                ;
+            }
+            $('#accept-disclaimer').on('click', hideAndLogDisclaimerResult);
+            $('#do-not-accept-disclaimer').on('click', hideAndLogDisclaimerResult);
+        });
+
+        function SearchResult(searchText, searchType) {
+
+            $('#LoadingImageDiv').show();
+            $('#mpopBody').hide();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GlobalSearch", "Home", new {Area = ""})',
+                data: { searchText: searchText, searchType: searchType },
+                success: function(data) {
+
+                    //$('#myModal').popup("open");
+                    $('#mySearchModal').modal('show');
+
+                    $('#mySearchModal .modal-body').html(data);
+                    $('#LoadingImageDiv').hide();
+                },
+                error: function(data) {
+                    $('#LoadingImageDiv').hide();
+                    notif({
+                        msg: "<b>Error :</b>Error while searching",
+                        type: "error",
+                    });
+                }
+            });
+
+        }
+
+        function showDisclaimer() {
+            $('#myLegalDisclaimerModal').modal('show');
+        }
+
+        function hideAndLogDisclaimerResult(event) {
+            var result = false;
+            if ($(event.target).attr('id') == 'accept-disclaimer')
+                result = true;
+            logDisclaimerActivity(result);
+        }
+
+        function logDisclaimerActivity(result) {
+            $.ajax({
+                url: '@Url.Action("CreateUserDisclaimerActivity", "Activity", new {Area = ""})',
+                method: 'POST',
+                data: {
+                    Accepted: result,
+                    UserId: '@SessionManager.GetCurrentlyLoggedInUserId()'
+                },
+                success: function(status) {
+                    $('#myLegalDisclaimerModal').modal('hide');
+                    notif({
+                        type: 'success',
+                        msg: 'Logged Disclaimer Activity'
+                    });
+                    if (!result)
+                        window.location.href = '@Url.Action("LogOff", "Account", new {Area = ""})';
+                },
+                error: function(status) {
+                    $('#myLegalDisclaimerModal').modal('hide');
+                    notif({
+                        type: 'error',
+                        msg: 'Logging Disclaimer Activity Error'
+                    });
+                    if (!result)
+                        window.location.href = '@Url.Action("LogOff", "Account", new {Area = ""})';
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+
+
+
+        <nav class="navbar navbar-default navbar-fixed-top navbar-top-custom" id="nav2">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topMenu">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+
+                </div>
+               
+      
+
+                    <div id="topMenu" class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-left">
+                            <li role="menuitem">
+                                <a href="javascript:Void(0);" style="color: white;">Welcome</a>
+                            </li>
+                        </ul>
+       
+                    </div>
+                
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="container-fluid">
+         
+            <br />
+            @RenderBody()
+        </div>
+
+    <footer>
+
+        <div class="navbar navbar-default navbar-bottom-custom">
+        </div>
+        <p class="hidden-xs" style="position: absolute">
+            <a href="@Href("~/")">
+                <img src="@footerLogoUrl" style="width: 180px; margin-left: 15px;" />
+
+            </a>
+        </p>
+        <p class="pull-right navbar-bottom-wording-custom" style="display: inline;">Powered by OnRamp &copy;@DateTime.Now.Year <br> @version</p>
+    </footer>
+
+
+
+
+
+
+</body>
+</html>

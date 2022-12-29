@@ -1,0 +1,270 @@
+﻿@model Ramp.Contracts.ViewModel.CheckListModel
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer
+@using Common.Enums
+
+@using System.Threading
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+
+    }
+
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var numberNorm = 0;
+    if (Model.ContentModels.FirstOrDefault() != null && Model.ContentModels.First().Number == 0)
+    {
+        numberNorm = 1;
+    }
+}
+<link href="~/Content/Areas/Document/Preview.css" rel="stylesheet" />
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<style>
+    #divContent .form-control {
+        max-width: unset;
+    }
+
+    .displayCss {
+        display: inline !important;
+    }
+
+    .hideCss {
+        display: none !important;
+    }
+</style>
+<div id="blueimp-gallery" class="blueimp-gallery">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+<div class="row">
+    <div class="col-sm-3">
+        <div id="divContent">
+            <div class="panel panel-info" data-bind="with:data">
+                <div class="panel-heading" style="">
+                    <h4>Contents</h4>
+                </div>
+
+                <div class="panel-footer">
+                    <table>
+                        <tbody data-bind="foreach: ContentModels">
+                            <tr>
+                                <td><span data-bind="text:ko.unwrap(Number) + @numberNorm"></span></td>
+                                <td>&nbsp;<span class="anchor" data-bind="click:$root.content.set.bind(),text:app.data.utils.string.truncate(Title,30),css:{'active-chapter' : $root.content.isSelected($data)}"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br />
+            <div class=" panel panel-info">
+                <div class="panel-heading" style="">
+                    <h4>Feedback</h4>
+                </div>
+                <div class="panel-footer" data-bind="with:$root.feedback">
+                    <select class="form-control" data-bind="options:contentTypes,
+                                                            optionsValue:'Id',
+                                                            optionsText:'Name',
+                                                            optionsCaption : 'What type of feedback ?',
+                                                            value:ContentType"></select>
+                    <p></p>
+                    <textarea class="form-control" data-bind="textInput:Content" rows="7"></textarea>
+                    <p></p>
+                    <button class="btn btn-success btn-sm" type="button" data-bind="click:save.bind()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-9" data-bind="with:data">
+
+        <h1 class="lead" data-bind="text:ko.unwrap(Title).toUpperCase()"></h1>
+        <h4><strong><span class="pageHeading_ref" data-bind="text:$root.enums.documentType[ko.unwrap(DocumentType)].toUpperCase() + ' REF: '"></span><span data-bind="text:ReferenceId"></span></strong></h4>
+        <div class="well">
+            <p data-bind="text:Description"></p>
+        </div>
+        <div class="input-group">
+            <label>View Mode</label>
+            <span class="btn-group-sm" data-bind="with:$root.content.previewMode">
+                <button type="button" class="btn btn-default" data-bind="click:set.bind(0),css : {'btn-primary' : isPortraitMode()}">Portrait</button>
+                <button type="button" class="btn btn-default" data-bind="click:set.bind(1) ,css : {'btn-primary' : isStorybookMode()}">Storybook</button>
+            </span>
+        </div>
+        <!-- ko if: $root.content.previewMode.isStorybookMode() -->
+        <div class="pull-right" data-bind="with:$root.paging">
+            <button class="btn btn-default" data-bind="click:previous.bind(),disable:isCover() || (!hasCover() && isFirst())">Prev</button>
+            <button class="btn btn-primary" data-bind="click:next.bind(),disable:isLast()">Next</button>
+        </div>
+        <br />
+        <!--/ko -->
+        <!-- ko if:$root.paging.shouldShowCover() -->
+        <br />
+        <div class="text-center" data-bind="with:CoverPicture">
+            <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                <img class="img-responsive" data-bind="attr:{src:Url,title:Description}" style="margin-left:auto;margin-right:auto" />
+            </a>
+        </div>
+        <!-- /ko -->
+        <br />
+        <!-- ko foreach:ContentModels -->
+        <!-- ko if:$root.paging.shouldShowContent($data) -->
+        <div class=" panel panel-info" data-bind="attr:{id:Id}">
+            <div class="panel-heading hidden-xs">
+                <div class="heading pull-left">
+                    <h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;
+
+                </div>
+                <div class="heading pull-left chkIsChecked">
+                    <p class="chapterName" data-bind="text:app.data.utils.string.truncate(Title,90)"></p>
+
+
+                </div>
+
+
+                <div class="btn-group pull-right hidden-sm">
+                    <a class="btn btn-default" data-bind="visible:ko.unwrap(StandardUserAttachments).length > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide Attachments' : 'Show Attachments'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(StandardUserAttachments).length"></span></a>
+                </div>
+
+                <div class="heading pull-right chkIsChecked">
+                    <input type="checkbox" data-bind="checked:IsChecked" disabled />&nbsp;
+
+                </div>
+
+
+                <div class="btn-group pull-right visible-sm">
+                    <a class="btn btn-default" data-bind="visible:ko.unwrap(StandardUserAttachments).length > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(StandardUserAttachments).length"></span></a>
+                </div>
+                <span class="clearfix"></span>
+            </div>
+            <div class="panel-heading visible-xs">
+                <div class="heading text-center">
+                    <h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;
+                </div>
+                <span class="clearfix"></span>
+            </div>
+            <div class="panel-heading visible-xs">
+                <div class="heading">
+                    <span class="chapterName" data-bind="text:Title"></span>
+                </div>
+                <span class="clearfix"></span>
+            </div>
+            <div class="panel-heading visible-xs text-center">
+                <div class="btn-group">
+                    <a class="btn btn-default" data-bind="visible:ko.unwrap(StandardUserAttachments).length, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(StandardUserAttachments).length"></span></a>
+                </div>
+            </div>
+            <!-- ko if:IssueDiscription -->
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-12 chapter-content">
+
+
+                        <p>Additional information from @ViewBag.FullName :  <br /><br /><span data-bind="text:IssueDiscription"></span></p><br />
+                        <p>@*Additional information from @Thread.CurrentPrincipal.GetGivenName():  <br /><br /><span data-bind="text:IssueDiscription"></span>*@</p><br />
+
+                    </div>
+                </div>
+            </div>
+            <!-- /ko -->
+        </div>
+        <div class="collapse hideCss" style="position: relative" data-bind="attr:{ id:'attachments_'+ko.unwrap(Id) }, slideVisible:state.showAttachments">
+            <!-- ko if:ko.unwrap(StandardUserAttachments).length > 0 -->
+            <div data-bind="foreach:StandardUserAttachments" style="padding: 5px">
+                <div class="pull-left text-center" style="margin-left: 15px;width: 115px; ">
+                    <div style="height: 100px;">
+                        <!-- ko if:ko.unwrap(Type).indexOf('Image') === 0 -->
+                        <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                            <img class="img-responsive attachment img-thumbnail" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:ko.unwrap(Type).indexOf('Video') === 0 -->
+                        <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                            <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                            <div class="content center-block">
+                                <video controls height="320" width="600">
+                                    <source data-bind="attr:{ src:Url }" type="video/mp4" />
+                                    Your browser does not support the HTML 5 video tag.
+                                </video>
+                            </div>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:ko.unwrap(Type).indexOf('Audio') === 0 -->
+                        <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                            <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                            <div class="content center-block">
+                                <audio controls style="width:100%">
+                                    <source data-bind="attr:{ src:Url }" type="audio/mp3" />
+                                    Your browser does not support the HTML 5 audio tag.
+                                </audio>
+                            </div>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko ifnot:(ko.unwrap(Type).indexOf('Image') === 0 || ko.unwrap(Type).indexOf('Video') === 0 || ko.unwrap(Type).indexOf('Audio') === 0)-->
+                        <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description},click:$root.content.previewUpload.bind($data)" />
+                        <!-- /ko -->
+                    </div>
+                    <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                        <small data-bind="text:Description"></small>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <hr />
+            <!-- /ko -->
+
+        </div>
+
+        <!-- /ko -->
+        <!-- /ko -->
+
+    </div>
+
+</div>
+
+
+<script>
+    var vm = new app.data.previewController(@Html.ToJson(Model),@Html.ToJson(ViewBag.Links as IDictionary<string,string>),
+        {
+            startTime: '@ViewBag.StartTime',
+            trackingInterval: parseInt(@ViewBag.TrackingInterval)
+        }, @Html.ToJson(new Ramp.Contracts.ViewModel.CheckListChapterModel()),
+         [
+            "image:png", "image:jpeg", "image:jpg", "image:gif", "image:bmp", "video:mp4", "document:ppsx", "document:pps", "document:docx", "document:xls", "document:xlsx", "document:ppt", "document:pptx", "document:pdf", "document:csv",
+            "audio:mp3"
+        ],
+        @Html.ToJson(new Ramp.Contracts.ViewModel.FileUploadResultViewModel()), @Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Categories)
+    , null);
+
+    vm.initialize();
+    vm.enums = {};
+    vm.enums.documentType = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)));
+
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+    $(function () {
+        $('.panel-info').click(function () {
+            var id = $(this).attr('id');
+            if ($("#attachments_" + id).hasClass('hideCss')) {
+                $("#attachments_" + id).removeClass('hideCss');
+                $("#attachments_" + id).addClass('displayCss');
+            } else {
+                $("#attachments_" + id).addClass('hideCss');
+                $("#attachments_" + id).removeClass('displayCss');
+            }
+
+        });
+    });
+
+</script>
+

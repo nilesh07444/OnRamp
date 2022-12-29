@@ -1,0 +1,172 @@
+﻿@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    ViewBag.HelpContext = "15";
+    Layout = "~/Views/Shared/_layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">  Manage Users </h1>
+    </div>
+</div>
+
+<div class="form-group">
+  
+    <label class="radio-inline">
+        <input id="optAllCompany" type="radio" checked="checked" value="optionAllCompany" name="optionsRadiosInline">
+        All Company
+    </label>
+    <label class="radio-inline">
+        <input id="optAllUsers" type="radio" value="optionAllUsers" name="optionsRadiosInline">
+        All Users
+    </label>
+</div>
+
+<div class="row" id="divAllCompany">
+</div>
+
+<div class="row" id="divAllUsers">
+</div>
+
+
+
+@using (Html.BeginForm("UpdatePassword", "ManagerUser"))
+{
+    <!-- Button trigger modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Change Password</h4>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"> Reset Password</div>
+                                @Html.ValidationSummary(true)
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            @Html.ValidationSummary(true)
+                                            <input id="hdUserId" name="hdUserId" type="hidden" />
+                                            <div class="form-group">
+                                                @Html.Label("Password")
+                                                @*@Html.TextBoxFor(model => model.SettingViewModelShort.PasswordPolicy, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.SettingViewModelShort.PasswordPolicy)*@
+                                                <input name="txtPassword" type="password" class="form-control" />
+
+                                                @*@Html.TextBoxFor(m => m.Email, new { @class = "required form-control", @placeholder = "E-mail" })
+                                                    @Html.ValidationMessageFor(m => m.Email)*@
+
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.Label("Confirm Password")
+                                                @*@Html.TextBoxFor(model => model.SettingViewModelShort.PasswordPolicy, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.SettingViewModelShort.PasswordPolicy)*@
+                                                <input name="txtConfirmPassword" type="password" class="form-control" />
+                                            </div>
+                                            @*<input type="submit" value="Save" class="btn btn-default" />*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script type="text/javascript" language="javascript">
+    $(document).ready(function () {
+        ShowGrid("optionAllCompany");
+        $("#divAllCompany").css("display", "block");
+        $("#divAllUsers").css("display", "none");
+
+        $("input[name=optionsRadiosInline]").click(function () {
+            var type = $(this).val();
+            if (type == "optionAllCompany") {
+                $("#divAllCompany").css("display", "block");
+                $("#divAllUsers").css("display", "none");
+            }
+            else {
+                $("#divAllCompany").css("display", "none");
+                $("#divAllUsers").css("display", "block");
+            }
+            ShowGrid(type);
+        });
+    });
+
+    function ShowGrid(type) {
+        $('#LoadingImageDiv').show();
+        $.ajax({
+            url: '@Url.Action("GetUserAndCompanyList", "ManagerUser")',
+            data: { type: type },
+            type: 'POST',
+            success: function (data) {
+                if (type == "optionAllCompany") {
+                    $("#divAllCompany").html(data);
+                    $('#LoadingImageDiv').hide();
+                }
+                else {
+                    $("#divAllUsers").html(data);
+                    $('#LoadingImageDiv').hide();
+                }
+            },
+            error: function (data, staus, e) {
+            }
+        });
+    }
+
+    function updateStatus(status, id, type) {
+        bootbox.confirm("Do you really want to change Status?", function (result) {
+            if (result) {
+                $('#LoadingImageDiv').show();
+                $.ajax({
+                    url: '@Url.Action("UpdateStatus", "ManagerUser")',
+                    data: {
+                        status: status, id: id, type: type
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        window.location.reload();
+                        $('#LoadingImageDiv').hide();
+                    },
+                    error: function (data) {
+                    }
+                });
+                return true;
+            }
+        });
+    }
+
+    function confirmChangePassword() {
+        var x = confirm("Are you sure you want to change Status?");
+        if (x) {
+            $.ajax({
+                url: '@Url.Action("UpdateStatus", "ManagerUser")',
+                data: { status: status, id: id },
+                type: 'POST',
+                success: function (data) {
+                },
+                error: function (data) {
+                }
+            });
+            return true;
+        }
+        else
+            return false;
+    }
+
+    function setUserId(id) {
+        document.getElementById('hdUserId').value = id;
+    }
+</script>

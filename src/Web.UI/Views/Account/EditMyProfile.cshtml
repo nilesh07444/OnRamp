@@ -1,0 +1,98 @@
+﻿@using Web.UI.Code.Extensions
+@using System.Threading
+
+@model Ramp.Contracts.ViewModel.EditUserProfileViewModel
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        //Layout = "~/Areas/CustomerManagement/Views/../../../Views/Shared/_Layout.cshtml";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        //Layout = "~/Areas/CustomerManagement/Views/../../../Views/Shared/_LayoutStandardUser.cshtml";
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    ViewBag.HelpContext = "22";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Edit My Profile</h1>
+    </div>
+</div>
+@using (Html.BeginForm("EditMyProfile", "Account"))
+{
+    @* @Html.AntiForgeryToken()*@
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-info">
+                <div class="panel-heading"> Edit your information </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            @Html.ValidationSummary(true)
+                            @Html.HiddenFor(model => model.Id)
+                            <div class="form-group">
+                                @Html.Label("Full Name")
+                                @Html.TextBoxFor(model => model.FullName, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.FullName)
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("ID Number")
+                                @Html.TextBoxFor(model => model.IDNumber,new { @class="form-control", @readonly = "readonly"})
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Email Address")
+                                @Html.TextBoxFor(model => model.EmailAddress, new { @class = "form-control", @readonly = "true" })
+                                @Html.ValidationMessageFor(model => model.EmailAddress)
+                            </div>
+
+                            <h6>Leave the Password Fields empty to keep your current password</h6>
+
+                            <div class="form-group">
+                                @Html.Label("Password")
+                                @Html.PasswordFor(model => model.Password, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.Password)
+                            </div>
+
+                            <div class="form-group">
+                                @Html.Label("Confirm Password")
+                                @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.ConfirmPassword)
+                            </div>
+
+                            <div class="form-group">
+                                @Html.Label("Mobile Number")
+                                @Html.TextBoxFor(model => model.MobileNumber, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.MobileNumber)
+                            </div>
+
+                            @if (Thread.CurrentPrincipal.IsInAdminRole() && Model.DropDownForGroup != null)
+                            {
+                                <div class="form-group">
+                                    @Html.Label("Group Allocation")
+                                    @Html.DropDownListFor(m => m.GroupList, Model.DropDownForGroup.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+                                    @*@Html.ValidationMessageFor(model => model.CompanyViewModel.SelectedPackage)*@
+                                </div>
+                            }
+
+                            @if (Thread.CurrentPrincipal.IsInStandardUserRole())
+                            {
+                                <div class="form-group">
+                                    @Html.Label("Employee No")
+                                    @Html.TextBoxFor(model => model.EmployeeNo, new { @class = "form-control", @readonly = "true" })
+                                    @Html.ValidationMessageFor(model => model.EmployeeNo)
+                                </div>
+                            }
+                            <input type="submit" value="Update" class="btn btn-default" />
+                            @*<input type="submit" value="Clear" class="btn btn-default" />*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

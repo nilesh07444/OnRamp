@@ -1,0 +1,59 @@
+﻿@model string
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    ViewBag.HelpContext = "20";
+
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Manage Playbook Categories</h1>
+        @Html.Label("Description :")
+        <div class="form-group input-group">
+            <p>
+                You can use categories to file your Playbooks. Right click the Category icon below and select an option. Note that you are able to create sub categories (i.e. a category within a category).
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"> Playbook Category List </div>
+            <div class="panel-body">
+                <input type="text" id="plugins4_q" value="" class="form-control" placeholder="Search">
+                <br />
+                <div id="demoTree" style="background: transparent;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<script src="~/Scripts/Areas/Categories/index.js"></script>
+<script type="text/javascript">
+    treeModel = @Html.Raw(Model)
+</script>
+
+<script type="text/javascript">
+
+    $(function(){
+
+        $("#plugins4_q").keyup(function(){
+            var value = $('#plugins4_q').val();
+            $('#demoTree').jstree("search", value);
+        });
+
+        $('#demotree').jstree({
+            "search":{
+                "case-insensitive": true,
+                "ajax": {
+                    url: "jstree.xml"
+                }
+            },
+        });
+
+    });
+</script>

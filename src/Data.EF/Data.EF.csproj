@@ -1,0 +1,492 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5F3E358D-E2BB-4C5C-AB8D-142FB5803068}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Data.EF</RootNamespace>
+    <AssemblyName>Data.EF</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'QA|AnyCPU'">
+    <OutputPath>bin\QA\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UAT|AnyCPU'">
+    <OutputPath>bin\UAT\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Production|AnyCPU'">
+    <OutputPath>bin\Production\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Common.Logging, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.3.3.1\lib\net40\Common.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Common.Logging.Core, Version=3.3.1.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Common.Logging.Core.3.3.1\lib\net40\Common.Logging.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Licensing, Version=17.4451.0.53, Culture=neutral, PublicKeyToken=632609b4d040f6b4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Licensing.17.4.0.53\lib\net451\Syncfusion.Licensing.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Collections" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Events\CreateCustomConfigurationContent.cs" />
+    <Compile Include="Events\CreateDefaultConfigurationContent.cs" />
+    <Compile Include="Events\CreateTestCertificatesEvent.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Migrations\201410300952232_UserCorrespondeceLog.cs" />
+    <Compile Include="Migrations\201410300952232_UserCorrespondeceLog.Designer.cs">
+      <DependentUpon>201410300952232_UserCorrespondeceLog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201411031001078_CorrespondenceContent.cs" />
+    <Compile Include="Migrations\201411031001078_CorrespondenceContent.Designer.cs">
+      <DependentUpon>201411031001078_CorrespondenceContent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503171610362_ChangePasswordFirstLoginSendWelcomeSMS.cs" />
+    <Compile Include="Migrations\201503171610362_ChangePasswordFirstLoginSendWelcomeSMS.Designer.cs">
+      <DependentUpon>201503171610362_ChangePasswordFirstLoginSendWelcomeSMS.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503261220099_IsForSelfProvision.cs" />
+    <Compile Include="Migrations\201503261220099_IsForSelfProvision.Designer.cs">
+      <DependentUpon>201503261220099_IsForSelfProvision.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503261427347_IsForSelfProvisionPackage.cs" />
+    <Compile Include="Migrations\201503261427347_IsForSelfProvisionPackage.Designer.cs">
+      <DependentUpon>201503261427347_IsForSelfProvisionPackage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503301329125_IsConfirmEmail.cs" />
+    <Compile Include="Migrations\201503301329125_IsConfirmEmail.Designer.cs">
+      <DependentUpon>201503301329125_IsConfirmEmail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201504211417171_CompanyIsLock.cs" />
+    <Compile Include="Migrations\201504211417171_CompanyIsLock.Designer.cs">
+      <DependentUpon>201504211417171_CompanyIsLock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201504281239044_IsSelfCustomer.cs" />
+    <Compile Include="Migrations\201504281239044_IsSelfCustomer.Designer.cs">
+      <DependentUpon>201504281239044_IsSelfCustomer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505011048157_IsUserExpire.cs" />
+    <Compile Include="Migrations\201505011048157_IsUserExpire.Designer.cs">
+      <DependentUpon>201505011048157_IsUserExpire.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505051347102_ApplyCustomCss.cs" />
+    <Compile Include="Migrations\201505051347102_ApplyCustomCss.Designer.cs">
+      <DependentUpon>201505051347102_ApplyCustomCss.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505070636269_IsForSelfSignUp.cs" />
+    <Compile Include="Migrations\201505070636269_IsForSelfSignUp.Designer.cs">
+      <DependentUpon>201505070636269_IsForSelfSignUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505090933466_IsforSelfSignUpGroup.cs" />
+    <Compile Include="Migrations\201505090933466_IsforSelfSignUpGroup.Designer.cs">
+      <DependentUpon>201505090933466_IsforSelfSignUpGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201505150924466_CustomerAccountType.cs" />
+    <Compile Include="Migrations\201505150924466_CustomerAccountType.Designer.cs">
+      <DependentUpon>201505150924466_CustomerAccountType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201506180332502_EmployeeNo.cs" />
+    <Compile Include="Migrations\201506180332502_EmployeeNo.Designer.cs">
+      <DependentUpon>201506180332502_EmployeeNo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601041718186_CustomerSplit.cs" />
+    <Compile Include="Migrations\201601041718186_CustomerSplit.Designer.cs">
+      <DependentUpon>201601041718186_CustomerSplit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604290718364_DefaultConfiguration.cs" />
+    <Compile Include="Migrations\201604290718364_DefaultConfiguration.Designer.cs">
+      <DependentUpon>201604290718364_DefaultConfiguration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604290720355_CreateTestCerificatesAndDefaut_CustomContent.cs" />
+    <Compile Include="Migrations\201604290720355_CreateTestCerificatesAndDefaut_CustomContent.Designer.cs">
+      <DependentUpon>201604290720355_CreateTestCerificatesAndDefaut_CustomContent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605161332554_IDNumber.cs" />
+    <Compile Include="Migrations\201605161332554_IDNumber.Designer.cs">
+      <DependentUpon>201605161332554_IDNumber.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605171345066_RaceCodes.cs" />
+    <Compile Include="Migrations\201605171345066_RaceCodes.Designer.cs">
+      <DependentUpon>201605171345066_RaceCodes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605251301341_ShowCompanyNameOnDashboard_Company.cs" />
+    <Compile Include="Migrations\201605251301341_ShowCompanyNameOnDashboard_Company.Designer.cs">
+      <DependentUpon>201605251301341_ShowCompanyNameOnDashboard_Company.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612061011372_CutomerConfiguration.cs" />
+    <Compile Include="Migrations\201612061011372_CutomerConfiguration.Designer.cs">
+      <DependentUpon>201612061011372_CutomerConfiguration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612061057594_CutomerConfiguration-Description.cs" />
+    <Compile Include="Migrations\201612061057594_CutomerConfiguration-Description.Designer.cs">
+      <DependentUpon>201612061057594_CutomerConfiguration-Description.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612062203307_Icon_IconSet.cs" />
+    <Compile Include="Migrations\201612062203307_Icon_IconSet.Designer.cs">
+      <DependentUpon>201612062203307_Icon_IconSet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612122246397_IconSetOnCompany.cs" />
+    <Compile Include="Migrations\201612122246397_IconSetOnCompany.Designer.cs">
+      <DependentUpon>201612122246397_IconSetOnCompany.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612130024321_MasterOnIconSet.cs" />
+    <Compile Include="Migrations\201612130024321_MasterOnIconSet.Designer.cs">
+      <DependentUpon>201612130024321_MasterOnIconSet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612130025115_DefaultIconSetData.cs" />
+    <Compile Include="Migrations\201612130025115_DefaultIconSetData.Designer.cs">
+      <DependentUpon>201612130025115_DefaultIconSetData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612190725261_CustomColorOnMainContext.cs" />
+    <Compile Include="Migrations\201612190725261_CustomColorOnMainContext.Designer.cs">
+      <DependentUpon>201612190725261_CustomColorOnMainContext.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201702060751005_AppendToDefaultIconSet.cs" />
+    <Compile Include="Migrations\201702060751005_AppendToDefaultIconSet.Designer.cs">
+      <DependentUpon>201702060751005_AppendToDefaultIconSet.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201702150633318_Legal_Disclaimer_ORP_912.cs" />
+    <Compile Include="Migrations\201702150633318_Legal_Disclaimer_ORP_912.Designer.cs">
+      <DependentUpon>201702150633318_Legal_Disclaimer_ORP_912.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201702162232152_AppendToDefaultIconSet_ORP914.cs" />
+    <Compile Include="Migrations\201702162232152_AppendToDefaultIconSet_ORP914.Designer.cs">
+      <DependentUpon>201702162232152_AppendToDefaultIconSet_ORP914.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704120647279_EnableTrainingActivityLoggingModule_ORP_1056.cs" />
+    <Compile Include="Migrations\201704120647279_EnableTrainingActivityLoggingModule_ORP_1056.Designer.cs">
+      <DependentUpon>201704120647279_EnableTrainingActivityLoggingModule_ORP_1056.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705081100599_AppendToDefaultIconSet_Sprint9.cs" />
+    <Compile Include="Migrations\201705081100599_AppendToDefaultIconSet_Sprint9.Designer.cs">
+      <DependentUpon>201705081100599_AppendToDefaultIconSet_Sprint9.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707190920214_NotificationInterval_ORP-1146.cs" />
+    <Compile Include="Migrations\201707190920214_NotificationInterval_ORP-1146.Designer.cs">
+      <DependentUpon>201707190920214_NotificationInterval_ORP-1146.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201709150836161_AppendToDefaultIconSet_Spint12.cs" />
+    <Compile Include="Migrations\201709150836161_AppendToDefaultIconSet_Spint12.Designer.cs">
+      <DependentUpon>201709150836161_AppendToDefaultIconSet_Spint12.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801030817147_ORP-1085.cs" />
+    <Compile Include="Migrations\201801030817147_ORP-1085.Designer.cs">
+      <DependentUpon>201801030817147_ORP-1085.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801110338503_CommandAuditTrail.cs" />
+    <Compile Include="Migrations\201801110338503_CommandAuditTrail.Designer.cs">
+      <DependentUpon>201801110338503_CommandAuditTrail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805152003360_ORP-1256_PackageToBundle.cs" />
+    <Compile Include="Migrations\201805152003360_ORP-1256_PackageToBundle.Designer.cs">
+      <DependentUpon>201805152003360_ORP-1256_PackageToBundle.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805152055421_ORP-1256_CopyPackageIdToBundleId.cs" />
+    <Compile Include="Migrations\201805152055421_ORP-1256_CopyPackageIdToBundleId.Designer.cs">
+      <DependentUpon>201805152055421_ORP-1256_CopyPackageIdToBundleId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805152110107_ORP-1256_DropPackageIdFromCompanies.cs" />
+    <Compile Include="Migrations\201805152110107_ORP-1256_DropPackageIdFromCompanies.Designer.cs">
+      <DependentUpon>201805152110107_ORP-1256_DropPackageIdFromCompanies.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805230859079_EnableRaceCode.cs" />
+    <Compile Include="Migrations\201805230859079_EnableRaceCode.Designer.cs">
+      <DependentUpon>201805230859079_EnableRaceCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201810252253036_ORP-1305_DashboardVideoQuote.cs" />
+    <Compile Include="Migrations\201810252253036_ORP-1305_DashboardVideoQuote.Designer.cs">
+      <DependentUpon>201810252253036_ORP-1305_DashboardVideoQuote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811011519067_AppendToDefaultIconSet_Sprint16.cs" />
+    <Compile Include="Migrations\201811011519067_AppendToDefaultIconSet_Sprint16.Designer.cs">
+      <DependentUpon>201811011519067_AppendToDefaultIconSet_Sprint16.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912211044585_EnableChecklistDocument.cs" />
+    <Compile Include="Migrations\201912211044585_EnableChecklistDocument.Designer.cs">
+      <DependentUpon>201912211044585_EnableChecklistDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001130959179_IsEmployeeCodeReq.cs" />
+    <Compile Include="Migrations\202001130959179_IsEmployeeCodeReq.Designer.cs">
+      <DependentUpon>202001130959179_IsEmployeeCodeReq.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003111028310_add_enableCategoryTree_And_EnableGlobalAccessDocuments.cs" />
+    <Compile Include="Migrations\202003111028310_add_enableCategoryTree_And_EnableGlobalAccessDocuments.Designer.cs">
+      <DependentUpon>202003111028310_add_enableCategoryTree_And_EnableGlobalAccessDocuments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004280855450_virtualclass.cs" />
+    <Compile Include="Migrations\202004280855450_virtualclass.Designer.cs">
+      <DependentUpon>202004280855450_virtualclass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005041343323_jitsiServer.cs" />
+    <Compile Include="Migrations\202005041343323_jitsiServer.Designer.cs">
+      <DependentUpon>202005041343323_jitsiServer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007180805255_IsEnabledEmployeeCode.cs" />
+    <Compile Include="Migrations\202007180805255_IsEnabledEmployeeCode.Designer.cs">
+      <DependentUpon>202007180805255_IsEnabledEmployeeCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007180857007_CompanySiteTitle.cs" />
+    <Compile Include="Migrations\202007180857007_CompanySiteTitle.Designer.cs">
+      <DependentUpon>202007180857007_CompanySiteTitle.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Repository.cs" />
+    <Compile Include="IMainContext.cs" />
+    <Compile Include="MainContext.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="job_scheduling_data_2_0.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{bbbb998d-2c63-4093-98dc-6d5b452997d0}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain\Domain.csproj">
+      <Project>{ca18cb88-47de-4df8-9592-6e9b4fb018ed}</Project>
+      <Name>Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ramp.Contracts\Ramp.Contracts.csproj">
+      <Project>{B579989D-E0AA-4D68-9DBF-4B7FF6800D69}</Project>
+      <Name>Ramp.Contracts</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201410300952232_UserCorrespondeceLog.resx">
+      <DependentUpon>201410300952232_UserCorrespondeceLog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201411031001078_CorrespondenceContent.resx">
+      <DependentUpon>201411031001078_CorrespondenceContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503171610362_ChangePasswordFirstLoginSendWelcomeSMS.resx">
+      <DependentUpon>201503171610362_ChangePasswordFirstLoginSendWelcomeSMS.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503261220099_IsForSelfProvision.resx">
+      <DependentUpon>201503261220099_IsForSelfProvision.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503261427347_IsForSelfProvisionPackage.resx">
+      <DependentUpon>201503261427347_IsForSelfProvisionPackage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503301329125_IsConfirmEmail.resx">
+      <DependentUpon>201503301329125_IsConfirmEmail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201504211417171_CompanyIsLock.resx">
+      <DependentUpon>201504211417171_CompanyIsLock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201504281239044_IsSelfCustomer.resx">
+      <DependentUpon>201504281239044_IsSelfCustomer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505011048157_IsUserExpire.resx">
+      <DependentUpon>201505011048157_IsUserExpire.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505051347102_ApplyCustomCss.resx">
+      <DependentUpon>201505051347102_ApplyCustomCss.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505070636269_IsForSelfSignUp.resx">
+      <DependentUpon>201505070636269_IsForSelfSignUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505090933466_IsforSelfSignUpGroup.resx">
+      <DependentUpon>201505090933466_IsforSelfSignUpGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201505150924466_CustomerAccountType.resx">
+      <DependentUpon>201505150924466_CustomerAccountType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201506180332502_EmployeeNo.resx">
+      <DependentUpon>201506180332502_EmployeeNo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601041718186_CustomerSplit.resx">
+      <DependentUpon>201601041718186_CustomerSplit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604290718364_DefaultConfiguration.resx">
+      <DependentUpon>201604290718364_DefaultConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604290720355_CreateTestCerificatesAndDefaut_CustomContent.resx">
+      <DependentUpon>201604290720355_CreateTestCerificatesAndDefaut_CustomContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605161332554_IDNumber.resx">
+      <DependentUpon>201605161332554_IDNumber.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605171345066_RaceCodes.resx">
+      <DependentUpon>201605171345066_RaceCodes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605251301341_ShowCompanyNameOnDashboard_Company.resx">
+      <DependentUpon>201605251301341_ShowCompanyNameOnDashboard_Company.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612061011372_CutomerConfiguration.resx">
+      <DependentUpon>201612061011372_CutomerConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612061057594_CutomerConfiguration-Description.resx">
+      <DependentUpon>201612061057594_CutomerConfiguration-Description.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612062203307_Icon_IconSet.resx">
+      <DependentUpon>201612062203307_Icon_IconSet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612122246397_IconSetOnCompany.resx">
+      <DependentUpon>201612122246397_IconSetOnCompany.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612130024321_MasterOnIconSet.resx">
+      <DependentUpon>201612130024321_MasterOnIconSet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612130025115_DefaultIconSetData.resx">
+      <DependentUpon>201612130025115_DefaultIconSetData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612190725261_CustomColorOnMainContext.resx">
+      <DependentUpon>201612190725261_CustomColorOnMainContext.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702060751005_AppendToDefaultIconSet.resx">
+      <DependentUpon>201702060751005_AppendToDefaultIconSet.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702150633318_Legal_Disclaimer_ORP_912.resx">
+      <DependentUpon>201702150633318_Legal_Disclaimer_ORP_912.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702162232152_AppendToDefaultIconSet_ORP914.resx">
+      <DependentUpon>201702162232152_AppendToDefaultIconSet_ORP914.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704120647279_EnableTrainingActivityLoggingModule_ORP_1056.resx">
+      <DependentUpon>201704120647279_EnableTrainingActivityLoggingModule_ORP_1056.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705081100599_AppendToDefaultIconSet_Sprint9.resx">
+      <DependentUpon>201705081100599_AppendToDefaultIconSet_Sprint9.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707190920214_NotificationInterval_ORP-1146.resx">
+      <DependentUpon>201707190920214_NotificationInterval_ORP-1146.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709150836161_AppendToDefaultIconSet_Spint12.resx">
+      <DependentUpon>201709150836161_AppendToDefaultIconSet_Spint12.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801030817147_ORP-1085.resx">
+      <DependentUpon>201801030817147_ORP-1085.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801110338503_CommandAuditTrail.resx">
+      <DependentUpon>201801110338503_CommandAuditTrail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805152003360_ORP-1256_PackageToBundle.resx">
+      <DependentUpon>201805152003360_ORP-1256_PackageToBundle.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805152055421_ORP-1256_CopyPackageIdToBundleId.resx">
+      <DependentUpon>201805152055421_ORP-1256_CopyPackageIdToBundleId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805152110107_ORP-1256_DropPackageIdFromCompanies.resx">
+      <DependentUpon>201805152110107_ORP-1256_DropPackageIdFromCompanies.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805230859079_EnableRaceCode.resx">
+      <DependentUpon>201805230859079_EnableRaceCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810252253036_ORP-1305_DashboardVideoQuote.resx">
+      <DependentUpon>201810252253036_ORP-1305_DashboardVideoQuote.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811011519067_AppendToDefaultIconSet_Sprint16.resx">
+      <DependentUpon>201811011519067_AppendToDefaultIconSet_Sprint16.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912211044585_EnableChecklistDocument.resx">
+      <DependentUpon>201912211044585_EnableChecklistDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001130959179_IsEmployeeCodeReq.resx">
+      <DependentUpon>202001130959179_IsEmployeeCodeReq.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003111028310_add_enableCategoryTree_And_EnableGlobalAccessDocuments.resx">
+      <DependentUpon>202003111028310_add_enableCategoryTree_And_EnableGlobalAccessDocuments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004280855450_virtualclass.resx">
+      <DependentUpon>202004280855450_virtualclass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005041343323_jitsiServer.resx">
+      <DependentUpon>202005041343323_jitsiServer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007180805255_IsEnabledEmployeeCode.resx">
+      <DependentUpon>202007180805255_IsEnabledEmployeeCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007180857007_CompanySiteTitle.resx">
+      <DependentUpon>202007180857007_CompanySiteTitle.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

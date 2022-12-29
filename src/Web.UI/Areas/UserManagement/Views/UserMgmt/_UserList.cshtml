@@ -1,0 +1,250 @@
+﻿@using Web.UI.Code.Extensions
+
+@using System.Threading
+@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.CompanyUserViewModel
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.6.1/js/buttons.colVis.min.js"></script>
+<style>
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: red;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+        background-color: #f30000;
+    }
+
+    input:checked + .slider {
+        background-color: #00c121;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .disabled {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+</style>
+
+<div class="dataTables_wrapper form-inline" role="grid">
+
+
+    <table id="tblUserList" class="table table-hover table-fixed" aria-describedby="dataTables-example_info">
+        <thead>
+            <tr role="row">
+                @if (Model.UserList.Any(x => !string.IsNullOrWhiteSpace(x.EmployeeNo)))
+                {
+                    <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                        Employee Code
+                    </th>
+                }
+                <th class="requiredCss" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                    Full Name
+                </th>
+                <th class="requiredCss" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                    Email Address
+                </th>
+                <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                    Roles
+                </th>
+                <th class="requiredCss" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                    Sign up Type
+                </th>
+                <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                    Group
+                </th>
+               
+                <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 70px;" aria-label="Rendering engine: activate to sort column ascending">
+                    Status
+                </th>
+                <th class="requiredCss" tabindex="0" rowspan="1" colspan="1" style="width: 100px;" aria-label="Rendering engine: activate to sort column ascending">
+                    Options
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                foreach (var item in Model.UserList.OrderBy(x => x.FullName))
+                {
+                    if (Thread.CurrentPrincipal.GetId() != item.Id)
+                    {
+                        <tr class="gradeA odd">
+                            @if (Model.UserList.Any(x => !string.IsNullOrWhiteSpace(x.EmployeeNo)))
+                            {
+                                <td class="">
+                                    @Html.DisplayFor(modelItem => item.EmployeeNo)
+                                </td>
+                            }
+                            <td class="">
+                                @Html.DisplayFor(modelItem => item.FullName)
+                            </td>
+                            <td class="">
+                                @Html.DisplayFor(modelItem => item.EmailAddress)
+                            </td>
+
+                            @if (item.RoleName == "Managing Admin")
+                            {
+                                <td class="" title="@String.Join(Environment.NewLine, item.Roles.Select(r => r.Description))">
+                                    @Html.DisplayFor(modelItem => item.RoleName)
+                                </td>
+                            }
+                            else
+                            {
+                                <td class="">
+                                    @Html.DisplayFor(modelItem => item.RoleName)
+                                </td>
+                            }
+                            <td>
+                                <span>@item.SignupType</span>
+                            </td>
+                            @*group list*@
+                            <td class="">
+                                @Html.DisplayFor(modelItem => item.GroupName)
+                            </td>
+                         
+                            <td class="">
+                                <label class="switch">
+                                    <input type="checkbox" role="@item.SignupType" checked="@item.Status" id="@item.Id" onclick="changeStatus(this)" />
+                                    <span class="slider round"></span>
+                                </label>
+
+                            </td>
+
+                            <td class="tooltip-demo" title="Toolip">
+                                <a class="action EditCss" onclick="EditUser(this);" href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Edit" role="@(item.SelectedGroupId==null?Guid.Empty:item.SelectedGroupId.Value)" id="@item.Id">
+
+                                    <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5; "> <span class="glyphicon glyphicon-edit"></span> Edit</button>
+                                </a>
+                                @if (!PortalContext.Current.UserCompany.ActiveDirectoryEnabled)
+                                {
+                                    <a href="javascript:void(0)" onclick="confirmDelete(this);" username="@item.FullName" id="@(item.Id)" role="@(item.SelectedGroupId==null?Guid.Empty:item.SelectedGroupId.Value)" class="action DeleteCss" data-toggle="tooltip" data-placement="top" title="Delete">
+                                        <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-trash"></span> Delete</button>
+
+                                    </a>
+
+
+
+                                    <a href="javascript:void(0)" class="action" title="Change Password" id="@(item.Id)" role="@(item.SelectedGroupId==null?Guid.Empty:item.SelectedGroupId.Value)" onclick="setPasswordUserId(this);">
+                                        <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-repeat"></span> Reset Password</button>
+
+                                    </a>
+
+                                }
+
+
+
+                                @if (item.RoleName != "Global Admin" && item.RoleName != "Managing Admin")
+                                {
+                                    <a href="javascript:void(0)" username="@item.FullName" id="@(item.Id)" class="action PeakCss" data-toggle="tooltip" data-placement="top" title="Library Peek">
+                                        <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-eye-open"></span> Library Peek</button>
+                                    </a>
+                                }
+
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<script type="text/javascript">
+
+    $('#hdnIsLastPage').val('@Model.Paginate.IsLastPage')
+
+
+    $('#tblUserList').dataTable({
+        bDeferRender: true,
+        bDestroy: true,
+        bFilter: false,
+        bPaginate: false,
+        dom: 'rt<"bottom"flp><"clear">',
+        initComplete: function () {
+            $(this.api().table().container()).find('input[type="search"]').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+        }
+    });
+
+    $('#ddlShowEntry').val('@Model.Paginate.PageSize');
+
+    var checkFirstPage ='@Model.Paginate.IsFirstPage';
+    if (checkFirstPage === true || checkFirstPage === 'true' || checkFirstPage==='True') {
+
+        $("#prevPageCss").addClass('disabled');
+    } else {
+
+        $("#prevPageCss").removeClass('disabled');
+    }
+    var checkLastPage ='@Model.Paginate.IsLastPage';
+    if (checkLastPage === true || checkLastPage === 'true' || checkLastPage==='True') {
+
+        $("#nextPageCss").addClass('disabled');
+    } else {
+
+        $("#nextPageCss").removeClass('disabled');
+    }
+
+
+    $('.PageCss').each(function () {
+
+        if ($(this).attr('id') == '@Model.Paginate.PageIndex') {
+            $('#' + '@Model.Paginate.PageIndex').addClass('active');
+        } else {
+            $(this).removeClass('active');
+        }
+
+    });
+
+    $('input[type="search"]').val('');
+
+</script>

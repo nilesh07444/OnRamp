@@ -1,0 +1,26 @@
+﻿@using Web.UI.Controllers
+@using Web.UI.Code.Extensions
+@{
+    ViewBag.Title = "Track"; Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<div class="row row-centered">
+    <div class="col-lg-12 col-centered">
+        <div class="text-center">
+            <h1>TRACK</h1>
+        </div>
+        @if (Html.CanAccess<HomeController>(m => m.AdminReports()))
+        {
+            <div class="col-lg-4 col-lg-offset-4 col-centered menu-tile">
+                <a href="@(Url.Content("~/Home/AdminReports"))">
+                    <img src="@(Url.Content("~/Content/images/systemReport.png"))" class="img-responsive" id="systemReportId">
+                    <h4>
+                        <span class="label label-default shade">
+                            Reports
+                        </span>
+                    </h4>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+

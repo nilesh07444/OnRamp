@@ -1,0 +1,264 @@
+﻿@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Web.UI.Code.Extensions
+@using System.Threading
+
+@model Ramp.Contracts.ViewModel.CompanyViewModel
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else 
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<link href="@Url.Content("~/Content/bootstrap-datetimepicker.min.css")" rel="stylesheet" />
+<script src="@Url.Content("~/Scripts/moment.js")"></script>
+<script src="@Url.Content("~/Scripts/bootstrap-datetimepicker.js")"></script>
+<script src="@Url.Content("~/Scripts/Js/morris.js")"></script>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header"> Playbook Usage Report Threshold </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">   Playbook Usage Report Threshold </div>
+            <div class="panel-body">
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        @Html.Label("Select Customer Company")
+                        @*@Html.DropDownListFor(m => m.SelectedTraningGuideId, Model.TrainingGuides.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })*@
+                        @Html.DropDownListFor(m => m.SelectedCompany, Model.Companies.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select Company", new { @class = "form-control" })
+                    </div>
+                </div>
+
+                @*<div class="form-group col-lg-3">
+                        <div class="input-group date" id='FromDate'>
+                            @Html.Label("From Date")
+                            <div class="form-group input-group" style="width: 281px;">
+                                <input type='text' id="inputFromDate" class="form-control" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>*@
+
+                @*<div class="form-group col-lg-3">
+                        <div class="input-group date" id='ToDate'>
+                            @Html.Label("To Date")
+                            <div class="form-group input-group" style="width: 281px;">
+                                <input type='text' id="inputToDate" class="form-control" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>*@
+
+                <div class="form-group col-lg-3">
+                    <div class="input-group date">
+                        <label></label>
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="View Report" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="ChartDiv">
+                <div class="panel-heading">
+                    Playbook Usage Threshold Report
+                </div>
+                <div class="panel-body" id="TableData">
+                    <div class="col-lg-12" style="display: none; text-align: center;" id="divNoData">
+                        <label id="lblNoData">No Data Found</label>
+                    </div>
+                    <div id="morris-bar-chart" style="border: 1px solid #ddd;">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('#ToDate').datetimepicker();
+        $('#FromDate').datetimepicker();
+    });
+</script>
+
+<script type="text/javascript" language="javascript">
+
+    $("#btnView").click(function () {
+       
+        $('#LoadingImageDiv').show();
+
+        //if ($('#inputFromDate').val() != "" && $('#inputToDate').val() != "" && $('#SelectedCompany').val() != "") {
+        if ($('#SelectedCompany').val() != "") {
+            var cmpId = $('#SelectedCompany').val();
+            // var FrpmDate = $('#inputFromDate').val();
+            //var LastDate = $('#inputToDate').val();
+            //var id = cmpId + "_" + FrpmDate + "_" + LastDate;
+
+            //if (FrpmDate > LastDate) {
+            //    $('#LoadingImageDiv').hide();
+            //    notif({
+            //        msg: "<b>Error :</b> From date cannot be greater than To Date ",
+            //        type: "error",
+            //    });
+            //}
+            //else
+            if (cmpId != "") {
+                var actionUrl = "TrainingGuideUsageReportViewThreshold?companyId=" + cmpId;
+                $.ajax({
+                    type: "POST",
+                    url: actionUrl,
+                    data: {},
+                    success: function (data) {
+                        //
+                        $('#LoadingImageDiv').hide();
+                        $('#ChartDiv').hide();
+                        $('#divNoData').hide();
+                        $('#morris-bar-chart').empty();
+
+                        var trainingGuideUsageList = data.GuideUserUsesList;
+                        if (trainingGuideUsageList.length == 0) {
+                            $('#TableData').empty();
+                            $('#TableData').append("<div class='col-lg-12' style='display: none; text-align: center;' id='divNoData'><label id='lblNoData'>No Data Found</label></div>");
+                            $('#ChartDiv').fadeIn();
+                            $('#divNoData').show();
+                        }
+                        else {
+                            ShowTable(trainingGuideUsageList);
+                            $('#ChartDiv').fadeIn();
+                            Morris.Bar({
+                                element: 'morris-bar-chart',
+                                data: trainingGuideUsageList,
+                                xkey: 'CompanyName',
+                                ykeys: ['AllowGuide', 'CreatedGuide'],
+                                labels: ['Allow Guide Create', 'Created Guide'],
+                                hideHover: 'auto',
+                                resize: true
+                            });
+                        }
+                    },
+                    error: function (data) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            }
+        }
+        else {
+            $('#LoadingImageDiv').hide();
+            //if ($('#inputFromDate').val() == "" && $('#inputToDate').val() == "" && $('#SelectedCompany').val() == "") {
+            //    notif({
+            //        msg: "<b>Error :</b> Please select Company, From Date & To Date",
+            //        type: "error",
+            //    });
+            //} else if ($('#inputToDate').val() == "" && $('#inputToDate').val() == "") {
+            //    notif({
+            //        msg: "<b>Error :</b> Please select From Date & To Date",
+            //        type: "error",
+            //    });
+            //} else if ($('#inputFromDate').val() == "" && $('#SelectedCompany').val() == "") {
+            //    notif({
+            //        msg: "<b>Error :</b> Please select From Date and Company",
+            //        type: "error",
+            //    });
+            //} else if ($('#inputToDate').val() == "" && $('#SelectedCompany').val() == "") {
+            //    notif({
+            //        msg: "<b>Error :</b> Please select Company and To Date",
+            //        type: "error",
+            //    });
+            //} else if ($('#inputFromDate').val() == "") {
+            //    notif({
+            //        msg: "<b>Error :</b> Please select From Date",
+            //        type: "error",
+            //    });
+            //} else if ($('#inputToDate').val() == "") {
+            //    notif({
+            //        msg: "<b>Error :</b> Please select To Date",
+            //        type: "error",
+            //    });
+            //} else if ($('#SelectedCompany').val() == "") {
+            if ($('#SelectedCompany').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select Company",
+                    type: "error",
+                });
+            }
+        }
+    });
+
+    function ShowTable(data) {
+        var parentTableDiv = $('<div class="table-responsive">');
+        var parentTable = $('<table class="table table-hover">');
+        var thead = $('<thead>');
+        var headTr = $('<tr>');
+        var headFirstNameTh = $('<th>');
+        var headTotalLoginsTh = $('<th>');
+        var headFrequencyTh = $('<th>');
+
+        //Add heading to table
+        headFirstNameTh.append("CompanyName");
+        headTotalLoginsTh.append("No of Guide Allow to Create");
+        headFrequencyTh.append("Created Guide");
+
+        //Append headings to <tr> tag
+        headTr.append(headFirstNameTh);
+        headTr.append(headTotalLoginsTh);
+        headTr.append(headFrequencyTh);
+
+        //Append headTr to <thead> tag
+        thead.append(headTr);
+
+        //Append thead to <table> tag
+        parentTable.append(thead);
+
+        //Append parentTable to table <div> tag
+        parentTableDiv.append(parentTable);
+
+        var tableBody = $('<tbody>');
+
+        for (var i = 0; i < data.length; i++) {
+            var innerTr = $('<tr>');
+            var innerUserNameTd = $('<td>');
+            innerUserNameTd.append(data[i].CompanyName);
+
+            var innerTotalLoginsTd = $('<td>');
+            innerTotalLoginsTd.append(data[i].AllowGuide);
+
+            var innerFrequencyTd = $('<td>');
+            innerFrequencyTd.append(data[i].CreatedGuide);
+
+            innerTr.append(innerUserNameTd);
+            innerTr.append(innerTotalLoginsTd);
+            innerTr.append(innerFrequencyTd);
+
+            tableBody.append(innerTr);
+        }
+        parentTable.append(tableBody);
+
+        $('#TableData').empty();
+        $('#TableData').append(parentTableDiv);
+
+        var label = $('<div class="alert alert-success">');
+        label.append("Bar Chart");
+
+        $('#TableData').append(parentTableDiv);
+        $('#TableData').append(label);
+        var div = $(' <div id="morris-bar-chart">');
+        $('#TableData').append(div);
+    }
+</script>

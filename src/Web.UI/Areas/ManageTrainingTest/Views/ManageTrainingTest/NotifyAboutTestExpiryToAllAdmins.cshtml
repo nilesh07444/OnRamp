@@ -1,0 +1,128 @@
+﻿@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.TestAssignedUsersAndNotAppearedUsersViewModel
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>OnRAMP Online Training Platform</title>
+   
+    </head>
+
+    <body>
+        <label>Hello @Model.RecipentUserName</label>
+        <p class="content">
+            The following has expired in the OnRamp System:  @Model.TrainingTestViewModel.TestTitle - @Model.TrainingTestViewModel.ReferenceId.
+            <br />
+            @if (Model.TestAppearedUsers.Any())
+            {
+                <div style="width: 50%;">
+                    <div style="-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05); background-color: #fff; border: 1px solid transparent; border-radius: 4px; box-shadow: 0 1px 1px rgba(0, 0, 0, .05); margin-bottom: 20px;">
+                        <div style="background-color: #f5f5f5; border-bottom: 1px solid transparent; border-color: #ddd; border-top-left-radius: 3px; border-top-right-radius: 3px; color: #333; padding: 10px 15px;">
+                            Users who took the test
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div style="box-sizing: border-box; padding: 15px;">
+                            <div style="color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.42857143;">
+                                <table style="background-color: transparent; border: 1px solid #ddd; border-collapse: collapse; border-spacing: 0; margin-bottom: 20px; max-width: 100%; width: 100%;">
+                                    <thead style="box-sizing: border-box;">
+                                        <tr>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">User Name</th>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">Email</th>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">Contact Number</th>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">Total Marks Scored</th>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">Test Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (UserViewModel user in Model.TestAppearedUsers)
+                                        {
+                                            <tr>
+                                                <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top; white-space: nowrap;">
+                                                    @user.FirstName
+                                                </td>
+                                                <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top;">
+                                                    @user.EmailAddress
+                                                </td>
+                                                <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top;">
+                                                    @user.ContactNumber
+                                                </td>
+                                                <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top;">
+                                                    @{
+                                                        double perc = @user.TestResult.NumberOfRightAnswers / (@user.TestResult.NumberOfRightAnswers + @user.TestResult.NumberOfUnattemptedQuestions + @user.TestResult.NumberOfWrongAnswers) *100;
+                                                        int maxMark = @user.TestResult.NumberOfRightAnswers + @user.TestResult.NumberOfUnattemptedQuestions + @user.TestResult.NumberOfWrongAnswers;
+                                                    }
+                                                    @user.TestResult.TotalMarksScored/@maxMark (@perc)%
+                                                </td>
+                                                @if (user.TestResult.TestResult)
+                                                {
+                                                    <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top;">
+                                                        <span style="background-color: #5cb85c; border-radius: .25em; color: #fff; display: inline; font-size: 75%; font-weight: 700; line-height: 1; padding: .2em .6em .3em; text-align: center; vertical-align: baseline; white-space: nowrap;">Passed</span>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top;">
+                                                        <span style="background-color: #d9534f; border-radius: .25em; color: #fff; display: inline; font-size: 75%; font-weight: 700; line-height: 1; padding: .2em .6em .3em; text-align: center; vertical-align: baseline; white-space: nowrap;">Failed</span>
+                                                    </td>
+                                                }
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.TestNotAppearedUsers.Any())
+            {
+                <div style="width: 50%;">
+                    <div style ="-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05); background-color: #fff; border: 1px solid transparent; border-radius: 4px; box-shadow: 0 1px 1px rgba(0, 0, 0, .05); margin-bottom: 20px;">
+                        <div style="background-color: #f5f5f5; border-bottom: 1px solid transparent; border-color: #ddd; border-top-left-radius: 3px; border-top-right-radius: 3px; color: #333; padding: 10px 15px;">
+                            Users who did not take the test
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div style="box-sizing: border-box; padding: 15px;">
+                            <div style="color: #333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.42857143;">
+                                <table style="background-color: transparent; border: 1px solid #ddd; border-collapse: collapse; border-spacing: 0; margin-bottom: 20px; max-width: 100%; width: 100%;">
+                                    <thead style="box-sizing: border-box;">
+                                        <tr>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">User Name</th>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">Email</th>
+                                            <th style="border: 1px solid #ddd; border-bottom: 2px solid #ddd; border-top: 0; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: bottom; vertical-align: top; white-space: nowrap;">Contact Number</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (UserViewModel user in Model.TestNotAppearedUsers)
+                                        {
+                                            <tr>
+                                                <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top; white-space:nowrap;">
+                                                    @user.FirstName
+                                                </td>
+                                                <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top;">
+                                                    @user.EmailAddress
+                                                </td>
+                                                <td style="background-color: #f5f5f5; border: 1px solid #ddd; border-top: 1px solid #ddd; line-height: 1.42857143; padding: 8px; vertical-align: top;">
+                                                    @user.ContactNumber
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </p>
+        <br />
+        <br />
+        Thanks & Regards
+        <br/>
+        The @AppSettings.CompanyName Team
+        <br />
+        <footer style="text-align:center">
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,12 @@
+﻿.row-description{
+    width: 80%;
+}
+.glyphicon-remove{
+    color:red;
+}
+.glyphicon-ok{
+    color:lightgreen;
+}
+.row-full{
+    width:100%;
+}

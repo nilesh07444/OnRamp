@@ -1,0 +1,1079 @@
+﻿@using Web.UI.Code.Extensions
+@using System.Threading
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Ramp.Contracts.Security
+@model Ramp.Contracts.ViewModel.CompanyUserViewModel
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<link href="~/Content/apex/apexcharts.css" rel="stylesheet" />
+
+<style>
+
+    .chart {
+        width: 100%;
+        margin: 35px auto;
+    }
+
+    .apexcharts-legend {
+        justify-content: center;
+    }
+
+    .user_permission {
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .tooltip-inner {
+        white-space: pre-wrap;
+    }
+
+    .btn-option {
+        margin-bottom: 5px;
+        padding: 5px;
+        font-size: 12px;
+        border-radius: 0px;
+    }
+</style>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<script src="~/Scripts/apex/apexcharts.js"></script>
+<div class="row hidden-sm hidden-xs">
+    <div class="col-sm-12">
+        <div class="col-sm-4">
+            <div class="col-sm-12">
+                <div class=" panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        User Role Counter
+                    </div>
+                    <div class="panel-body">
+                        <i style="font-size:12px;">This chart represents the number of global admins as well as standard users in your organisation.</i><br />
+                        <div id="divRolechart" class="chart">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+
+            <div class="col-sm-12">
+                <div class=" panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        User Status Counter
+                    </div>
+                    <div class="panel-body">
+                        <i style="font-size:12px;">This chart represents number of users in your organisation that are active or inactive.</i><br />
+
+
+                        <div id="divStatuschart" class="chart">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-sm-4">
+
+            <div class="col-sm-12">
+                <div class=" panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        User Signup type counter
+                    </div>
+                    <div class="panel-body">
+                        <i style="font-size:12px;">This chart represents the number of users in your organisation that have enrolled and by what type.</i>
+
+
+                        <div id="divSignUpTypechart" class="chart">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+
+    </div>
+</div>
+
+
+<div class="col-lg-12">
+    <div class="col-sm-2 pull-left">
+        <div class=" panel panel-info " style="overflow-x:auto;">
+            <div class="panel-heading clearfix" style="line-height: 32px;">
+                Group
+                @if (Thread.CurrentPrincipal.IsInRole(Role.CustomerAdmin))
+                {
+                    <div class="pull-right">
+                        <a id="mg" data-bind="click:options.modals.manageGroups.open.bind()" style="border-left: solid 1px; padding-left: 0.5em; cursor: pointer; color: white"><i class="glyphicon glyphicon-pencil"></i></a>
+                        | @if (PortalContext.Current.UserCompany.ActiveDirectoryEnabled)
+                        {
+                            <a onclick="importGroup('@Url.Action("ImportGroups", "UserMgmt", new { Area = "UserManagement"})')"><i class="glyphicon glyphicon-refresh" style="cursor:pointer;color:white;" id="importGroups"></i></a>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="panel-body">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="groupSearch" placeholder="Search" autocomplete="off" style="max-width:unset" data-bind="textInput:options.category.menu.match" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" id="btnclearGroup"><span class="fa fa-close"></span></button>
+                    </span>
+                </div>
+            </div>
+            <div id="groupTree" data-bind="jstreeWithSearch:options,jstreeOptions: {plugins:['search', 'types'], types: {default: {icon: 'glyphicon glyphicon-plus-sign category-icon'}}},valueProperty:options.category.menu.selected,filterProperty:options.category.menu.match" style="min-height:800px"></div>
+        </div>
+
+    </div>
+
+
+    <div class="col-sm-10 pull-right">
+        <div class="panel panel-info">
+            <div class="panel-heading clearfix" style="line-height: 32px;">
+                @Model.CompanyName Users | <a><i class="glyphicon glyphicon-plus" style="cursor:pointer" id="openWizard"></i></a>  | <a id="du"><i class="glyphicon glyphicon-floppy-save" style="cursor:pointer" onclick="downloadReport('@Url.Action("DownloadEXCEL", "CustomerCompanyUserExport", new { Area = "Reporting", CompanyId = Model.CompanyId })')"></i></a> |
+
+                @if (PortalContext.Current.UserCompany.ActiveDirectoryEnabled)
+                {
+                    <a onclick="importUser('@Url.Action("ImportUsers", "UserMgmt", new { Area = "UserManagement"})')"><i class="glyphicon glyphicon-refresh" style="cursor:pointer" id="importUsers"></i></a>
+
+                }
+
+
+
+
+
+
+                <div class="pull-right">
+                    <form class="form-inline">
+                        <div class="input-group">
+                            <select class="selectpicker" multiple id="ddlFilter" data-bind="selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'}">
+                                @foreach (var item in Model.FilterCompanyCustomer)
+                                {
+
+                                    <optgroup label="@item.Type">
+                                        @foreach (var data in item.FilterData)
+                                        {
+                                            if (data.Name == "Global Admin")
+                                            {
+                                                <option value="@(item.Type + '_' + data.Id)">Global Administrator</option>
+
+                                            }
+                                            else
+                                            {
+                                                <option value="@(item.Type + '_' + data.Id)">@data.Name</option>
+
+                                            }
+                                        } T
+
+                                    </optgroup>
+
+                                }
+
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" id="txtSearch" class="form-control" placeholder="User Search" data-bind="" />
+                            <span class="input-group-btn">
+                                <button id="btnSearch" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+            <div class="panel-body">
+                <div class="table-responsive" id="divUserList">
+
+                    @Html.Partial("_UserList", Model)
+
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4" style="padding-top: 4px">
+                Show <select id="ddlShowEntry">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select> entries
+            </div>
+            <div class="pull-right">
+                <ul class="pagination" style="margin: 0 15px 20px 0;">
+                    <li id="prevPageCss"><a href="#">&larr; Previous</a></li>
+                    @for (int i = Model.Paginate.StartPage; i <= Model.Paginate.EndPage; i++)
+                    {
+                        <li class="PageCss" id="@(i)"><a href="#">@(i)</a></li>
+                    }
+
+                    <li id="nextPageCss"><a href="#">Next &rarr;</a></li>
+                </ul>
+            </div>
+            <div class="pull-right" style="padding-top: 6px; margin-right: 2em;">Showing <span>@(Model.Paginate.FirstPage)</span> to <span>@(Model.Paginate.LastPage) </span> of <span>@Model.Paginate.TotalItems</span> entries</div>
+
+            <input type="hidden" value="@Model.Paginate.StartPage" id="hdnStartPage" />
+            <input type="hidden" value="@Model.Paginate.EndPage" id="hdnEndPage" />
+            <input type="hidden" value="@Model.Paginate.IsLastPage" id="hdnIsLastPage" />
+        </div>
+    </div>
+
+</div>
+</div>
+
+<div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                <h4 class="modal-title"><span id="spnUser">Create</span> User for @Model.CompanyName</h4>
+            </div>
+            <div class="modal-body" id="divAddUser">
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" id="btnWizardModalClose"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">What would you like to do?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <div class="col-sm-4 col-sm-offset-2 hover-zoom">
+                            <a class="no-underline" style="cursor:pointer" id="addNewUser">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.SendAssign], true)" />
+                                Add Single User
+                            </a>
+                        </div>
+                        <div class="col-sm-4 hover-zoom" style="cursor:pointer" id="addCsv">
+                            <a href="javascript:void(0);" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.SendAssign], true)" />
+                                Upload CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addCsvModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close CssClose" data-dismiss="" id="btnAddCsvModalClose"><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                <h4 class="modal-title">Upload CSV</h4>
+            </div>
+            <div class="modal-body">
+                @using (Html.BeginForm("SaveCSVGroupUser", "UserMgmt", FormMethod.Post, new { Area = "UserManagement", enctype = "multipart/form-data" }))
+                {
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">Upload CSV </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        @Html.Label("Download Sample CSV")
+                                        <a href="@Url.Content("~/Content/SampleCSV.csv")">Download</a>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="file" name="UserViewModel.UserCVSFile" class="btn btn-default" />
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" />
+                                    <br />
+                                    <br />
+                                    @foreach (var notification in Html.PopNotifications("csvuploads"))
+                                    {
+                                        <div class="alert alert-@notification.GetBootstrapType()" style="white-space: pre-line">@notification.Message</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Change Password</h4>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="hdnUserId" />
+                <input type="hidden" id="hdnGroupId" />
+                <div class="row">
+                    <div class="col-lg-12">
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-lg-6">
+
+                                    <input id="hdUserId" name="hdUserId" type="hidden" />
+                                    <div class="form-group">
+                                        @Html.Label("Password")
+
+                                        <input name="txtPassword" type="password" id="txtPassword" class="form-control" />
+
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        @Html.Label("Confirm Password")
+                                        <input name="txtConfirmPassword" type="password" id="txtConfirmPassword" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="btnChangePwd">Save changes</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="documentPeakModal" tabindex="-1" role="dialog" aria-labelledby="documentPeakModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" style="width:1025px;">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                <h4 class="modal-title"><span id="spnDocPeak"></span> Document Library</h4>
+            </div>
+            <div class="modal-body" id="divDocPeakList">
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@if (ViewData["Message"] != null)
+{
+
+    if (Convert.ToString(ViewData["Message"]) == "true" || Convert.ToString(ViewData["Message"]) == "True")
+    {
+        @:<script>notif({ msg: "<b>Success :</b> User created successfully.", type: "success", });</script>
+    }
+    else
+    {
+
+        @:<script>notif({ msg: "<b>Success :</b> User updated successfully.", type: "success", });</script>
+    }
+}
+
+
+@Html.Partial("~/Views/Groups/ManageGroupsModalPartial.cshtml")
+<script>
+
+    $(document).ready(function () {
+
+        //var temp = $('#spnUser').text == 'Create' ? notif({ msg: "<b>Success :</b> User created successfully.", type: "success", })
+        //    : notif({ msg: "<b>Success :</b> User updated successfully.", type: "success", });
+
+
+        $('#mg').tooltip({ title: "Click here to manage groups and subgroups.", delay: 500 });
+        $('#openWizard').tooltip({ title: "Click here to add a new user.", delay: 500 });
+        $('#du').tooltip({ title: "Click here to download a list of all your users.", delay: 500 });
+        $('#uu').tooltip({ title: "Click here to either lock or unlock user accounts.", delay: 500 });
+        $('#eu').tooltip({ title: "Click here to edit user details.", delay: 500 });
+        $('#dcu').tooltip({ title: "Click here to delete user.", delay: 500 });
+        $('#up').tooltip({ title: "Click here to update a users password.", delay: 500 });
+        $('#lp').tooltip({ title: "Click here to view assigned documents to the user.", delay: 500 });
+
+});
+
+
+     $('#' + '@Model.Paginate.PageIndex').addClass('active');
+    function closeGroup() {
+        $('#manageGroupsModal').modal('hide');
+
+    }
+
+
+    var options = ko.observableArray( @Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Groups));
+    options.modals = {
+        manageGroups: {
+            open: function () {
+
+                $('#manageGroupsModal').modal('show');
+            }
+
+        },
+    }
+   options.category = {
+        menu: {
+            match: ko.observable(),
+            selected: ko.observable(),
+            options: ko.observableArray(),
+            initialize: function () {
+                vm.category.menu.selected.subscribe(vm.category.handlers.filter);
+            }
+        },
+        handlers: {
+            filter: function (newValue, oldValue) {
+                 if (newValue != oldValue)
+                    vm.query.CategoryId(newValue != '00000000-0000-0000-0000-000000000000' ? newValue : null);
+            },
+            clear: function () {
+                vm.category.menu.match('');
+                vm.category.menu.selected('');
+            }
+        }
+    };
+    ko.applyBindings(options, document.getElementsByTagName('body')[0]);
+
+    function confirmPassword() {
+        $('#btnChangePwd').prop('disabled', true);
+        $('#txtPassword').keyup(function () {
+            if ($('#txtPassword').val() === $('#txtConfirmPassword').val()) {
+                $('#btnChangePwd').removeAttr('disabled');
+            }
+            else {
+                $('#btnChangePwd').prop('disabled', true);
+            }
+        })
+
+        $('#txtConfirmPassword').keyup(function () {
+            if ($('#txtPassword').val() === $('#txtConfirmPassword').val()) {
+                $('#btnChangePwd').removeAttr('disabled');
+            }
+            else {
+                $('#btnChangePwd').prop('disabled', true);
+            }
+        })
+    }
+
+    $(function () {
+
+            $(document).on('click', ".PeakCss", function () {
+            var name = $(this).attr('username');
+            var id = $(this).attr('id');
+            $('#spnDocPeak').text(name + "'s");
+
+              var docPeak = $.get("@Url.Action("DocumentPeakList", "UserMgmt", new { Area = "UserManagement" })", {
+                id: id
+                });
+
+            docPeak.done(function (data) {
+
+                $("#divDocPeakList").html(data);
+                $('#documentPeakModal').modal('show');
+                });
+            docPeak.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            docPeak.always(function () {
+
+                });
+
+        })
+
+
+        confirmPassword();
+
+        /**********this is used to open wizard modal********************/
+        $("#openWizard").click(function () {
+            $("#wizardModal").modal("show");
+        });
+        $("#addCsv").click(function () {
+            $("#addCsvModal").modal("show");
+            $("#wizardModal").modal("hide");
+        });
+        /***************this for pagination on user hit the page number******************/
+        $(document).on('click', ".PageCss", function () {
+
+            pageIndex = $(this).attr('id');
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+
+            var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: '', searchText: '', groupId: '', pageIndex: pageIndex, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+        });
+        /**************this one will fire once user select the page size***************/
+        $(document).on('change', "#ddlShowEntry", function () {
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+            pageIndex = $('.PageCss.active').attr('id');
+            pageSize = $("#ddlShowEntry").val();
+
+            var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: '', searchText: '', groupId: '', pageIndex: pageIndex, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+        });
+
+        /*****************filter the user list once user hit the group from tree*************************/
+
+        $(document).on('click', 'ul>li>a.jstree-anchor', function () {
+
+            var groupId = $(this).attr('id');
+
+            localStorage.setItem('groupId', groupId);
+
+            localStorage.removeItem("searchText");
+            localStorage.removeItem("filters");
+
+            pageIndex = $('.PageCss.active').attr('id');
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+
+            var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: '', searchText: '', groupId: groupId, pageIndex: pageIndex, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+        });
+        /**********once user hit the next button**********/
+        $(document).on('click', '#nextPageCss', function () {
+             pageIndex = $('.PageCss.active').attr('id');
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+
+            var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: '', searchText: '', groupId: '', pageIndex: parseInt(pageIndex) + 1, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+
+
+        });
+        /***********when user hit the previous button************/
+          $(document).on('click', '#prevPageCss', function () {
+             pageIndex = $('.PageCss.active').attr('id');
+              pageSize = $("#ddlShowEntry").val();
+              startPage = $('#hdnStartPage').val();
+              endPage = $('#hdnEndPage').val();
+
+            var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: '', searchText: '', groupId: '', pageIndex: parseInt(pageIndex) - 1, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+
+
+        });
+
+        $("#btnclearGroup").click(function () {
+
+            $('#groupSearch').val('');
+            return false;
+        });
+
+
+        $('#groupTree').jstree('open_node', '00000000-0000-0000-0000-000000000000');
+        $('#manageGroupsModal').on('hidden.bs.modal',
+            function() {
+                $('#LoadingImageDiv').show();
+                window.setTimeout(function () { window.location = window.location; }, 1000);
+            });
+        $(document).on('hidden.bs.modal',
+            '.modal',
+            function() {
+                $('.modal:visible').length && $(document.body).addClass('modal-open');
+            });
+       });
+              /************this one is used to download the userlist in csv/xls format*****************/
+              function importUser(url) {
+
+                   $.ajax({
+                        type: "GET",
+                        url: url,
+                       success: function (data) {
+                           if (data.success) {
+                               notif({
+                                   msg: "<b>Success :</b> Users imported successfully.",
+                                   type: "success",
+                               });
+                               window.location.reload();
+                           } else {
+                               notif({
+                                   msg: "<b>Error :</b> Users import failed.",
+                                   type: "error",
+                               });
+                           }
+                        },
+                       error: function (data) {
+                           notif({
+                               msg: "<b>Error :</b> Users import failed.",
+                               type: "error",
+                           });
+                        }
+                    });
+              }
+
+              function importGroup(url) {
+                  $.ajax({
+                      type: "GET",
+                      url: url,
+                      success: function (data) {
+                          if (data.success) {
+                              notif({
+                                  msg: "<b>Success :</b> Groups imported successfully.",
+                                  type: "success",
+
+                              });
+                              window.location.reload();
+                          } else {
+                              notif({
+                                  msg: "<b>Error :</b> Groups import failed.",
+                                  type: "error",
+                              });
+                          }
+                      },
+                      error: function (data) {
+                          notif({
+                              msg: "<b>Error :</b> Groups import failed.",
+                              type: "error",
+                          });
+                      }
+                  });
+              }
+
+    function downloadReport(url) {
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = 'blob';
+        request.onload = function () {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+            }
+        }
+        request.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                $('#LoadingImageDiv').hide();
+            }
+        }
+        $('#LoadingImageDiv').show();
+        request.send();
+    }
+
+    function setPasswordUserId(element) {
+
+        $("#hdnUserId").val($(element).attr('Id'));
+        $("#hdnGroupId").val($(element).attr('role'));
+        $("#myModal").modal("show");
+
+    }
+
+    /**************this is one used to change the user status**********************/
+    function changeStatus(element) {
+        var userId = $(element).attr('Id');
+        var status = $(element).is(":checked");
+        var type = $(element).attr('role');
+        var changeStatus = $.post("@Url.Action("ChangeCompanyUserStatus", "UserMgmt", new { Area = "UserManagement" })", {
+             userId: userId, status: status,type:type
+                });
+
+        changeStatus.done(function (data) {
+
+                //notif({
+                //    msg: "<b>Success :</b>  User status updated successfully.",
+                //    type: "success",
+                //});
+               // $("#divUserList").html(data);
+                });
+        changeStatus.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        changeStatus.always(function () {
+
+                });
+    }
+    /**********this is used to delete the specific user with confirmation***************/
+    function confirmDelete(element) {
+        var userId = $(element).attr('Id');
+        var groupId = $(element).attr('role');
+        var name = $(element).attr('username');
+        pageIndex = $('.PageCss.active').attr('id');
+        pageSize = $("#ddlShowEntry").val();
+        startPage = $('#hdnStartPage').val();
+        endPage = $('#hdnEndPage').val();
+
+        bootbox.confirm("Do you really want to delete " + "<b>" + name+"</b> ?", function (result) {
+             var urlToHit = "@Url.Action("DeleteCustomerCompanyUser", "UserMgmt", new { Area = "UserManagement" })";
+                if (result) {
+                    $.ajax({
+                        type: "POST",
+                        url: urlToHit,
+                        data: { userId: userId, companyId: '@Model.CompanyId', company: '@Model.CompanyName', groupId: groupId, filters: '', searchText: '', pageIndex: pageIndex, pageSize: pageSize, startPage: startPage, endPage: endPage },
+                        success: function (data) {
+                            notif({
+                                msg: "<b>Success :</b> User deleted successfully.",
+                                type: "success",
+                            });
+                            $("#divUserList").html(data);
+
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+        });
+    }
+    /************this one is used to show the modal to Edit/Add the user******************/
+    function EditUser(element) {
+        var userId = $(element).attr('id');
+        $('#spnUser').text('Edit');
+        var groupId = $(element).attr('role');
+            var users = $.get("@Url.Action("AddOrEditUser", "UserMgmt", new { Area = "UserManagement" })", { company: '@Model.CompanyName', companyId: '@Model.CompanyId', userId: userId, groupId: groupId });
+
+                    users.done(function (data) {
+                        $("#divAddUser").html(data);
+                        $("#addUserModal").modal("show");
+
+                    });
+
+                    users.always(function () {
+
+                    });
+
+    }
+
+    $(function () {
+
+        $("#btnWizardModalClose").click(function () {
+            $("#wizardModal").modal("hide");
+        });
+
+        $("#btnAddCsvModalClose").click(function () {
+            $("#addCsvModal").modal("hide");
+        });
+
+        $('#sb_tb').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+        $('#sb_tb').attr("placeholder", "Document Search");
+        $('#groupSearch').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+        $('#groupSearch').attr("placeholder", "Search");
+
+        $(".CssClose").click(function () {
+            $("#addUserModal").modal('hide');
+            $('#documentPeakModal').modal('hide');
+        });
+
+        /**************handle the enter keypress event once user focus on Search and hit enter key*****************/
+        $("#txtSearch").keypress(function (e) {
+
+            if (e.which == 13) {
+                e.preventDefault();
+                $("#btnSearch").click();
+            }
+        });
+
+        /******************Used to filter the userlist based on searchtext *************************/
+        $("#btnSearch").click(function () {
+            var searchText = $("#txtSearch").val();
+
+            localStorage.setItem("searchText", searchText);
+
+            localStorage.removeItem("groupId");
+            localStorage.removeItem("filters");
+
+             pageIndex = $('.PageCss.active').attr('id');
+              pageSize = $("#ddlShowEntry").val();
+              startPage = $('#hdnStartPage').val();
+              endPage = $('#hdnEndPage').val();
+
+            var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: '', searchText: searchText, groupId: '', pageIndex: pageIndex, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+
+        });
+
+
+        /******************Used to filter the userlist based on selected filters *************************/
+        $("#ddlFilter").change(function () {
+
+            var filters = $(this).val();
+
+            localStorage.setItem("filters", JSON.stringify(filters));
+
+            localStorage.removeItem("groupId");
+            localStorage.removeItem("searchText");
+
+             pageIndex = $('.PageCss.active').attr('id');
+              pageSize = $("#ddlShowEntry").val();
+              startPage = $('#hdnStartPage').val();
+              endPage = $('#hdnEndPage').val();
+
+            var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: JSON.stringify(filters), searchText: '', groupId: '', pageIndex: pageIndex , pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+        });
+
+        /**********this one used to change the password of selected user*******************/
+        $("#btnChangePwd").click(function () {
+            var userId = $("#hdnUserId").val();
+            var groupId = $("#hdnGroupId").val();
+            var passWord = $("#txtPassword").val();
+            pageIndex = $('.PageCss.active').attr('id');
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+
+            var changePwd = $.post("@Url.Action("UpdatePassword", "UserMgmt", new { Area = "UserManagement" })", {
+                company: '@Model.CompanyName', companyId: '@Model.CompanyId', userId: userId, groupId: '', passWord: passWord, filters: '', searchText: '', pageIndex: pageIndex, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            changePwd.done(function (data) {
+                $("#myModal").modal("hide");
+                notif({
+                    msg: "<b>Success :</b> Password reset successfully.",
+                    type: "success",
+                });
+                $("#divUserList").html(data);
+                });
+            changePwd.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            changePwd.always(function () {
+                $("#myModal").modal("hide");
+                });
+
+        });
+
+        /***********this is used to add company user modal pop up**************/
+        $("#addNewUser").click(function () {
+
+            $('#spnUser').text('Create');
+            var users = $.get("@Url.Action("AddOrEditUser", "UserMgmt", new { Area = "UserManagement" })", { company: '@Model.CompanyName',companyId:'@Model.CompanyId' });
+
+                    users.done(function (data) {
+                        $("#divAddUser").html(data);
+                        $("#addUserModal").modal("show");
+                        $("#wizardModal").modal("hide");
+                    });
+
+                    users.always(function () {
+
+                    });
+        });
+
+    });
+
+</script>
+<script type="text/javascript">
+    var roleoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(Model.UserChartViewModel.RoleCount))'),
+        chart: {
+                     height: 300,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(Model.UserChartViewModel.RoleName))'),
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+        legend: {
+            position: 'bottom',
+
+            Y: 0,
+            height: 100,
+        },
+
+           colors: ['#008ffb', '#00e396', '#009B72', '#8A1C7C', '#FF9505','#DD6031', '#BF0603', '#C2F261', '#372772'],
+           fill: {
+               colors: ['#008ffb', '#00e396', '#009B72', '#8A1C7C', '#FF9505','#DD6031', '#BF0603', '#C2F261', '#372772']
+           }
+    };
+
+                var chart = new ApexCharts(document.querySelector("#divRolechart"), roleoptions);
+    chart.render();
+
+    var statusoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(Model.UserChartViewModel.StatusCount))'),
+        chart: {
+                      height: 300,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(Model.UserChartViewModel.Status))'),
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+        legend: {
+            position: 'bottom',
+            offsetY: 0,
+            height: 100,
+        }
+    };
+    var statuschart = new ApexCharts(document.querySelector("#divStatuschart"), statusoptions);
+    statuschart.render();
+
+    var typeoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(Model.UserChartViewModel.TypeCount))'),
+        chart: {
+                    height: 300,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(Model.UserChartViewModel.TypeName))'),
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+        legend: {
+            position: 'bottom',
+            offsetY: 0,
+            height: 100,
+        }
+    };
+    var typechart = new ApexCharts(document.querySelector("#divSignUpTypechart"), typeoptions);
+    typechart.render();
+</script>

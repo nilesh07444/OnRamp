@@ -1,0 +1,60 @@
+﻿@model Ramp.Contracts.ViewModel.FeedbackViewModel
+
+@{
+    Layout = null;
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath =Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var loginLink = AppSettings.Urls.ResolveUrl("~Account/Login", Model.CompanyViewModel);
+
+    var loginLinkDescription = AppSettings.Urls.ResolveUrl("~",Model.CompanyViewModel);
+    var supportEmailLink = "support@onramp.training";
+    var notificationHeader = "#FFFFFF";
+    var notificationFooter = "#FFFFFF";
+
+
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+</head>
+<body>
+
+        <img src="@headerPath" width="100%" height="35" alt="Header Image" />
+    
+    <br />
+    <br />
+    <p>
+        Hello <b>@Model.Collaborator.FirstName</b>,
+    </p>
+    <p>
+        Feedback has been submitted by <b>@Model.User.FullName</b>. This is what they had to say:
+    </p>
+    <table>
+        <tr>
+            <th>Date:</th>
+            <td>@Model.FeedbackDate.ToString("dd MMM yyyy HH:mm")</td>
+        </tr>
+        <tr>
+            <th>@Model.Type.ToString():</th>
+            <td>@Model.SubjectName</td>
+        </tr>
+        <tr>
+            <th>Type:</th>
+            <td>@Model.Option</td>
+        </tr>
+        <tr>
+            <th>Message:</th>
+            <td>@Model.Message</td>
+        </tr>
+
+    </table>
+    <br />
+
+        <img src="@footerPath" width="100%" height="35" alt="Footer Image" />
+    
+    <br />
+    <br />
+</body>
+</html>

@@ -1,0 +1,158 @@
+﻿@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.CompanyViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Company Survey Stats Report</h1>
+        @Html.Label("Description :")
+        <div class="form-group input-group">
+            <p>
+                It would be nice that you could send out your own email with your own text and graphics.
+                That way you will make your email look professional.
+                For this we will need to create a simple Joomla article.
+                Put it in a special section+category so
+            </p>
+        </div>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">User Satisfaction Survey</div>
+
+            <div class="panel-body">
+                <br />
+                <br />
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Select Customer Companies</label>
+                        @Html.DropDownListFor(m => m.SelectedCompany, Model.Companies.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select Customer", new {@class = "form-control"})
+                    </div>
+                </div>
+
+
+                <div class="form-group col-lg-3">
+                    <div class="input-group date" id='FromDate'>
+                        @Html.Label("From Date")
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type='text' id="inputFromDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-lg-3">
+                    <div class="input-group date" id='ToDate'>
+                        @Html.Label("To Date")
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type='text' id="inputToDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-lg-3">
+                    <div class="input-group date">
+                        <label></label>
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="View Report" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="ChartDiv">
+                <div class="panel-heading">
+                    Customer Rating Survey stats
+                </div>
+                <div class="panel-body" id="TableData">
+                    <div class="col-lg-12" style="display: none; text-align: center;" id="divNoData">
+                        <label id="lblNoData">No Data Found</label>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        $('#ToDate').datetimepicker();
+        $('#FromDate').datetimepicker();
+    });
+</script>
+
+<script type="text/javascript">
+
+    $("#btnView").click(function() {
+        $('#LoadingImageDiv').show();
+        if ($('#inputFromDate').val() != "" && $('#inputToDate').val() != "" ) {
+            var frmDateInstance = new Date($('#inputFromDate').val());
+            var toDateInstance = new Date($('#inputToDate').val());
+            if (frmDateInstance > toDateInstance) {
+                $('#LoadingImageDiv').hide();
+                notif({
+                    msg: "<b>Error :</b> From date cannot be greater than To Date ",
+                    type: "error",
+                });
+            } else {
+                $.ajax({
+                    type: "POST",
+                   url: "@(Url.Action("CompanySurveyData", "CustomerMgmt", "CustomerManagement"))",
+                    data: {
+                        customerCompanyId: $('#SelectedCompany').val(),
+                        fromDate: $('#inputFromDate').val(),
+                        toDate: $('#inputToDate').val(),
+                    },
+                    success: function(data) {
+                        $('#LoadingImageDiv').hide();
+                        $('#ChartDiv').hide();
+                        $('#divNoData').hide();
+                        $('#morris-bar-chart').empty();
+                        if (data.length == 0) {
+                            $('#ChartDiv').fadeIn();
+                            $('#divNoData').show();
+                        } else {
+                            $('#TableData').empty();
+                            $('#TableData').append(data);
+                            $('#ChartDiv').fadeIn();
+                        }
+                    },
+                    error: function(data) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            }
+        } else {
+            $('#LoadingImageDiv').hide();
+            if ($('#inputToDate').val() == "" && $('#inputToDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select From Date & To Date",
+                    type: "error",
+                });
+            }  else if ($('#inputFromDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select From Date",
+                    type: "error",
+                });
+            } else if ($('#inputToDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select To Date",
+                    type: "error",
+                });
+            } 
+        }
+    });
+   
+</script>

@@ -1,0 +1,198 @@
+﻿@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Web.UI.Controllers;
+@using Web.UI.Areas.Reporting.Controllers;
+@using Web.UI.Areas.Categories.Controllers;
+@using Web.UI.Areas.ProvisionalManagement.Controllers;
+@using Web.UI.Areas.Configurations.Controllers;
+@using Web.UI.Areas.ManageTrainingTest.Controllers;
+@using Web.UI.Code.Extensions
+@using System.Threading
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else {
+
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+
+@if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+{
+    <div class="row">
+        <br />
+        <div class="container">
+            <div class="row row-centered menu-row">
+                <div class="col-lg-4 col-centered menu-tile">
+                    <a href="@Url.Action("Index", "PointsStatement", new { Area = "Reporting" })">
+                        <img src="@(Url.Content("~/Content/images/pointsexport.png"))" class="img-responsive" />
+                        <h4>
+                            <span class="label label-default shade">
+                                Points Statement
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+                <div class="col-lg-4 col-centered menu-tile">
+                    <a href="@(Url.Action("UserActivityDetails", "ManagerUser", new { Area = "Configurations" }))">
+                        <img src="@(Url.Content("~/Content/images/UserActivities.png"))" class="img-responsive">
+                        <h4>
+                            <span class="label label-default shade">
+                                User Activity Report
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            </div>
+            <div class="row row-centered menu-row">
+                <div class="col-lg-4 col-centered menu-tile col-lg-offset-4">
+                    <a href="@(Url.Action("ViewCustomerSurvey", "CustomerMgmt", new { Area = "CustomerManagement" }))">
+                        <img src="@(Url.Content("~/Content/images/CompanyLogin.png"))" class="img-responsive">
+                        <h4>
+                            <span class="label label-default shade">
+                                Company Survey Stats Report
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+else if (Thread.CurrentPrincipal.IsInResellerRole())
+{
+    <div class="container">
+        <div class="row row-centered menu-row">
+
+            <div class="col-lg-4 col-centered menu-tile">
+                <a href="@Url.Action("Index", "PointsStatement", new { Area = "Reporting" })">
+                    <img src="@(Url.Content("~/Content/images/pointReport_lg.png"))" class="img-responsive" />
+                    <h4>
+                        <span class="label label-default shade">
+                            Points Statement
+                        </span>
+                    </h4>
+                </a>
+            </div>
+            <div class="col-lg-4 col-centered menu-tile">
+                <a href="@Url.Action("UserActivityDetails", "ManagerUser", new {Area = "Configurations"})">
+                    <img src="@(Url.Content("~/Content/images/UserActivities.png"))" class="img-responsive">
+                    <h4>
+                        <span class="label label-default shade">
+                            User Activity
+                        </span>
+                    </h4>
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+else if (Thread.CurrentPrincipal.IsInAdminRole() || Thread.CurrentPrincipal.IsInStandardUserRole())
+{
+    <div class="row row-centered">
+        <div class="col-lg-12 text-center">
+            <div class="form-group text-center">
+                <h1>TRACK</h1>
+            </div>
+        </div>
+    </div>
+   if (Html.CanAccess<PointsStatementController>(a => a.Index(null)) ||
+       Html.CanAccess<ManagerUserController>(a => a.UserActivityDetails())
+        || Html.CanAccess<ManageTrainingTestController>(a => a.TestHistoryReport(null))) { 
+    <div class="row row-centered menu-row">
+        <div class="col-lg-12 col-centered">
+            @if (Html.CanAccess<PointsStatementController>(a => a.Index(null)))
+            {
+            <div class="col-lg-6 col-centered text-center menu-tile" id="points">
+                <a href="@Url.Action("Index", "PointsStatement", new { Area = "Reporting" })">
+                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Report_Points], true)" />
+                    <h4>
+                        <span class="label label-default shade">
+                            Points Statement
+                        </span>
+                    </h4>
+                </a>
+            </div>
+            }
+            @if (Html.CanAccess<ManagerUserController>(a => a.UserActivityDetails()))
+            {
+                <div class="col-lg-6 col-centered text-center menu-tile" id="user-activities">
+                    <a href="@(Url.Action("UserActivityDetails", "ManagerUser", new { Area = "Configurations" }))">
+                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Report_User_Activities], true)" />
+                        <h4>
+                            <span class="label label-default shade">
+                                User Activity Report
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+    }
+}
+<script>
+    tour.steps = [
+           {
+               target: 'category-certification-and-utilization',
+               title: 'Category Certification & Utilization Report',
+               content: 'This report allows you to examine user compliance and certification on a per category basis. For example - if you have a category of Playbooks for Health and Safety, you can check to see that all of your health and safety Playbooks have been read, and assigned Tests have been taken. You can look at the percentage passed column to see how users are certified on each of your Playbooks in the selected category. i.e. Safety in the Kitchen, Hygiene, Safety in the workshop.',
+               placement: 'top',
+               xOffset: 'center',
+               arrowOffset: 'center',
+               width: '480'
+           },
+          {
+              target: 'points',
+              placement: 'top',
+              title: 'Points Statement',
+              content: 'The Points Statement allows you to export historical records for all tests written, and documents viewed and Training Activities in the OnRamp System together with the points achieved. You can customise the statement to filter based on Groups, Users, Category and Date Ranges. You can export the statement by clicking the Export to Excel button if you would like this information in Microsoft Excel.',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: '480'
+          },
+          {
+              target: 'test-history',
+              placement: 'top',
+              title: 'Test History Report',
+              content: 'The Test History Report allows you to pull historical records on all Tests written in the OnRamp System. You can customise the report to filter based on particular Playbooks, Groups and Date Ranges.',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: '480'
+          },
+          {
+              target: 'user-activities',
+              placement: 'top',
+              title: 'User Activities Report',
+              content: 'Use this report to view a historical audit trail of a user’s activities in the OnRamp System.',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: '480'
+          },
+           {
+               target: 'user-kpi',
+               placement: 'top',
+               title: 'User KPI Report',
+               content: 'The User Performance Report allows you to view a specific user\'s activity and performance in the OnRamp system for a given period. At a glance, you will be able to determine the level of compliance of a given user.',
+               xOffset: 'center',
+               arrowOffset: 'center',
+               width: '480'
+           },
+            {
+                target: 'user-login-stats',
+                placement: 'top',
+                title: 'User Login Stats Report',
+                content: 'This Report provides insight as to how many times each of your users have logged into the system within a given time period. The graph can be used to compare usage levels, and provides a calculated frequency for how often your users login to OnRamp in a week (Frequency/Week).',
+                xOffset: 'center',
+                arrowOffset: 'center',
+                width: '480'
+            }
+    ];
+</script>

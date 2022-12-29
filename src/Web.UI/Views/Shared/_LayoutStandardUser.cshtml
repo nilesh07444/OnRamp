@@ -1,0 +1,1683 @@
+﻿@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Areas.CustomerManagement.Controllers
+@using Web.UI.Areas.ManageTrainingTest.Controllers
+@using Web.UI.Code.Extensions
+@using Web.UI.Controllers
+@using Web.UI.Areas.Reporting.Controllers
+@using Web.UI.Areas.Feedback.Controllers
+@using Web.UI.Areas.Configurations.Controllers
+@using System.Threading
+@using Domain.Models
+@{
+    var companySiteTitle = "OnRamp Online Training Portal";
+    var version = System.Reflection.Assembly.GetAssembly(typeof(Web.UI.App_Start.RampSecurityConfig)).GetName().Version.ToString();
+    var portalContext = Html.GetPortalContext();
+    var footerLogoUrl = Url.Content("~/images/powered.PNG");
+    if (portalContext != null && portalContext.UserCompany != null)
+    {
+        if (portalContext.UserCompany.CustomerConfigurations.Count > 0)
+        {
+            var customerConfiguration = portalContext.UserCompany.CustomerConfigurations;
+            var footerImage = customerConfiguration.Where(x => x.Type == CustomerConfigurationType.FooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault();
+            if (footerImage != null && footerImage.UploadModel != null)
+            {
+                footerLogoUrl = "data:image/png;base64," + Convert.ToBase64String(footerImage.UploadModel.Data);
+            }
+
+        }
+    }
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.CompanySiteTitle))
+    {
+        companySiteTitle = PortalContext.Current.UserCompany.CompanySiteTitle;
+    }
+    var roles = SessionManager.GetRolesForCurrentlyLoggedInUser().ToList();
+
+
+    List<AssignedDocumentListModel> notifications = new List<AssignedDocumentListModel>();
+    //var notifications = (List<AssignedDocumentListModel>)Session["notifications"];
+    var notificationCount = 0;
+    //if (notifications != null && notifications.Count > 0)
+    //{
+    //    notificationCount = notifications.Count;
+    //}
+
+    string tempRole = String.Join(",", roles);
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="" />
+    <meta http-equiv=“X-UA-Compatible” content="IE=11" />
+    <title>@companySiteTitle</title>
+    @Styles.Render("~/bundles/css")
+    <link href="~/Content/admin.css?v=@version" rel="stylesheet" />
+    @Scripts.Render("~/bundles/js")
+    <script src="~/Scripts/app/app.common.js?v=@version"></script>
+    <script src="~/Scripts/app/app.datamodel.js?v=@version"></script>
+    <script src="~/Scripts/app/app.viewmodel.js?v=@version"></script>
+
+    <script src="~/Scripts/app/extension.common.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.ajaxprefilter.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.editortemplates.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.extenders.js?v=@version"></script>
+    <script src="~/Scripts/app/extensions.validation.js?v=@version"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+
+    <script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.js"></script>
+    <script src="~/Scripts/app/SignatureManger.js?v=@version"></script>
+
+    @*Changes Made By Pawan*@
+    <script src="~/Scripts/jstree.js"></script>
+
+    @if (HttpContext.Current.IsDebuggingEnabled)
+    {
+        <link rel="stylesheet" href="~/Content/ContentTools/build/content-tools.min.css" />
+        <link rel="stylesheet" href="~/Content/fancyBox/source/jquery.fancybox.css" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ContentTools@1.6.8/build/content-tools.min.css" />
+        <link rel="stylesheet" href="~/Content/hopscotch/dist/css/hopscotch.min.css" />
+        <link rel="stylesheet" href="~/Content/fancyBox/source/jquery.fancybox.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
+    }
+    @{
+        var EnabledTrainingActivityLoggingModule = false;
+        if (PortalContext.Current != null && PortalContext.Current.UserCompany != null)
+        {
+            EnabledTrainingActivityLoggingModule = PortalContext.Current.UserCompany.EnableTrainingActivityLoggingModule;
+        }
+    }
+    @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.ApplyCustomCss && File.Exists(Server.MapPath("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css")))
+    {
+        var customCssPath = Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css");
+        <link id="ApplyCustomCss" href="@customCssPath" rel="stylesheet" />
+    }
+
+    @RenderSection("scripts", false)
+    @Html.Partial("_NotifyPartial")
+    @if (PortalContext.Current != null)
+    {
+        <style>
+            @Html.Raw(PortalContext.Current.EmbedCss())
+
+
+
+ .show{
+        display: block;
+    }
+
+    .hide {
+        display: none;
+    }
+.navbar-default .dropdown-menu.notify-drop {
+  min-width: 330px;
+  background-color: #fff;
+  min-height: 360px;
+  max-height: 360px;
+}
+.navbar-default .dropdown-menu.notify-drop .notify-drop-title {
+  border-bottom: 1px solid #e2e2e2;
+  padding: 5px 15px 10px 15px;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content {
+  min-height: 280px;
+  max-height: 280px;
+
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content::-webkit-scrollbar-track
+{
+  background-color: #F5F5F5;
+}
+
+.navbar-default .dropdown-menu.notify-drop .drop-content::-webkit-scrollbar
+{
+  width: 8px;
+  background-color: #F5F5F5;
+}
+
+.navbar-default .dropdown-menu.notify-drop .drop-content::-webkit-scrollbar-thumb
+{
+  background-color: #ccc;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li {
+  border-bottom: 1px solid #e2e2e2;
+  padding: 10px 0px 5px 0px;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li:nth-child(2n+0) {
+  background-color: #fafafa;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li:after {
+  content: "";
+  clear: both;
+  display: block;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li:hover {
+  background-color: #fcfcfc;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li:last-child {
+  border-bottom: none;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li .notify-img {
+  float: left;
+  display: inline-block;
+  width: 45px;
+  height: 45px;
+  margin: 0px 0px 8px 0px;
+}
+.navbar-default .dropdown-menu.notify-drop .allRead {
+  margin-right: 7px;
+}
+.navbar-default .dropdown-menu.notify-drop .rIcon {
+  float: right;
+  color: #999;
+}
+.navbar-default .dropdown-menu.notify-drop .rIcon:hover {
+  color: #333;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li a {
+  font-size: 12px;
+  font-weight: normal;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li {
+  font-weight: bold;
+  font-size: 11px;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li hr {
+  margin: 5px 0;
+  width: 70%;
+  border-color: #e2e2e2;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content .pd-l0 {
+  padding-left: 0;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li p {
+  font-size: 11px;
+  color: #666;
+  font-weight: normal;
+  margin: 3px 0;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li p.time {
+  font-size: 10px;
+  font-weight: 600;
+  top: -6px;
+  margin: 8px 0px 0px 0px;
+  padding: 0px 3px;
+  border: 1px solid #e2e2e2;
+  position: relative;
+  background-image: linear-gradient(#fff,#f2f2f2);
+  display: inline-block;
+  border-radius: 2px;
+  color: #B97745;
+}
+.navbar-default .dropdown-menu.notify-drop .drop-content > li p.time:hover {
+  background-image: linear-gradient(#fff,#fff);
+}
+.navbar-default .dropdown-menu.notify-drop .notify-drop-footer {
+  border-top: 1px solid #e2e2e2;
+  bottom: 0;
+  position: relative;
+  padding: 8px 15px;
+}
+.navbar-default .dropdown-menu.notify-drop .notify-drop-footer a {
+  color: #777;
+  text-decoration: none;
+}
+.navbar-default .dropdown-menu.notify-drop .notify-drop-footer a:hover {
+  color: #333;
+}
+        </style>
+    }
+    <style>
+
+        .info {
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var tour = {
+            id: 'hello-hopscotch',
+            steps: [],
+            showPrevButton: true,
+            scrollTopMargin: 100
+        };
+        var tour1 = {
+            id: 'hello-hopscotch',
+            steps: [],
+            showPrevButton: true,
+            scrollTopMargin: 100
+        };
+
+        $(function() {
+            var respondTimeout = null;
+            var timeOutInterval = null;
+            var secondsRemaining = 30;
+            var useTestDuraionTimeout = false;
+            if (window.hasOwnProperty('startTest_TestDuration'))
+                useTestDuraionTimeout = true;
+
+            function TimeoutFunction() {
+                if ($.fancybox.isOpen) {
+                    reEnlistTimeoutInterval();
+                    return;
+                }
+                if (window.hasOwnProperty('AutoSave'))
+                    AutoSave();
+                secondsRemaining = 30;
+                $('#timeout').modal('show');
+                var interval = window.setInterval(function() {
+                        secondsRemaining--;
+                        if (secondsRemaining < 0)
+                            window.clearInterval(interval);
+                        $('#timeout_remainingSeconds').html(secondsRemaining);
+                    },
+                    1000);
+
+                respondTimeout = window.setTimeout(function() {
+                        $('#timeout_logOut').trigger('click');
+                        window.clearInterval(interval);
+                    },
+                    60 * 1000 * .5);
+            }
+
+            $('.dropdown-link').on('click',
+                function() {
+                    if ($(this).attr('href'))
+                        if ($(this).attr('href') !== '')
+                            window.location.href = $(this).attr('href');
+                });
+            $('#timeout_keepAlive').bind('click',
+                function() {
+                    window.clearTimeout(respondTimeout);
+                    $('#timeout').modal('hide');
+                });
+            $('#timeout_logOut').bind('click',
+                function() {
+                    $('#timeout').modal('hide');
+                    if (window.hasOwnProperty('ContentTools')) {
+                        var e = ContentTools.EditorApp.get();
+                        if (e != null)
+                            e.destroy();
+                    }
+                    window.location.href = '@Url.Action("LogOff", "Account", new {Area = ""})';
+                });
+            timeOutInterval = window.setInterval(TimeoutFunction,
+                60 * 1000 * (useTestDuraionTimeout ? ko.unwrap(vm.details.TestDuration) : 20));
+            $(window).on('click', reEnlistTimeoutInterval);
+            $(window).on('keyup', reEnlistTimeoutInterval);
+            $(window).on('scroll', reEnlistTimeoutInterval);
+
+            function reEnlistTimeoutInterval() {
+                window.clearInterval(timeOutInterval);
+                timeOutInterval = window.setInterval(TimeoutFunction,
+                    60 * 1000 * (useTestDuraionTimeout ? ko.unwrap(vm.details.TestDuration) : 10));
+            }
+        });
+
+
+    </script>
+    <script>
+      $(function () {
+
+        let role = localStorage.getItem("role");
+        console.log("role ", role)
+        console.log("rolese from razor ", '@tempRole')
+
+        if (
+             role == 'admin' ||
+            (!'@tempRole'.includes('StandardUser') || '@tempRole'.includes('ContentCreator,ContentApprover'))
+        ) {
+            console.log("admin")
+            let x = document.getElementById("admin");
+            let y = document.getElementById("su");
+
+            x.classList.remove('hide');
+            x.classList.add('show')
+            y.classList.add('hide');
+
+
+        }
+        else if (
+            role == 'su' ||
+            ('@tempRole'.includes('StandardUser'))
+        ) {
+            console.log("standard user")
+            let x = document.getElementById("admin");
+            let y = document.getElementById("su");
+
+            x.classList.add('hide');
+            y.classList.remove('hide');
+            y.classList.add('show');
+
+
+        }
+
+    });
+    </script>
+    <script type="text/javascript">
+        function isInViewport(element, offsetTop, offsetBottom) {
+            if (!$(element))
+                return false;
+            var elementTop = $(element).offset().top + offsetTop
+            var elementBottom = elementTop + $(element).outerHeight() + offsetBottom;
+
+            var viewportTop = $(window).scrollTop();
+            var viewportBottom = viewportTop + $(window).height();
+
+            return elementBottom > viewportTop && elementTop < viewportBottom;
+        };
+        function _adjustPageFooter() {
+            var style = $('#allNavigation').attr('style')
+                ? $('#allNavigation').attr('style')
+                : $('#midMenu').attr('style');
+            var hidden = style ? style.indexOf('display: none') : false;
+            if (hidden)
+                $('#wrapper').attr('style', 'min-height:82%');
+            else
+                $('#wrapper').attr('style', '');
+
+        };
+        function _adjustNav() {
+            if (!isInViewport($('#midMenu'), -50, -25) && !$('#allNavigation').hasClass('navbar-fixed-top')) {
+                $('#allNavigation').toggleClass('navbar-fixed-top');
+                $('#nav2').toggleClass('navbar-fixed-top');
+            } else if (isInViewport($('#nav2'), -50, -25) && !$('#nav2').hasClass('navbar-fixed-top')) {
+                $('#allNavigation').toggleClass('navbar-fixed-top');
+                $('#nav2').toggleClass('navbar-fixed-top');
+            }
+        }
+        function _adjustBuildMenu() {
+            var menu = $('#buildMenu');
+            if (menu.length) {
+                if (!isInViewport($('footer'), $('footer').outerHeight(), 0) && !$('#buildMenu').hasClass('navbar-fixed-bottom')) {
+                    $('#buildMenu').toggleClass('navbar-fixed-bottom');
+                    $('#buildMenu').toggleClass('custom-build-menu');
+                } else if (isInViewport($('footer'), $('footer').outerHeight(), 0) && $('#buildMenu').hasClass('navbar-fixed-bottom')) {
+                    $('#buildMenu').toggleClass('navbar-fixed-bottom');
+                    $('#buildMenu').toggleClass('custom-build-menu');
+                }
+            }
+        }
+        function _loadCustomerCss() {
+            $('#ApplyCustomCss').attr("href",
+                Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css"));
+        }
+
+        $(document).ready(function () {
+            _adjustPageFooter();
+            $(window).on('resize', _adjustPageFooter);
+            _adjustNav();
+            $(window).on('resize', _adjustNav);
+            $(window).on('scroll', _adjustNav);
+            _adjustBuildMenu();
+            $(window).on('resize', _adjustBuildMenu);
+            $(window).on('scroll', _adjustBuildMenu);
+        });
+    </script>
+
+    @*New Script*@
+
+    <script type="text/javascript">
+        //<![CDATA[
+        if (typeof jQuery == 'undefined') {
+            document.write(
+                unescape("%3Cscript src='/script/JS/jquery-1.6.2.min.js' type='text/javascript' %3E%3C/script%3E"));
+        } //]]></script>
+    <script type="text/javascript" language="Javascript" src="~/Scripts/navbarmenu.min.js"></script>
+    <script type="text/javascript" language="Javascript">
+        //<![CDATA[
+        var notificationAlert = new NotificationAlert('ctl00_MemberMenu_Messages_NotificationCount',
+            'Notifications',
+            '/script/Membership/Ajax/NotificationList.aspx');
+        notificationAlert.initialise();
+        var oSrchFlt = false, oSrchBox = false, srchBoxFoc = false;
+        $(document).ready(function () {
+            if (InitWatermark) InitWatermark('sb_tb', 'Document Search');
+            var sbar = $('#sb_tb');
+            var sfilter = $('#SearchFilter');
+            if (sbar && sfilter) {
+                sfilter.removeClass('popup');
+                sfilter.hide();
+                sfilter.removeClass('open');
+                sbar.blur(function () {
+                    if (!oSrchFlt) {
+                        sfilter.hide();
+                        sfilter.removeClass('open');
+                    }
+                    srchBoxFoc = false;
+                });
+                sbar.focus(function () {
+                    oSrchFlt = false;
+                    srchBoxFoc = true;
+                    sfilter.show();
+                    sfilter.addClass('open');
+                });
+                sbar.mouseleave(function () { oSrchBox = false; });
+                sbar.mouseover(function () { oSrchBox = true; });
+                sfilter.mouseleave(function () {
+                    oSrchFlt = false;
+                    if (!srchBoxFoc && !oSrchBox) {
+                        sfilter.hide();
+                        sfilter.removeClass('open');
+                    }
+                });
+                sfilter.mouseover(function () { oSrchFlt = true; });
+            }
+        });
+
+        //]]>
+    </script>
+
+    <script type="text/javascript">
+
+         function closeFeedbackModal() {
+             $('#feedbackModal').modal('hide');
+             }
+        // Textbox change Event
+        $(function () {
+
+             $('#feedbackLink').click(function () {
+
+        var promise = $.get("@Url.Action("CustomerUserSurvey", "CustomerMgmt", new { area= "CustomerManagement" })");
+
+            promise.done(function (data) {
+                $('#divFeedback').html(data);
+                $('#feedbackModal').modal('show');
+            });
+            promise.fail(function (jqXHR, textStatus, errorThrown) {
+                console.error(errorThrown);
+            });
+            promise.always(function () {
+
+            });
+
+            });
+
+
+            $("#myProfileLink").click(
+                function () {
+
+                    var promise = $.get("@Url.Action("EditMyProfile", "Account", new { area= "", id = Thread.CurrentPrincipal.GetId() })");
+
+                    promise.done(function (data) {
+
+                        $("#myProfileModal").modal("show");
+                        $('#divMyProfile').html(data);
+                    });
+                    promise.fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error(errorThrown);
+
+                    });
+                    promise.always(function () {
+
+
+                    });
+                });
+
+        $("#btnMyProfileModalClose").click(function () {
+            $("#myProfileModal").modal("hide");
+
+        });
+
+            $('#sb_tb').on('keyup', function (event) {
+                if (event.keyCode == 13) {
+                    $('#searchId').trigger('click');
+                }
+            });
+            $('#searchId').click(function() {
+                var filter = $('#sb_tb').val();
+                if (filter == "") {
+                    //alert(search);
+                } else {
+                    var search = $('input[name=sbo]:checked').val();
+                    // search function call
+                    SearchResult(filter, search);
+                }
+                //alert(search);
+            });
+
+            // Radio button change Event.
+
+            $('input[name=sbo]').change(function() {
+
+                var filter = $('#sb_tb').val();
+                if (filter == "") {
+                    //alert(search);
+                } else {
+                    var search = $('input[name=sbo]:checked').val();
+                    // search function call
+                    //  SearchResult(filter, search);
+                }
+
+            });
+
+            $('#sb_tb').change(function() {
+                var filter = $('#sb_tb').val();
+                if (filter == "") {
+                    //alert(search);
+                } else {
+                    var search = $('input[name=sbo]:checked').val();
+                    // search function call
+                    SearchResult(filter, search);
+                }
+                //alert(search);
+            });
+            $("#btnClose").on('click',
+                function() {
+                    $('#LoadingImageDiv').hide();
+                    $('#mpopBody').hide();
+                    //$('#myModal').popup("close");
+                    $('#mySearchModal').modal('hide');
+
+                });
+            @if (PortalContext.Current != null && SessionManager.GetSessionInformation() != null
+                 && PortalContext.Current.ShouldShowDisclaimer(SessionManager.GetSessionInformation().UserHasAcceptedDisclaimer, SessionManager.GetSessionInformation().DisclaimerAcknowledged))
+            {
+                SessionManager.GetSessionInformation().DisclaimerAcknowledged = true;
+
+                @Html.Raw("showDisclaimer();");
+            }
+            $('#accept-disclaimer').on('click', hideAndLogDisclaimerResult);
+            $('#do-not-accept-disclaimer').on('click', hideAndLogDisclaimerResult);
+        });
+
+        function SearchResult(searchText, searchType) {
+
+            $('#LoadingImageDiv').show();
+            $('#mpopBody').hide();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("GlobalSearch", "Home", new {Area = ""})',
+                data: { searchText: searchText, searchType: searchType },
+                success: function(data) {
+
+                    //$('#myModal').popup("open");
+                    $('#mySearchModal').modal('show');
+
+                    $('#mySearchModal .modal-body').html(data);
+                    $('#LoadingImageDiv').hide();
+                },
+                error: function(data) {
+                    $('#LoadingImageDiv').hide();
+                    notif({
+                        msg: "<b>Error :</b>Error while searching",
+                        type: "error",
+                    });
+                }
+            });
+
+        }
+
+        function showDisclaimer() {
+            $('#myLegalDisclaimerModal').modal('show');
+        }
+
+        function hideAndLogDisclaimerResult(event) {
+            var result = false;
+            if ($(event.target).attr('id') == 'accept-disclaimer')
+                result = true;
+            logDisclaimerActivity(result);
+        }
+
+        function logDisclaimerActivity(result) {
+            $.ajax({
+                url: '@Url.Action("CreateUserDisclaimerActivity", "Activity", new {Area = ""})',
+                method: 'POST',
+                data: {
+                    Accepted: result,
+                    UserId: '@SessionManager.GetCurrentlyLoggedInUserId()'
+                },
+                success: function(status) {
+                    $('#myLegalDisclaimerModal').modal('hide');
+                    notif({
+                        type: 'success',
+                        msg: 'Logged Disclaimer Activity'
+                    });
+                    if (!result)
+                        window.location.href = '@Url.Action("LogOff", "Account", new {Area = ""})';
+                },
+                error: function(status) {
+                    $('#myLegalDisclaimerModal').modal('hide');
+                    notif({
+                        type: 'error',
+                        msg: 'Logging Disclaimer Activity Error'
+                    });
+                    if (!result)
+                        window.location.href = '@Url.Action("LogOff", "Account", new {Area = ""})';
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="LoadingImageDiv" class="modal-backdrop fade in" style="background-color: #FFF !important; display: none">
+            <div style="left: 47%; position: absolute !important; top: 34%;">
+                <p>
+                    <img src="@(Url.Content("~/Content/images/Preloader_3.gif"))" />
+                </p>
+                <label>Loading</label>
+            </div>
+        </div>
+
+        @{
+            SessionInformation sessionInfo = SessionManager.GetSessionInformation();
+            <input type="hidden" id="hiddenCompanyId" value="@PortalContext.Current.UserCompany.Id" />
+        }
+        <input type="hidden" id="isStandardUser" value="@Thread.CurrentPrincipal.IsInStandardUserRole()" />
+
+        <nav class="navbar navbar-default navbar-fixed-top navbar-top-custom" id="nav2">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topMenu">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+
+                </div>
+                @{
+                    // Changes made for having 2 tour on same view
+                    if (Thread.CurrentPrincipal.IsInStandardUserRole())
+                    {
+                        <input id="CustomHopscotchID" type="hidden" value="1" />
+                    }
+                    else
+                    {
+                        <input id="CustomHopscotchID" type="hidden" value="0" />
+                    }
+
+                    <div id="topMenu" class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-left">
+                            <li role="menuitem">
+                                <a href="javascript:Void(0);" style="color: white;">Welcome @Thread.CurrentPrincipal.GetGivenName() </a>
+                            </li>
+                        </ul>
+
+                        <ul class="nav navbar-nav navbar-right">
+                            @if (
+                                (Thread.CurrentPrincipal.IsInStandardUserRole() &&
+                               (Url.RouteUrl(ViewContext.RouteData.Values) == "/Home/StandardUser")
+                                || Url.RouteUrl(ViewContext.RouteData.Values) == "/Document/MyDocuments"
+                                || Url.RouteUrl(ViewContext.RouteData.Values) == "/Document/MyVirtualMeetings"
+                                )
+                                )
+                            {
+                                <ul class="nav navbar-nav">
+                                    <li class="dropdown">
+                                        <a href="#" id="notificationId" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                            <span style="color:#fff;">Notifications</span>
+                                            @if (notifications != null && notifications.Count > 0)
+                                            {
+                                                <span style="color: red" id="initNotificationCount">(@notifications.Count)</span>
+                                            }
+                                            <span style="display: none" id="notificationCount"></span>
+                                        </a>
+                                        <ul class="dropdown-menu notify-drop">
+                                            <div class="notify-drop-title">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <span style="color:black;">Notifications</span>
+                                                        @if (notifications != null && notifications.Count > 0)
+                                                        {
+                                                            <span style="color: red" id="initNotificationCount">(@notifications.Count)</span>
+                                                        }
+                                                        @*<span style="display: none" id="notificationCount"></span>*@
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- end notify title -->
+                                            <!-- notify content -->
+                                            <div class="drop-content" id="initNotifications">
+                                                @if (notifications != null && notifications.Count > 0)
+                                                {
+                                                    foreach (var item in notifications)
+                                                    {
+                                                    <li>
+                                                        <div class='col-md-3 col-sm-3 col-xs-3'>
+                                                            <div class='notify-img'>
+                                                                @switch (item.DocumentType)
+                                                                {
+                                                                    case Domain.Customer.DocumentType.TrainingManual:
+                                                                        <img width='50' height='50' src='@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)' alt='' />
+                                                                        break;
+                                                                    case Domain.Customer.DocumentType.Test:
+                                                                        <img width='50' height='50' src='@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)' alt='' />
+                                                                        break;
+                                                                    case Domain.Customer.DocumentType.Policy:
+                                                                        <img width='50' height='50' src='@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)' alt='' />
+                                                                        break;
+                                                                    case Domain.Customer.DocumentType.Memo:
+                                                                        <img width='50' height='50' src='@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)' alt='' />
+                                                                        break;
+                                                                    case Domain.Customer.DocumentType.Checklist:
+                                                                        <img width='50' height='50' src='@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)' alt='' />
+                                                                        break;
+                                                                    case Domain.Customer.DocumentType.VirtualClassRoom:
+                                                                        <img width='50' height='50' src='@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.VirtualClassRoom], true)' alt='' />
+                                                                        break;
+                                                                }
+
+                                                            </div>
+                                                        </div>
+                                                        <div class='col-md-9 col-sm-9 col-xs-9 pd-l0'>
+                                                            <h5>@item.Title</h5>
+                                                            <p style='font-size:12px'>Notification Type: @item.NotificationType</p>
+                                                            @if (item.NotificationType == "Document Unassigned")
+                                                            {
+                                                                <p style='font-size:12px'>Assigned Date: @item.DateAssigned</p>
+                                                            }
+                                                            else if (item.NotificationType == "Document Unassigned")
+                                                            {
+                                                                <p style='font-size:12px'>UnAssigned Date: @item.DateAssigned</p>
+                                                            }
+                                                            else
+                                                            {
+
+                                                            }
+
+                                                            @if (item.NotificationType == "Virtual Meeting Invite")
+                                                            {
+                                                                <p style='font-size:12px'>Start Date: @item.VirtualMeetingStartDate</p>
+                                                                <p style='font-size:12px'>End Date: @item.VirtualMeetingEndDate</p>
+                                                                if (item.IsJoinMeeting)
+                                                                {
+                                                                    <br>
+                                                                    <div class='btn-group-xs'>
+                                                                        <a class='btn btn-default btn-option' style='color:#262626; background-color:#f9f9f9 padding:10px;' href="/Meeting/VirtualMeeting/" + @item.Id>
+                                                                            <span class='glyphicon glyphicon-eye-open'></span> Join Meeting
+                                                                        </a>
+                                                                    </div>
+                                                                }
+                                                            }
+
+                                                            @if (item.Message != "" && item.Message != null)
+                                                            {
+                                                                <p style='font-size:12px'>Message: @item.Message</p>
+                                                            }
+                                                            <br>
+                                                            <input type='hidden' name='docIds' value='@item.Id' />
+                                                            @{
+                                                                if (item.NotificationType == "Document Assigned")
+                                                                {
+                                                                    <div class='btn-group-xs'>
+                                                                        <a class='btn btn-default btn-option' style='color:#262626; background-color:#f9f9f9 padding:10px;' href="@item.DocumentHref">
+                                                                            <span class='glyphicon glyphicon-eye-open'></span>
+                                                                            @if (item.DocumentType == Domain.Customer.DocumentType.Test)
+                                                                            {
+                                                                                <b>Show Test</b>
+                                                                            }
+                                                                            else if (item.DocumentType == Domain.Customer.DocumentType.TrainingManual || item.DocumentType == Domain.Customer.DocumentType.Checklist)
+                                                                            {
+                                                                                <b>Preview</b>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <b>View</b>
+                                                                            }
+                                                                        </a>
+
+                                                                        @*For Start Checklist*@
+                                                                        @if (item.DocumentType == Domain.Customer.DocumentType.Checklist)
+                                                                        {
+                                                                            <a class='btn btn-default btn-option' style='color:#262626; background-color:#f9f9f9 padding:10px;' href="@item.ChecklistHref">
+                                                                                <span class='glyphicon glyphicon-eye-open'></span>
+                                                                                <b>Start Checklist</b>
+                                                                            </a>
+                                                                        }
+
+                                                                    </div>
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </li>
+                                                }
+                                            }
+
+                            </div>
+                            <div class="drop-content" id="notifications">
+
+
+                            </div>
+                            <div class="notify-drop-footer text-center">
+                                @*<a href=""><i class="fa fa-eye"></i> Tümünü Göster</a>*@
+                            </div>
+                            </ul>
+                            </li>
+                            </ul>
+                        }
+
+                            @if (Thread.CurrentPrincipal.IsInAdminRole())
+                            {
+                                <li class="topmenu">
+                                    <a href="https://onramp.freshdesk.com/support/tickets/new" target="_blank" style="color: white; ">Help</a>
+                                </li>
+                            }
+                            @*<li class="topmenu">
+                                    <a href="@(Url.Content("~/Calendar/Index"))" style="color: white; ">Calendar</a>
+                                </li>*@
+
+                            @if (!PortalContext.Current.UserCompany.ActiveDirectoryEnabled)
+                            {
+
+                                <li class="topmenu-item" id="editProfile">
+                                    <a id="myProfileLink" style="cursor: pointer;color: white"> My Profile</a>
+                                </li>
+                            }
+
+                            @if (Thread.CurrentPrincipal.IsInAdminRole() && Thread.CurrentPrincipal.IsInStandardUserRole())
+                            {
+                                <li>
+
+                                    <a href="@(Url.Content("~/Account/SelectLoginRole"))" id="logoutLink" style="color: white;">
+                                        Switch Profile
+                                    </a>
+                                </li>
+                            }
+                            @if (!Thread.CurrentPrincipal.IsInResellerRole())
+                            {
+                                @*
+                                    <li class="topmenu-item-half hidden-xs">
+                                        <a href="javascript:Void(0)" style="color:white; margin-right:-10px;">Tour</a>
+                                    </li>
+
+                                                    <li class="topmenu-item-half hidden-xs">
+                                                        <button id="startTourBtn" style="display:none" class="">Take a tour</button>
+                                                        <input type="checkbox" id="TourCheckBox" style="height: 30px; width: 30px; display: inline; padding:10px 0 0 0px; left: 8px; top: 10px;" data-toggle="toggle" data-size="mini" />
+                                                    </li>
+                                *@
+
+                                <li class="topmenu-item">
+                                    <a href="@(Url.Content("~/Account/LogOff"))" id="logoutLink" style="color: white;">
+                                        Logout
+                                    </a>
+                                </li>
+                            }
+                            </ul>
+                        </div>
+                }
+        </div>
+        </nav>
+        @*neeraj*@
+
+        @*Thread.CurrentPrincipal.IsInStandardUserRole() && !Thread.CurrentPrincipal.IsInAdminRole() || (Thread.CurrentPrincipal.IsInStandardUserRole() && Url.RouteUrl(ViewContext.RouteData.Values) == "/Home/StandardUser")
+            || Url.RouteUrl(ViewContext.RouteData.Values) == "/Home/Administrator"
+        *@
+
+
+        <div id="admin" class="hide">
+            @if (Thread.CurrentPrincipal.IsInAdminRole())
+            {
+                <div id="allNavigation" class="navbar navbar-default navbar-inner-menu" role="navigation" style="margin-bottom: 0px;">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#midMenu">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                        <div id="midMenu" class="navbar-collapse collapse navbar-inner">
+                            <ul class="nav navbar-nav">
+                                <li role="menuitem" class="@Html.IsActive("Administrator", "Home")">
+                                    <a href="@Url.Action("Administrator", "Home", new {Area = ""})">Home</a>
+                                </li>
+                                @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentCreator.ToString()))
+                                {
+                                    if (Html.CanAccess<DocumentController>(a => a.Index(null)))
+                                    {
+                                        <li role="menuitem" class="@Html.IsActive("Index", "Document")">
+                                            <a href="@Url.Action("Index", "Document", new {Area = ""})" onclick="removeNode()">Build</a>
+                                        </li>
+                                    }
+                                }
+
+                                @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.Publisher.ToString()))
+                                {
+                                    if (Html.CanAccess<SendController>(a => a.Index()))
+                                    {
+                                        <li role="menuitem" class="@Html.IsActive("Index", "Send")">
+                                            <a href="@Url.Action("Index", "Send", new {Area = ""})">Send</a>
+                                        </li>
+                                    }
+                                }
+
+                                @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.Reporter.ToString()))
+                                {
+
+                                    if (Html.CanAccess<HomeController>(m => m.AdminReports()) ||
+                                    Html.CanAccess<IndividualDevelopmentRecordReportController>(m => m.Index(null)) ||
+                                    Html.CanAccess<ExternalTrainingProviderReportController>(m => m.Index(null)) ||
+                                    Html.CanAccess<TrainingActivityReportController>(m => m.Index(null)))
+                                    {
+                                        <li class="dropdown @Html.IsActive("AdminReports", "Home")" id="trackDropdown">
+                                            <a class="dropdown-toggle dropdown-link" id="track-menu-dropdown" aria-haspopup="true" aria-expanded="true" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">Track <span class="caret"></span></a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="track-menu-dropdown">
+
+
+                                                @if (Html.CanAccess<FeedbackController>(a => a.ContentFeedbackReport()))
+                                                {
+                                                    <li>
+                                                        <a href="@(Url.Content("~/Feedback/ContentFeedbackReport"))">
+                                                            Document Feedback Report
+                                                        </a>
+                                                    </li>
+                                                }
+
+                                                @if (Html.CanAccess<ManageTrainingTestController>(a => a.FocusAreaReport()))
+                                                {
+                                                    <li>
+                                                        <a href="@(Url.Action("FocusAreaReport", "ManageTrainingTest", new { Area = "ManageTrainingTest" }))">
+                                                            Focus Area Report
+                                                        </a>
+                                                    </li>
+                                                }
+
+                                                @if (Html.CanAccess<InteractionReportController>(a => a.Index()))
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("Index", "InteractionReport", new { Area = "Reporting" })"> Interaction Report</a>
+                                                    </li>
+                                                }
+                                                @if (Html.CanAccess<PointsStatementController>(a => a.Index(null)))
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("Index", "PointsStatement", new { Area = "Reporting" })">
+                                                            Points Statement Report
+                                                        </a>
+                                                    </li>
+                                                }
+
+                                                @if (Html.CanAccess<UserActivityAndPerformanceReportController>(a => a.Index(null)))
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("Index", "UserActivityAndPerformanceReport", new { Area = "Reporting" })">
+                                                            User Activity & Performance Report
+                                                        </a>
+                                                    </li>
+                                                }
+                                                @if (Html.CanAccess<ActivitybookSubmissionReportController>(a => a.Index(null)) && PortalContext.Current.UserCompany.EnableChecklistDocument)
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("Index", "ActivitybookSubmissionReport", new { Area = "Reporting" })">
+                                                            Activity Book Submission Report
+                                                        </a>
+                                                    </li>
+                                                }
+
+                                                @if (Html.CanAccess<CustomDocumentSubmissionReportController>(a => a.Index(null)) && PortalContext.Current.UserCompany.EnableChecklistDocument)
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("Index", "CustomDocumentSubmissionReport", new { Area = "Reporting" })">
+                                                            Custom Document Submission Report
+                                                        </a>
+                                                    </li>
+                                                }
+
+
+                                                @if (Html.CanAccess<ManagerUserController>(a => a.UserCorrespondenceDetails()))
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Content("~/Configurations/ManagerUser/UserCorrespondenceDetails")">
+                                                            User Correspondence Report
+                                                        </a>
+                                                    </li>
+                                                }
+                                                @if (Html.CanAccess<ManagerUserController>(a => a.UserActivityDetails()))
+                                                {
+                                                    <li>
+                                                        <a href="@Url.Action("UserActivityDetails", "ManagerUser", new { Area = "Configurations" })">
+                                                            User Login Report
+                                                        </a>
+                                                    </li>
+                                                }
+
+
+                                                @if (PortalContext.Current.UserCompany.EnableVirtualClassRoom)
+                                                {
+                                                    <li role="menuitem" id="liMeetingReport">
+                                                        <a style="cursor:pointer" href="@Url.Action("Index", "MeetingReport", new { Area = "Reporting" })">
+                                                            Virtual Meeting Attendance Report
+                                                        </a>
+                                                    </li>
+
+                                                }
+
+                                                <li role="menuitem" id="liDocumentAuditReport">
+                                                    <a style="cursor:pointer" href="@Url.Action("Index", "DocumentAudit", new { Area = "Reporting" })">
+                                                        Document Audit Report
+                                                    </a>
+                                                </li>
+
+                                                @if (EnabledTrainingActivityLoggingModule || roles.Contains(Ramp.Contracts.Security.Role.TrainingActivityReporter.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.TrainingActivityAdmin.ToString()))
+                                                {
+                                                    <li role="menuitem" id="liMeetingReport">
+                                                        <a style="cursor:pointer" href="@Url.Action("Index", "TrainingActivitylogReport", new {Area = "Reporting"})">
+                                                            Training Activity Report
+                                                        </a>
+                                                    </li>
+
+                                                }
+                                                <li role="menuitem" id="liDocumentAuditReport">
+                                                    <a style="cursor:pointer" href="@Url.Action("Index", "CustomInternal", new { Area = "Reporting" })">
+                                                        Custom Internal Training Report
+                                                    </a>
+                                                </li>
+
+                                                <li role="menuitem" id="liDocumentAuditReport">
+                                                    <a style="cursor:pointer" href="@Url.Action("Index", "DocumentAudit", new { Area = "Reporting" })">
+                                                        Custom External Training Report
+                                                    </a>
+                                                </li>
+
+
+
+                                            </ul>
+                                        </li>
+                                    }
+                                }
+
+                                @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageTags.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageVirtualMeetings.ToString()))
+                                {
+                                    if (PortalContext.Current.UserCompany.EnableVirtualClassRoom)
+                                    {
+                                        if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageVirtualMeetings.ToString()))
+                                        {
+                                            <li role="menuitem" id="liMeetingRoom" class="@Html.IsActive("Index", "VirtualMeeting")">
+                                                <a href="@Url.Action("Index", "VirtualMeeting", new { Area = "" })">
+                                                    Virtual Meetings
+                                                </a>
+                                            </li>
+                                        }
+                                    }
+
+                                    if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageTags.ToString()))
+                                    {
+
+                                        if (Html.CanAccess<TagController>(a => a.Index()))
+                                        {
+                                            <li class="@Html.IsActive("Index", "Tag")">
+                                                <a href="@Url.Action("Index", "Tag", new {Area = ""})">
+                                                    <i class="" aria-hidden="true"></i> Tags
+                                                </a>
+                                            </li>
+                                        }
+                                    }
+                                }
+
+                                @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.UserAdmin.ToString()))
+                                {
+                                    if (Html.CanAccess<CustomerMgmtController>(a => a.ManageOwnCustomerCompanyUser(Guid.Empty, Guid.Empty, null, null))
+                                                                                || Html.CanAccess<ManageGroupsController>(a => a.Index(null, null))
+                                                                                || Html.CanAccess<CustomerMgmtController>(a => a.CustomerUserSelfSignUpNotApproved()))
+                                    {
+                                        <li class="dropdown @Html.IsActive("Index", "UserMgmt")" role="menuitem">
+                                            <a href="@Url.Action("Index", "UserMgmt", new {Area = "UserManagement" , companyId = PortalContext.Current.UserCompany.Id, userId = Guid.Empty, companyName = PortalContext.Current.UserCompany.CompanyName})">
+                                                User Management
+                                            </a>
+                                        </li>
+
+                                    }
+
+                                }
+
+                                @*@if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageTags.ToString())) {
+
+                                            <li class="@Html.IsActive("Index", "Certificate")">
+                                                <a href="@Url.Action("Index", "Certificate", new {Area = ""})">
+                                                    <i class="" aria-hidden="true"></i> Achievements
+                                                </a>
+                                            </li>
+                                    }*@
+
+
+
+                                @if (EnabledTrainingActivityLoggingModule && (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.TrainingActivityAdmin.ToString())))
+                                {
+                                    <li class="dropdown @Html.IsActive("LogTraining", "Home")" role="menuitem">
+                                        <a class="dropdown-toggle dropdown-link" id="logtraining-menu-dropdown" data-hover="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" href="javascript:void(0)">Training <span class="caret"></span></a>
+                                        <ul class="dropdown-menu" role="menu" aria-labelledby="send-menu-dropdown">
+                                            @if (Html.CanAccess<ExternalTrainingProviderController>(a => a.Index(null)))
+                                            {
+                                                <li>
+                                                    <a href="@Url.Action("Index", "ExternalTrainingProvider", new {Area = ""})">
+                                                        <i class="" aria-hidden="true"></i> External Training Providers Management
+                                                    </a>
+                                                </li>
+                                            }
+                                            @if (Html.CanAccess<TrainingActivityController>(a => a.Index(null)))
+                                            {
+                                                <li>
+                                                    <a href="@Url.Action("Index", "TrainingActivitylog", new {Area = ""})">
+                                                        <i class="" aria-hidden="true"></i> Training Activity Management
+                                                    </a>
+                                                </li>
+                                            }
+                                            <li role="menuitem" id="liMeetingReport">
+                                                <a style="cursor:pointer" href="@Url.Action("Index", "TrainingActivitylogReport", new {Area = "Reporting"})">
+                                                    Training Activity Report
+                                                </a>
+                                            </li>
+
+                                        </ul>
+                                    </li>
+
+                                }
+
+
+
+                                @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.PortalAdmin.ToString())
+                                    ||
+                                    roles.Contains(Ramp.Contracts.Security.Role.ManageAutoWorkflow.ToString())
+                                    )
+                                {
+                                    if (Html.CanAccess<CustomerMgmtController>(m => m.CustomerAdminSetting()))
+                                    {
+
+                                        <li role="menuitem" class="@Html.IsActive("CustomerAdminSetting", "CustomerMgmt")">
+                                            <a href="@(Url.Action("CustomerAdminSetting", "CustomerMgmt", new {Area = "CustomerManagement"  , companyId = PortalContext.Current.UserCompany.Id}))">Settings</a>
+                                        </li>
+
+
+                                    }
+                                }
+                            </ul>
+                            <div class="navbar-form navbar-right search">
+                                <div class="input-group">
+                                    <input type="search" placeholder="Document Search" tabindex="-1" class="form-control" id="sb_tb" value="" name="q">
+                                    <span class="input-group-btn">
+                                        <button id="searchId" class="btn btn-primary"><i class=" glyphicon glyphicon-search"></i></button>
+                                    </span>
+                                </div>
+                                <div class="hover-container" hidden="hidden">
+                                    <div id="SearchFilter" class="search-advanced small-text align-left" style="display: none;">
+                                        <b>Search within:<br></b>
+                                        <br />
+                                        <input type="radio" id="sb_kw" name="sbo" value="0" checked="checked"><label for="sb_kw">PlayBook</label><br>
+                                        <input type="radio" id="sb_qa" name="sbo" value="1"><label for="sb_qa">Playbook Test</label><br>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <div id="su" class="hide">
+            @if (Thread.CurrentPrincipal.IsInStandardUserRole())
+            {
+                <div id="allNavigation" class="navbar navbar-inner-menu navbar-default" role="navigation" style="margin-bottom: 0px;">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#midMenu">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                        <div id="midMenu" class="navbar-collapse collapse navbar-inner">
+                            <ul class="nav navbar-nav">
+                                <li role="menuitem" class="@Html.IsActive("StandardUser", "Home")">
+                                    <a href="@Url.Action("StandardUser", "Home", new {Area = ""})">
+                                        Home
+                                    </a>
+                                </li>
+                                <li role="menuitem" class="@Html.IsActive("MyDocuments", "Document")">
+                                    <a href="@Url.Action("MyDocuments", "Document", new { Area = "" })">
+                                        My Documents
+                                    </a>
+                                </li>
+
+                                @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+                                {
+                                    <li role="menuitem" class="@Html.IsActive("GlobalDocuments", "Document")">
+                                        <a href="@Url.Action("GlobalDocuments", "Document", new { Area = "" })">
+                                            My Global Documents
+                                        </a>
+                                    </li>
+                                }
+                                @if (PortalContext.Current.UserCompany.EnableVirtualClassRoom)
+                                {
+                                    <li role="menuitem" id="liVirtualClassroom" class="@Html.IsActive("MyDocuments", "Document")">
+                                        <a href="@Url.Action("MyVirtualMeetings", "Document", new { Area = "" })">
+                                            My Virtual Meetings
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                            <div class="navbar-form navbar-right search">
+                                <div class="input-group">
+                                    <input type="search" placeholder="Document Search" class="form-control" id="sb_tb" value="" name="q">
+                                    <span class="input-group-btn">
+                                        <button id="searchId" class="btn btn-primary"><i class=" glyphicon glyphicon-search"></i></button>
+                                    </span>
+                                </div>
+                                <div class="hover-container" hidden="hidden">
+                                    <div id="SearchFilter" class="search-advanced small-text align-left" style="display: none;">
+                                        <b>Search within:<br></b>
+                                        <br />
+                                        <input type="radio" id="sb_kw" name="sbo" value="0" checked="checked"><label for="sb_kw">PlayBook</label><br>
+                                        <input type="radio" id="sb_qa" name="sbo" value="1"><label for="sb_qa">Playbook Test</label><br>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div id="page-wrapper" class="container-fluid">
+            @*<div class="row">
+                    <div class="col-lg-12">
+                        <div class="pull-right">
+                            <div class="searchbar" style="margin-top: 15px; margin-bottom: 15px;">
+
+                                <table border="0" cellspacing="0" cellpadding="0" class="search">
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <input tabindex="-1" class="form-control" id="sb_tb" value="" name="q">
+                                        </td>
+                                        <td>
+                                            <span id="searchId" style="margin-left: 5px;" class=" glyphicon glyphicon-search" data-toggle="modal" data-target=""></span>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div class="hover-container" hidden="hidden">
+                                    <div id="SearchFilter" class="search-advanced small-text align-left" style="display: none;">
+                                        <b>Search within:<br></b>
+                                        <br/>
+                                        <input type="radio" id="sb_kw" name="sbo" value="0" checked="checked"><label for="sb_kw">PlayBook</label><br>
+                                        <input type="radio" id="sb_qa" name="sbo" value="1"><label for="sb_qa">Playbook Test</label><br>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>*@
+            <br />
+            @RenderBody()
+        </div>
+
+        @if (Session["ShowSurveyModal"] != null && Convert.ToBoolean(Session["ShowSurveyModal"]))
+        {
+            @Html.Partial("CustomerUserSurvey", new CustomerSurveyDetailViewModel())
+        }
+        @if (Session["ShowTestFeedbackModal"] != null && Convert.ToBoolean(Session["ShowTestFeedbackModal"]))
+        {
+            @Html.Partial("CustomerTestFeedback", new FeedbackViewModel() { Type = Domain.Customer.Models.Feedback.FeedbackType.Test, Subject = Session["TrainingTestReferenceId"].ToString() })
+        }
+        </div>
+        <footer>
+
+            <div class="navbar navbar-default navbar-bottom-custom">
+            </div>
+            <p class="hidden-xs" style="position: absolute">
+                <a href="@Href("~/")">
+                    <img src="@footerLogoUrl" style="width: 180px; margin-left: 15px;" />
+
+                </a>
+            </p>
+            <p class="pull-right navbar-bottom-wording-custom" style="display: inline;">Powered by OnRamp &copy;@DateTime.Now.Year <br> @version</p>
+        </footer>
+        <div class="modal fade" id="mySearchModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modalSearch">
+                        <button type="button" class="close" data-dismiss="" id="btnClose">
+                            <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                        </button>
+                        <h4 class="modal-title">Global Search</h4>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="myLegalDisclaimerModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modalSearch ">
+                        <h4 class="modal-title">Disclaimer</h4>
+                    </div>
+                    <div class="modal-body">
+                        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrWhiteSpace(PortalContext.Current.UserCompany.LegalDisclaimer))
+                        {
+                            @Html.TextAreaFor(m => PortalContext.Current.UserCompany.LegalDisclaimer, new { @class = "form-control", @style = "max-width:none", rows = 20, @readonly = "" })
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <div class="text-right">
+                            <div class="btn-group">
+                                <button type="button" id="accept-disclaimer" class="btn btn-primary">Accept</button>
+                                <button type="button" id="do-not-accept-disclaimer" class="btn btn-default">Do Not Accept</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="timeout" role="dialog" aria-labelledby="timeoutModelLabel" aria-hidden="true" data-backdrop="static">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modalSearch">
+                        <h4 class="modal-title">Session Timeout</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>@Ramp.Services.Helpers.StringExtensions.GetFirstName(Thread.CurrentPrincipal.GetGivenName()), are you still here?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="text-center">
+                            <div class="btn-group">
+                                <button class="btn btn-primary" id="timeout_keepAlive">Keep Me Logged In</button>
+                                <button class="btn btn-default" id="timeout_logOut">Log Me Out <span class="glyphicon glyphicon-time"></span><span id="timeout_remainingSeconds"></span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="myProfileModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-custom">
+                        <button type="button" class="close CssClose" id="btnMyProfileModalClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                        <h4 class="modal-title">Edit My Profile</h4>
+                    </div>
+                    <div class="modal-body" id="divMyProfile">
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="feedbackModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-custom">
+                        <a href="javascript:void(0)" data-dismiss="" class="close" onclick="javascript: closeFeedbackModal()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></a>
+                        <h4 class="modal-title">OnRamp Feedback</h4>
+                    </div>
+                    <div class="modal-body" id="divFeedback">
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+    </body>
+</html>
+<script>
+
+
+
+
+
+
+
+
+    var count = 0;
+    count = @notificationCount;
+    $(document).ready(function () {
+        var isStandardUser = $("#isStandardUser").val();
+        if (isStandardUser != null && isStandardUser != undefined && isStandardUser != "") {
+            setInterval(function () {
+                getNotification();
+            }, 50000);
+        }
+    });
+
+    $("#notificationId").click(function () {
+        var initNotifEle = document.querySelectorAll('#initNotificationCount');
+        for (var i = 0; i < initNotifEle ?.length; i++) {
+            if (initNotifEle[i] != undefined && initNotifEle[i].style.display != "none")
+            {
+                initNotifEle[i].style.display = "none";
+            }
+        }
+        if (count != null && count != undefined && count > 0) {
+            var docs = document.querySelectorAll('[name="docIds"]');
+            const arr = [...docs].map(input => input.value);
+            if (arr != null && arr.length > 0) {
+                $.ajax({
+                    url: '/Home/UpdateNotificationStatus',
+                    type: 'post',
+                    data: {
+                        docIds: arr
+                    }
+                });
+                count = 0;
+                var notEle = document.querySelectorAll('#notificationCount');
+                for (var i = 0; i < notEle ?.length; i++) {
+                    if (count > 0) {
+                        notEle[i].innerHTML = "(" + count + ")";
+                        notEle[i].style.display = "contents";
+                        notEle[i].style.color = "red";
+                    } else {
+                        notEle[i].style.display = "none";
+                        notEle[i].style.color = "black";
+                    }
+                }
+            }
+        } else {
+            $('#notifications').empty();
+            document.querySelector("#initNotifications").style.display = "none";
+            $('#notifications').append("<li><h5 style='text-align: center'>No new notifications</h5></li>");
+        }
+    });
+
+    function getNotification() {
+        //$('#LoadingImageDiv').show();
+        if (document.querySelector("#initNotifications")!=null)
+        document.querySelector("#initNotifications").style.display = "none";
+        var initNotifEle = document.querySelectorAll('#initNotificationCount');
+        for (var i = 0; i < initNotifEle ?.length; i++) {
+            if (initNotifEle[i] != undefined && initNotifEle[i].style.display != "none") {
+                initNotifEle[i].style.display = "none";
+            }
+        }
+        $.ajax({
+            url: '/Home/GetNotifications',
+            type: 'get',
+            success: function (data) {
+                count = 0;
+                $('#notifications').empty();
+
+                var ele = document.querySelectorAll('#notificationCount');
+                for (var i = 0; i < data?.length; i++) {
+                    if (!data[i].IsViewed) {
+                        count = count + 1;
+                    }
+                }
+                for (var i = 0; i < ele?.length; i++) {
+                    if (count > 0) {
+                        ele[i].innerHTML = "(" + count + ")";
+                        ele[i].style.display = "contents";
+                        ele[i].style.color = "red";
+                    } else {
+                        ele[i].style.display = "none";
+                        //ele[i].style.color = "white";
+                    }
+                }
+                if (data.length > 0 && data != null) {
+                    for (var i = 0; i < data.length; i++) {
+                        var docType = data[i].DocumentType;
+                        var btnValue = "View";
+                        if (data[i].DocumentType == 2) {
+                            btnValue = "Show Test";
+                        } else if (data[i].DocumentType == 1 || data[i].DocumentType == 6) {
+                            btnValue = "Preview";
+                        } else {
+                            btnValue = "View";
+                        }
+                        var docId = data[i].Id;
+                        var img = getIcon(data[i].DocumentType);
+                        var docName = getDocumentNameByTypeId(data[i].DocumentType);
+                        var title = data[i].Title;
+                        var dateAssigned = data[i].DateAssigned;
+                        var notificationType = data[i].NotificationType;
+                        var message = data[i].Message != null ? data[i].Message : "";
+                        var label = "";
+                        if (data[i].NotificationType == "Document Assigned") {
+                            label = "Assigned Date: "
+                        } else {
+                            label = "Unassigned Date: ";
+                        }
+                        var res = "<li><div class='col-md-3 col-sm-3 col-xs-3'><div class='notify-img'>";
+                        res += "<img  width='50' height='50' src=" + img + " alt='' /></div></div>";
+                        res += "<div class='col-md-9 col-sm-9 col-xs-9 pd-l0'>";
+                        res += "<h5>" + title + "</h5>";
+                        res += "<p style='font-size:12px'>Notification Type: " + notificationType + "</p>";
+                        if (data[i].NotificationType == "Document Assigned" || data[i].NotificationType == "Document Unassigned") {
+                            res += "<p style='font-size:12px'>" + label + dateAssigned + "</p>";
+                        }
+
+                        if (data[i].NotificationType === "Virtual Meeting Invite") {
+                            res += "<p style='font-size:12px'>Start Date:" + data[i].VirtualMeetingStartDate + "</p>";
+                            res += "<p style='font-size:12px'>End Date:" + data[i].VirtualMeetingEndDate + "</p>";
+                            if (data[i].IsJoinMeeting) {
+                                var actionUrl = "/Meeting/VirtualMeeting/" + data[i].Id;
+                                res += "<br><div class='btn-group-xs'><a class='btn btn-default btn-option' style='color:#262626; background-color:#f9f9f9 padding:10px;' href=" + actionUrl + "><span class='glyphicon glyphicon-eye-open'></span> Join Meeting</a></div>";
+                            }
+                        }
+                        if (message != "" && message != null) {
+                            res += "<p style='font-size:12px'>Message: " + message + "</p>";
+                        }
+                        res += "<br>";
+                        res += "<input type='hidden' name='docIds' value=" + data[i].Id + " />";
+                        if (data[i].NotificationType == "Document Assigned") {
+                            res += "<div class='btn-group-xs'>";
+                            res += "<a class='btn btn-default btn-option' style='color:#262626; background-color:#f9f9f9 padding:10px;' href=" + getViewLink(docType, docId) + "><span class='glyphicon glyphicon-eye-open'></span> " + btnValue + "</a>";
+                            if (data[i].DocumentType == 6) {
+                                var checklistUrl = "/Checklist/CheckListComplete/" + data[i].Id;
+                                res += "<a class='btn btn-default btn-option' style='color:#262626; background-color:#f9f9f9 padding:10px;' href=" + checklistUrl + "><span class='glyphicon glyphicon-eye-open'></span>Start Checklist</a>";
+                            }
+                            res += "</div>";
+                        } else {
+
+                        }
+                        res += "</div></li>";
+                        $('#notifications').append(res);
+                    }
+                } else {
+                    $('#notifications').empty();
+                    $('#notifications').append("<li><h5 style='text-align: center'>No new notifications</h5></li>");
+                }
+                //$('#LoadingImageDiv').hide();
+            }, error: function (err) {
+                //$('#LoadingImageDiv').hide();
+            }
+        })
+    }
+
+    function getIcon(DocumentType) {
+        switch (DocumentType) {
+                case 1:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)';
+                case 2:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)';
+                case 3:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)';
+                case 4:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)';
+                case 6:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)';
+                case 7:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.VirtualClassRoom], true)';
+                }
+                return '';
+    }
+
+    function getDocumentNameByTypeId(DocumentType) {
+        var url = '';
+        switch (DocumentType) {
+                case 1:
+                    url = "TrainingManual";
+                    break;
+                case 2:
+                    url = "Test";
+                    break;
+                case 3:
+                    url = "Policy";
+                    break;
+                case 4:
+                    url = "Memo";
+                    break;
+                case 6:
+                    url = "CheckList";
+                    break;
+                default:
+                    break;
+        }
+        return url;
+    }
+
+    function getViewLink(DocumentType, Id) {
+        var url = '';
+        switch (DocumentType) {
+                case 1:
+                    url = '@Url.Action("Preview", "TrainingManual", new {Area = ""})';
+                    break;
+                case 2:
+                    url = '@Url.Action("Preview", "Test", new {Area = ""})';
+                    break;
+                case 3:
+                    url = '@Url.Action("Preview", "Policy", new {Area = ""})';
+                    break;
+                case 4:
+                    url = '@Url.Action("Preview", "Memo", new {Area = ""})';
+                    break;
+                case 6:
+                    url = '@Url.Action("Preview", "CheckList", new {Area = ""})';
+                    break;
+                default:
+                    break;
+        }
+        return url + '/' + Id;
+    }
+
+    function closeProfileModal() {
+
+        $('#myProfileModal').modal('hide');
+        $("#liMeetingReport").click(function () {
+
+
+        });
+
+    }
+
+    function removeNode() {
+        var nodeId = sessionStorage.getItem("nodeId");
+        if (nodeId != null && nodeId != undefined && nodeId != "") {
+            sessionStorage.removeItem("nodeId");
+        }
+    }
+
+
+
+
+</script>

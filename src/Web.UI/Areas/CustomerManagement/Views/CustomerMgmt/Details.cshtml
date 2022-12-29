@@ -1,0 +1,130 @@
+﻿@model Domain.Models.User
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>User</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ParentUserId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ParentUserId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CompanyId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CompanyId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Company.CompanyName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Company.CompanyName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FirstName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.LastName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Company.PhysicalAddress)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Company.PhysicalAddress)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Company.PostalAddress)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Company.PostalAddress)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EmailAddress)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EmailAddress)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Company.TelephoneNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Company.TelephoneNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Company.WebsiteAddress)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Company.WebsiteAddress)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Password)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Password)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MobileNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MobileNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Company.LayerSubDomain)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Company.LayerSubDomain)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Company.ProvisionalAccountLink)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Company.ProvisionalAccountLink)
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

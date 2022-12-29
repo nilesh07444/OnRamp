@@ -1,0 +1,65 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Web.UI.Code.Extensions
+@model ExternalTrainingProviderModel
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+    <form method="post" enctype="multipart/form-data" data-bind="with:data">
+        <div class="row">
+            <div class="col-lg-12">
+                <h3 class="page-header">External Training Providers</h3>
+            </div>
+        </div>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <span data-bind="text:$root.mode"></span>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" name="CompanyName" class="form-control" data-bind="textInput:CompanyName,validatewith:$root.errors" />
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" class="form-control" name="Address" data-bind="textInput:Address,validatewith:$root.errors" />
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="text" class="form-control" name="ContactNumber" data-bind="textInput:ContactNumber,validatewith:$root.errors" />
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Person</label>
+                        <input type="text" class="form-control" name="ContactPerson" data-bind="textInput:ContactPerson,validatewith:$root.errors" />
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="text" class="form-control" name="EmailAddress" data-bind="textInput:EmailAddress,validatewith:$root.errors" />
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input type="text" class="form-control" name="MobileNumber" data-bind="textInput:MobileNumber,validatewith:$root.errors" />
+                    </div>
+                    <div class="form-group">
+                        <label>BEE Status Level</label>
+                        <input type="number" class="form-control" name="BEEStatusLevel" data-bind="value:BEEStatusLevel,validatewith:$root.errors" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <button type="submit" class="btn btn-primary" data-bind="click: $root.save.bind(),css:{'disabled':ko.unwrap($root.saving)}">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+     var vm = new app.data.crudController(@Html.ToJson(Model),@Html.ToJson((IDictionary<string,string>)ViewBag.Links),@Html.ToJson((string)ViewBag.Mode));
+    vm.data.BEEStatusLevel.extend({ numeric: 0, preventNegative: true });
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>

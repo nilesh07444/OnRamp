@@ -1,0 +1,90 @@
+﻿@using Common.Web
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@using System.Threading
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@*<script src="~/Scripts/jquery-1.10.2.min.js"></script>*@
+
+
+<div class="modal fade" id="loginmodal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with:$root.modals.newDocument">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">What would you like to access?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="col-sm-4 col-sm-offset-2 hover-zoom">
+
+                            <a id="su" href="@Url.Action("StandardUser", "Home", new { Area = ""})" class="no-underline">
+                                <img class="img-responsive" src="~/Content/images/UserLogin.png" />
+                                Standard User Portal
+                            </a>
+
+                        </div>
+                        <div class="col-sm-4 hover-zoom">
+                            <a id="admin" href="@Url.Action("Administrator", "Home", new { Area = "" })" class="no-underline">
+                                <img class="img-responsive" src="~/Content/images/UserLogin.png" />
+                                Administrator Portal
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+
+    $("#su").click(() => {
+        console.log("aa ")
+       let url = '@Url.Action("StandardUser", "Home", new { Area = "" })';
+        localStorage.setItem("role", "su");
+        window.location.href = url;
+
+    });
+
+    $("#admin").click(() => {
+        let url = '@Url.Action("Administrator", "Home", new { Area = "" })'
+        localStorage.setItem("role", "admin");
+        window.location.href = url;
+    });
+</script>
+
+
+
+<script>
+
+
+    $(document).ready(function () {
+        $("#loginmodal1").modal('show');
+    });
+
+    $("#submit").click((data) => {
+        console.log("data ", data);
+    })
+
+    $("#select").change((data) => {
+        let x = document.getElementById("select")
+        console.log("ssss", x.value)
+
+        if (x.value == "StandardUser") {
+            console.log("ssss1", x.value)
+             '@Url.Action("StandardUser", "Home")'
+        }
+        else if (x.value == "Other") {
+            console.log("ssss2", x.value)
+             '@Url.Action("Administrator", "Home")'
+        }
+    });
+</script>

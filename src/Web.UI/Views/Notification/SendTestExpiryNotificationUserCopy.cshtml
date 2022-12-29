@@ -1,0 +1,39 @@
+﻿@model Ramp.Contracts.Events.TestManagement.SendTestExpiryNotificationEvent
+
+@{
+    Layout = null;
+    var testUrl = AppSettings.Urls.ResolveUrl("~ManageTrainingTest/ManageTrainingTest/TakeTrainingTest?trainingTestId=" + @Model.TrainingTestViewModel.TrainingTestId,Model.CompanyViewModel);
+    var footerUrl = AppSettings.Urls.ResolveUrl("~images/powered.png",Model.CompanyViewModel);
+    var notificationHeader = "#FFFFFF";
+    var notificationFooter = "#FFFFFF";
+
+
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+</head>
+<body>
+    <p> Hi @Model.UserViewModel.FirstName !</p>
+    @if (Model.TrainingTestViewModel.TestExpiryDate.Value.Date == DateTime.Today.Date) {
+        <p>
+            Your test <strong>@Model.TrainingTestViewModel.ReferenceId</strong> is about to expire.
+        </p>
+    } else {
+        <p>
+            Your test <strong>@Model.TrainingTestViewModel.ReferenceId</strong> is expiring on @Model.TrainingTestViewModel.TestExpiryDate.Value.ToShortDateString()
+        </p>
+    }
+    <p>
+        Click <a href="@testUrl">here</a> to complete the test.
+    </p>
+    @*<img src="@footerUrl" alt="Powered by ONRAMP" />*@
+    @if (Model.NotificationFooterLogo != null) {
+        <img src="data:image/png;base64,@Convert.ToBase64String(Model.NotificationFooterLogo)" width="100%" height="35" alt="Footer Image" class="img-responsive center-block company-logo" />
+    } else {
+        <img src="@footerUrl" width="100%" height="35" alt="Powered by ONRAMP" />
+    }
+</body>
+</html>

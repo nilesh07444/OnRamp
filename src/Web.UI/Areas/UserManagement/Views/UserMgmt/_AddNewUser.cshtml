@@ -1,0 +1,609 @@
+﻿@using Web.UI.Code.Extensions
+@using Common.Web
+
+
+@model Ramp.Contracts.ViewModel.UserViewModel
+@{
+
+    var EnabledTrainingActivityLoggingModule = false;
+    var EnableRaceCode = PortalContext.Current.UserCompany.EnableRaceCode;
+}
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<style>
+    .required {
+        color: red;
+    }
+
+    .requiredTxt {
+        border: solid red;
+    }
+</style>
+
+@*<script language="javascript" type="text/javascript">
+    $('form').attr('autocomplete', 'off');
+    $('input').attr('autocomplete', 'off');
+
+</script>*@
+
+@*@Scripts.Render("~/bundles/jquery")
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>*@
+
+
+@*Html.BeginForm("SaveOrUpdateUser", "UserMgmt", FormMethod.Post, new { enctype = "multipart/form-data", @id = "UserForm" })*@
+@using (Ajax.BeginForm("SaveOrUpdateUser", "UserMgmt", new AjaxOptions { HttpMethod = "POST" }, new { enctype = "multipart/form-data", @id = "UserForm" } )) {
+    <div class="col-md-7">
+        <i>All mandatory fields are marked with <span class="required">*</span></i>
+        <br><br>
+    </div>
+    @* don't remove below line of code this is used for disable the autofill textboxes *@
+    <div style="display:none; overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
+        <input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername"></input>
+        <input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
+    </div>
+    <div class="row">
+
+        @Html.HiddenFor(m => m.CompanyId)
+        @Html.HiddenFor(m => m.CompanyName)
+
+        @if (!Model.DropDownForGroup.Any()) {
+            <div style="padding: 15px;">
+                You do not have any groups yet. <a class="btn btn-sm btn-primary" href="@Href("~/Configurations/ManageGroups?companyId=" + Request.Params["companyid"])">Create Groups</a>
+            </div>
+        }
+    <div class="col-md-7">
+        @Html.ValidationSummary(true)
+
+        @Html.HiddenFor(model => model.Id)
+        @Html.HiddenFor(model => model.IsActive)
+
+        <div class="form-group">
+            <span class="required">*</span>  @Html.Label("Full Name")
+            @Html.TextBoxFor(model => model.FullName, new { @class = "form-control requiredClass", tabindex = 1 })
+            @Html.ValidationMessageFor(model => model.FullName)
+        </div>
+        <div class="form-group">
+            @Html.Label("Gender")
+            @Html.DropDownListFor(model => model.Gender, Model.GenderDropDown, new { @class = "form-control", tabindex = 3 })
+            @Html.ValidationMessageFor(model => model.Gender)
+        </div>
+        <div class="form-group" id="EmployeeNo">
+            @Html.Label("Employee No")
+            @Html.TextBoxFor(model => model.EmployeeNo, new { @class = "form-control", tabindex = 5 })
+            @Html.ValidationMessageFor(model => model.EmployeeNo)
+        </div>
+
+        @if (Model.Id == Guid.Empty)
+        {
+            <div class="form-group">
+                <span class="required">*</span>  @Html.Label(" Password")
+                @Html.PasswordFor(model => model.Password, new { @class = "form-control requiredClass", tabindex = 9 })
+                <span id="spnPasswordlength">The password must be at least 6 characters long.</span>
+            </div>
+            <div class="form-group">
+                <span class="required">*</span>  @Html.Label("Confirm Password")
+                @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control requiredClass", tabindex = 10 })
+                @Html.ValidationMessageFor(model => model.ConfirmPassword)
+                <span style="color:red;" id="txtErrorForPwd">The password and confirm password do not match.</span>
+            </div>
+        }
+        <div class="form-group" id="UserType">
+            @Html.Label("User Type")
+            @Html.DropDownListFor(m => m.SelectedCustomerType, Model.CustomerTypesSelectList, new { @class = "form-control", tabindex = 11 })
+        </div>
+        <div class="form-group">
+            <span class="required"></span>  @Html.Label("Employee Termination Status")
+            @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control requiredClass", tabindex = 12 })
+            @Html.ValidationMessageFor(model => model.ConfirmPassword)
+            @*<span style="color:red;" id="txtErrorForPwd">The password and confirm password do not match.</span>*@
+        </div>
+        <div class="row" id="AdminRoles" style="display: none;">
+            <div class="col-md-10">
+                <div class="panel panel-info">
+                    <div class="panel-heading">User Permissions</div>
+                    <div class="panel-body">
+
+                        <div class="pull-left form-group">
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.CustomerAdmin)
+                                <label>Global Administrator</label>
+                                <br />
+                            </div>
+
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.ContentAdmin)
+                                <label>Document Manager</label>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.PortalAdmin)
+                                <label>Settings Manager</label>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.Publisher)
+                                <label>Document Sender</label>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.Reporter)
+                                <label>Report Manager</label>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.UserAdmin)
+                                <label>User Manager</label>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.ManageTags)
+                                <label>Tag Manager</label>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @Html.CheckBoxFor(m => m.ManageVirtualMeetings)
+                                <label>Virtual Meetings Manager</label>
+                                <br />
+                            </div>
+                            @if (EnabledTrainingActivityLoggingModule)
+                            {
+                                <div class="user_permission">
+                                    @Html.CheckBoxFor(m => m.ManageActivityLog)
+                                    <label>Training Manager</label>
+                                    <br />
+                                </div>
+
+
+                            }
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" id="CustomUserRole">
+            @Html.Label("Custom Roles")
+            @Html.DropDownListFor(m => m.SelectedCustomUserRole, Model.CustomUserRoleSelectList, new { @class = "form-control", tabindex = 12, id = "CustomUserRoles" })
+            <div class="form-group">
+                <br>
+                @Html.Label("Permission Preview")<br>
+                <span id="customRolePermission"></span>
+            </div>
+        </div>
+
+
+
+        <div class="form-group" id="CustomUserRoleMsg">
+            No Custom roles created
+        </div>
+
+    </div>
+    <div class="col-md-5">
+        <div class="form-group">
+            @Html.Label("ID Number")
+            @Html.TextBoxFor(model => model.IDNumber, new { @class = "form-control", tabindex = 2, autocorrect = "off", spellcheck = "false", autocomplete = "off", onfocus = "this.removeAttribute('readonly');", @readonly = "readonly" })
+            @Html.ValidationMessageFor(model => model.IDNumber)
+        </div>
+        @if (EnableRaceCode)
+        {
+            <div class="form-group">
+                @Html.Label("Race Code")
+                @Html.DropDownListFor(model => model.RaceCodeId, Model.RaceCodes.ToSelectList(a => a.Id.ToString(), a => a.Description), "Select a Race Code", new { @class = "form-control", tabindex = 4 })
+                @Html.ValidationMessageFor(model => model.RaceCodeId)
+            </div>
+        }
+        @if (Model.Id != null && Model.Id.ToString() != "" && Model.Id != Guid.Empty)
+        {
+            <div class="form-group">
+                <span class="required">*</span> @Html.Label("Email Address")
+                <input type="text" class="form-control" value="@Model.EmailAddress" disabled />
+            </div>
+        }
+        else
+        {
+            <div class="form-group">
+                <span class="required">*</span> @Html.Label(" Email Address")
+                @Html.TextBoxFor(model => model.EmailAddress, new { @class = "form-control requiredClass", tabindex = 6 })
+                <span id="spnEmailAlreayExist" style="color:red;">This email address is already in use in the OnRAMP system, please enter a unique email address</span>
+            </div>
+        }
+        <div class="form-group">
+            @Html.Label("Mobile Number")
+            @Html.TextBoxFor(model => model.MobileNumber, new { @class = "form-control", tabindex = 8, @onkeypress = "return onlyNumbers, (event);" })
+            @Html.ValidationMessageFor(model => model.MobileNumber)
+        </div>
+
+        @*<div class="form-group" id="GroupDropDown">
+            <span class="required">*</span> <label class="control-label"> Group Allocation</label>
+            @Html.DropDownListFor(m => m.SelectedGroupId, Model.DropDownForGroup, "", new { @class = "form-control requiredClass", tabindex = 12 })
+            @Html.ValidationMessageFor(model => model.SelectedGroupId)
+        </div>*@
+        @*changed by neeraj*@
+
+
+
+        <div class="form-group" id="GroupDropDown">
+            <span class="required">*</span>
+            <label class="control-label"> Group Allocation</label><br />
+            @Html.ListBoxFor(m => m.SelectedGroups, new MultiSelectList(Model.DropDownForGroup, "Value", "Text"), new { @class = "form-control requiredClass", id = "label-multiselect-Groups", @multiple = "multiple" })
+            @Html.ValidationMessageFor(m => m.SelectedGroups)
+        </div>
+
+
+        <div class="form-group">
+            <label class="control-label"> Tags</label><br />
+            @Html.ListBoxFor(m => m.SelectedLabel, new MultiSelectList(ViewBag.Labels, "Name", "Name"), new { id = "label-multiselect-Tags", @multiple = "multiple" })
+        </div>
+        <div class="form-group">
+            @Html.Label("Municipality")
+            @Html.TextBoxFor(model => model.MobileNumber, new { @class = "form-control", tabindex = 9, @onkeypress = "return onlyNumbers, (event);" })
+            @Html.ValidationMessageFor(model => model.MobileNumber)
+        </div>
+    </div>
+    </div>
+    <div class="row">
+
+        <div class="col-md-7">
+            <input type="button" id="btnSaveUser" onclick="return checkValidation();" value="Save" class="btn btn-primary" tabindex="13" />
+        </div>
+    </div>
+
+}
+
+    <script>
+
+    function checkValidation() {
+        var check = true;
+        if ($('#EmailAddress').val() === "" || $('#EmailAddress').val() === null) {
+            $('#spnEmailAlreayExist').hide();
+        }
+
+        $('.requiredClass').each(function () {
+            var val = $(this).val();
+            if (val === '' || val === null || val === undefined || val.length == 0) {
+                $(this).addClass('requiredTxt');
+                check = false;
+            } else {
+                $(this).removeClass('requiredTxt');
+            }
+
+        });
+        if (check) {
+            var pwd = $("#Password").val();
+            var cpwd = $("#ConfirmPassword").val();
+            $("#txtErrorForPwd").hide();
+            if (pwd && cpwd) {
+                if (pwd !== cpwd) {
+                    $("#txtErrorForPwd").show();
+                    check = false;
+                } else {
+                    $("#txtErrorForPwd").hide();
+                    check = true;
+                }
+            }
+        }
+
+        return check;
+    }
+
+    function checkPassword() {
+        var pwd = $("#Password").val();
+        var cpwd = $("#ConfirmPassword").val();
+        $("#txtErrorForPwd").hide();
+        if (pwd && cpwd) {
+            if (pwd !== cpwd) {
+                $("#txtErrorForPwd").show();
+                return false
+            } else {
+                $("#txtErrorForPwd").hide();
+                return true;
+            }
+        }
+    }
+    function checkPwdLength() {
+        if ($("#Password").val().length < 6) {
+            $('#spnPasswordlength').show();
+
+        } else {
+            $('#spnPasswordlength').hide();
+        }
+    }
+
+    //Except only numbers for textbox
+    function onlyNumbers(event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+    function showCustomerType(type) {
+        if (type == 'Administrator') {
+            $('#SelectedGroupId').removeClass('requiredClass');
+             $('#label-multiselect-Groups').removeClass('requiredClass');
+            $('#GroupDropDown').hide();
+            $('#SelectedGroupId').hide();
+            $('#CustomUserRole').hide();
+            $('#CustomUserRoleMsg').hide();
+           // $('#AdminRoles').show();
+           // $('#AdminRoles').show();
+
+        } else if (type == 'Custom') {
+            $('#SelectedGroupId').removeClass('requiredClass');
+            $('#label-multiselect-Groups').removeClass('requiredClass');
+            $('#GroupDropDown').hide();
+
+            // $('#AdminRoles').hide();
+           // $('#SelectedGroupId').hide();
+
+            //$('#AdminRoles').hide();
+            $('#SelectedGroupId').hide();
+            if (@Model.CustomUserRoleSelectList.Count > 0) {
+                $('#CustomUserRole').show();
+                console.log("Model.CustomUserRoleSelectList ",  @Html.ToJson(Model))
+                let ll = @Html.ToJson(Model)
+                    //console.log("aaaaaaaaaaaaallll ", ll)
+                if (ll.SelectedCustomUserRole == null) {
+                    getdata(ll.CustomUserRoleSelectList[0].Value);
+                }
+                    else {
+                    getdata(ll.SelectedCustomUserRole);
+                    }
+                $('#CustomUserRoleMsg').hide();
+            }
+            else {
+                $('#CustomUserRoleMsg').show();
+                            }
+        }
+        else {
+            $('#GroupDropDown').show();
+            $('#label-multiselect-Groups').addClass('requiredClass');
+            $('#SelectedGroupId').show();
+            $('#SelectedGroupId').addClass('requiredClass');
+           // $('#AdminRoles').hide();
+            $('#CustomUserRole').hide();
+            $('#CustomUserRoleMsg').hide();
+        }
+    }
+    $(function () {
+
+        var checkEmailAlready = false;
+        $('#spnPasswordlength').hide();
+        $('#EmailAddress').val('');
+        $("#txtErrorForPwd").hide();
+        $('#spnEmailAlreayExist').hide();
+        $('#SelectedCustomerType').val('@ViewBag.Role');
+    var type='@ViewBag.Role'
+        showCustomerType(type);
+
+        $('#SelectedCustomerType').change(function () {
+            var type = $(this).val();
+            showCustomerType(type);
+        });
+
+        $("#ConfirmPassword").blur(function () {
+
+            checkPassword();
+        });
+
+        $('.requiredClass').blur(function(){
+
+            if ($('#EmailAddress').val() === "" || $('#EmailAddress').val() === null) {
+                $('#spnEmailAlreayExist').hide();
+            }
+
+            var val = $(this).val();
+            if (val === '' || val === null || val === undefined) {
+                $(this).addClass('requiredTxt');
+                $('#spnEmailAlreayExist').hdie();
+                check = false;
+            } else {
+                $(this).removeClass('requiredTxt');
+            }
+
+        });
+        $("#Password").blur(function () {
+            checkPwdLength();
+        });
+
+        $('#EmailAddress').blur(function () {
+            var email = $(this).val();
+
+            var promise = $.get("@Url.Action("DoesEmailAlreadyPresent", "UserMgmt", new { area= "UserManagement" })", {
+                EmailAddress: email
+            });
+
+            promise.done(function (data) {
+
+                if (data == false) {
+                    $('#spnEmailAlreayExist').show();
+                    checkEmailAlready = true;
+                } else {
+                    $('#spnEmailAlreayExist').hide();
+                    checkEmailAlready = false;
+                }
+            });
+            promise.fail(function (jqXHR, textStatus, errorThrown) {
+                console.error(errorThrown);
+               // $("#hdnCheckEmail").innerHTML = errorThrown;
+            });
+            promise.always(function () {
+               // $("#Email1").removeClass("spinner");
+
+            });
+
+        });
+
+
+        $("#btnSaveUser").click(function (e) {
+            // e.preventDefault();
+            var type = $('#SelectedCustomerType').val();
+            //if (type === 'Administrator') {
+            //    var adminDiv = $('#AdminRoles');
+            //    var valid = false;
+            //    adminDiv.find('input').each(function () {
+            //        if ($(this).is(':checked'))
+            //            valid = true;
+            //    });
+            //    if (valid === false) {
+
+            //        notif({
+            //            msg: "<b>Error :</b> Whoops. Please select an admin role.",
+            //            type: "error"
+            //        });
+            //        return false;
+            //    }
+            //}
+
+            var t = checkValidation();
+            if (t && !checkEmailAlready) {
+                $('#UserForm').submit();
+                window.location.reload();
+                //below lines added my me
+                //notif({ msg: "<b>Success :</b> User created successfully.", type: "success", });
+
+                //console.log("spnUser ", $('#spnUser').text)
+
+                (document.getElementById('spnUser').innerText == 'Create') ? notif({ msg: "<b>Success :</b> User created successfully.", type: "success", })
+            : notif({ msg: "<b>Success :</b> User updated successfully.", type: "success", });
+
+                $("#addUserModal").modal("hide");
+
+             pageIndex = $('.PageCss.active').attr('id');
+              pageSize = $("#ddlShowEntry").val();
+              startPage = $('#hdnStartPage').val();
+              endPage = $('#hdnEndPage').val();
+
+                let groupId = localStorage.getItem("groupId");
+                let searchText = localStorage.getItem("searchText");
+                let filters = localStorage.getItem("filters");
+
+                var filteruser = $.get("@Url.Action("SeachFilterUsers", "UserMgmt", new { Area = "UserManagement" })", {
+                    companyName: '@Model.CompanyName', companyId: '@Model.CompanyId', filters: filters, searchText: searchText, groupId: groupId, pageIndex: pageIndex, pageSize: pageSize, startPage: startPage, endPage: endPage
+                });
+
+            filteruser.done(function (data) {
+
+                $("#divUserList").html(data);
+                });
+            filteruser.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            filteruser.always(function () {
+
+                });
+
+            } else {
+                notif({
+                    msg: 'Please ensure all required fields are filled in',
+                    type: 'error',
+                    multiline: true,
+                });
+                return false;
+            }
+        });
+
+        $('#CustomerAdmin').change(function () {
+            if ($(this).is(':checked')) {
+                var inputs = $('#AdminRoles').find('input');
+                inputs.each(function () {
+                    if ($(this).attr('type') == 'checkbox') {
+                        $(this).prop('checked', true);
+                    }
+                });
+            } else {
+                var inputs = $('#AdminRoles').find('input');
+                inputs.each(function () {
+                    if ($(this).attr('type') == 'checkbox') {
+                        $(this).prop('checked', false);
+                    }
+                });
+            }
+        });
+
+    });
+
+    function validateAdminRoleSelection(caller) {
+        if ($('#UserViewModel_SelectedCustomerType').val() === 'Administrator') {
+            var adminDiv = $('#AdminRoles');
+            var valid = false;
+            adminDiv.find('input').each(function () {
+                if ($(this).is(':checked'))
+                    valid = true;
+            });
+            if (valid === false) {
+
+                notif({
+                    msg: "<b>Error :</b> Whoops. Please select an admin role.",
+                    type: "error"
+                });
+            } else {
+                caller.submit();
+            }
+        } else {
+            caller.submit();
+        }
+    }
+
+    $('#label-multiselect-Tags').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 220,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    $('#label-multiselect-Groups').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 220,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    $("#CustomUserRoles").change((data) => {
+        console.log("data ... ", data.target.value);
+        getdata(data.target.value)
+
+
+
+    });
+
+    function getdata(data) {
+        var url = '@Url.Action("GetCustomUSerRolePermission")';
+            $.ajax({
+                    method: 'GET',
+                    url: url,
+                    data: {
+                        roleId: data
+                    }
+                })
+                .done(function (data) {
+                    console.log("resffffffffffffff ", data);
+                    $('#customRolePermission').text(data);
+
+                    if (data.includes("Standard User")) {
+                        $('#GroupDropDown').show();
+                        $('#label-multiselect-Groups').addClass('requiredClass');
+                        $('#SelectedGroupId').show();
+                        $('#SelectedGroupId').addClass('requiredClass');
+                    }
+                    else {
+                        $('#GroupDropDown').hide();
+                        $('#SelectedGroupId').hide();
+
+                        $('#label-multiselect-Groups').removeClass('requiredClass');
+                        $('#SelectedGroupId').removeClass('requiredClass');
+                    }
+                })
+                .always(function() {
+
+                });
+    }
+    </script>
+
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>

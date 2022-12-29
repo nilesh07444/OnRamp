@@ -1,0 +1,735 @@
+﻿@using Ramp.Security.Authorization
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Common.Enums
+@using Common.Web
+@using Domain.Customer
+
+@model Ramp.Contracts.ViewModel.ContentFeedbackViewModel
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Content Feedback Report</h1>
+        <div class="well well-sm">
+            This report allows you to view and respond to feedback that has been submitted by users on assigned documents.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*<span></b>
+        <br>
+        <div class=" panel panel-info">
+
+            <div class="panel-heading">Filtering Options</div>
+            <div class="panel-body">
+
+
+
+                <div class="col-md-3 col-sm-offset-1">
+                    <div class="form-group">
+                        <span style="color:red"><b>*</b></span>
+                        @Html.Label("Document Type")<br>
+                        <select class="form-control" id="ddlDocumentType" multiple title="Document Types"
+                                data-bind="options: documentTypes ,
+                                optionsValue: 'id', optionsText: 'name',
+                                selectedOptions: selectedDocumentTypes, multiselect: {
+                                includeSelectAllOption: true,
+                                buttonWidth: 300,
+                                enableFiltering: false,
+                                maxHeight: 300
+                                }"></select>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Document")<br>
+                        <select class="form-control" id="ddlDocument" multiple title="Documents"
+                                data-bind="options: documents ,
+                                optionsValue: 'Id', optionsText: 'Title',
+                                selectedOptions: selectedDocuments,
+                                multiselect: {includeSelectAllOption: true,
+                                buttonWidth: 300,
+                                enableFiltering: false,
+                                maxHeight: 300
+                                }"></select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="form-group" id="divFeedback">
+                        @Html.Label("Feedback Type")<br>
+                        <select class="form-control" multiple title="Feedback Types"
+                                data-bind="options: feedbackTypes,optionsValue: 'id',
+                                optionsText: 'name',selectedOptions: selectedFeedbackTypes,
+                                multiselect: {
+                                includeSelectAllOption: true,
+                                buttonWidth: 300,
+                                enableFiltering: false,
+                                maxHeight: 300}">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Reference")
+                        <input type="text" class="form-control" data-bind="textInput: search" />
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        @Html.Label("From Date")
+                        <div class="input-group" id='FromDate' data-bind="datepicker: fromDate">
+                            <input type='text' id="inputFromDate" class="form-control" style="max-width: none" autocomplete="off" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("To Date")
+                        <div class="input-group" id='ToDate' data-bind="datepicker: toDate">
+                            <input type='text' id="inputToDate" class="form-control" style="max-width: none" autocomplete="off" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="col-md-2 col-sm-offset-1" style="height: 100%">
+                    <br /><br /><br />
+                    <button class="btn btn-primary" type="submit" data-bind="click: submit, enable: selectedDocumentTypes().length > 0">Generate</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ko if: trainingManuals().length > 0 || tests().length > 0 || policies().length > 0 || memos().length > 0 || checkLists().length > 0 || customDocument().length > 0 -->
+<div class="panel panel-info">
+
+    <div class="panel-heading">
+        Results
+        <a class="pull-right exportCss" style="cursor:pointer" data-bind="click:download"><b><u>Export To Excel</u></b></a>
+    </div>
+
+    <div class="panel-body">
+        <div class="row">
+
+            <div class="col-md-12" data-bind="if: trainingManuals().length > 0">
+                <div class=" panel panel-info">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#trainingManuals" data-bind="click: toggleCollapse('#trainingManuals')">
+                        Training Manuals <span class="glyphicon" data-bind="css: panelCollapse('#trainingManuals')"></span>
+                    </div>
+                    <div class="panel-body collapse" id="trainingManuals" data-bind="foreach: trainingManuals">
+                        <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12" data-bind="if: tests().length > 0">
+                <div class="panel panel-info">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#tests" data-bind="click: toggleCollapse('#tests')">
+                        Tests <span class="glyphicon" data-bind="css: panelCollapse('#tests')"></span>
+                    </div>
+                    <div class="panel-body collapse" id="tests" data-bind="foreach: tests">
+                        <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12" data-bind="if: policies().length > 0">
+                <div class="panel panel-info">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#policies" data-bind="click: toggleCollapse('#policies')">
+                        Policies <span class="glyphicon" data-bind="css: panelCollapse('#policies')"></span>
+                    </div>
+                    <div class="panel-body collapse" id="policies" data-bind="foreach: policies">
+                        <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12" data-bind="if: memos().length > 0">
+                <div class="panel panel-info">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#memos" data-bind="click: toggleCollapse('#memos')">
+                        Memos <span class="glyphicon" data-bind="css: panelCollapse('#memos')"></span>
+                    </div>
+                    <div class="panel-body collapse" id="memos" data-bind="foreach: memos">
+                        <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12" data-bind="if: checkLists().length > 0">
+                <div class="panel panel-info">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#checkLists" data-bind="click: toggleCollapse('#checkLists')">
+                        CheckLists <span class="glyphicon" data-bind="css: panelCollapse('#checkLists')"></span>
+                    </div>
+                    <div class="panel-body collapse" id="checkLists" data-bind="foreach: checkLists">
+                        <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12" data-bind="if: customDocument().length > 0">
+                <div class=" panel panel-info">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#customDocument" data-bind="click: toggleCollapse('#customDocument')">
+                        Custom Documents <span class="glyphicon" data-bind="css: panelCollapse('#customDocument')"></span>
+                    </div>
+                    <div class="panel-body collapse" id="customDocument" data-bind="foreach: customDocument">
+                        <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12" data-bind="if: feedback().length === 0">
+                <h3></h3>
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
+<!-- /ko -->
+
+@if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+{
+    <!-- ko if: trainingManualsGlobal().length > 0 || testsGlobal().length > 0 || policiesGlobal().length > 0 || memosGlobal().length > 0 || checkListsGlobal().length > 0 || customDocumentGlobal().length > 0 -->
+    <div class="panel panel-info">
+
+        <div class="panel-heading">
+            Global Document  Results
+
+            <a class="pull-right exportCss" style="cursor:pointer" data-bind="click:downloadGlobal"><b><u>Export To Excel</u></b></a>
+
+        </div>
+
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-12" data-bind="if: trainingManualsGlobal().length > 0">
+                    <div class=" panel panel-info">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#trainingManualsGlobal" data-bind="click: toggleCollapse('#trainingManualsGlobal')">
+                            Training Manuals <span class="glyphicon" data-bind="css: panelCollapse('#trainingManualsGlobal')"></span>
+                        </div>
+                        <div class="panel-body collapse" id="trainingManualsGlobal" data-bind="foreach: trainingManualsGlobal">
+                            <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12" data-bind="if: testsGlobal().length > 0">
+                    <div class="panel panel-info">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#testsGlobal" data-bind="click: toggleCollapse('#testsGlobal')">
+                            Tests <span class="glyphicon" data-bind="css: panelCollapse('#testsGlobal')"></span>
+                        </div>
+                        <div class="panel-body collapse" id="testsGlobal" data-bind="foreach: testsGlobal">
+                            <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12" data-bind="if: policiesGlobal().length > 0">
+                    <div class="panel panel-info">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#policiesGlobal" data-bind="click: toggleCollapse('#policiesGlobal')">
+                            Policies <span class="glyphicon" data-bind="css: panelCollapse('#policiesGlobal')"></span>
+                        </div>
+                        <div class="panel-body collapse" id="policiesGlobal" data-bind="foreach: policiesGlobal">
+                            <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12" data-bind="if: memosGlobal().length > 0">
+                    <div class="panel panel-info">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#memosGlobal" data-bind="click: toggleCollapse('#memosGlobal')">
+                            Memos <span class="glyphicon" data-bind="css: panelCollapse('#memosGlobal')"></span>
+                        </div>
+                        <div class="panel-body collapse" id="memosGlobal" data-bind="foreach: memosGlobal">
+                            <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" data-bind="if: checkListsGlobal().length > 0">
+                    <div class="panel panel-info">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#checkListsGlobal" data-bind="click: toggleCollapse('#checkListsGlobal')">
+                            CheckLists <span class="glyphicon" data-bind="css: panelCollapse('#checkListsGlobal')"></span>
+                        </div>
+                        <div class="panel-body collapse" id="checkListsGlobal" data-bind="foreach: checkListsGlobal">
+                            <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12" data-bind="if: customDocumentGlobal().length > 0">
+                    <div class=" panel panel-info">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#customDocumentGlobal" data-bind="click: toggleCollapse('#customDocumentGlobal')">
+                            Custom Documents <span class="glyphicon" data-bind="css: panelCollapse('#customDocumentGlobal')"></span>
+                        </div>
+                        <div class="panel-body collapse" id="customDocumentGlobal" data-bind="foreach: customDocumentGlobal">
+                            <div data-bind="template: { name: 'feedback-template', data: $data}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12" data-bind="if: feedbackGlobal().length === 0">
+                    <h3></h3>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- /ko -->
+}
+
+<script type="text/html" id="feedback-template">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <span data-bind="text: values[0].DocumentTitle"></span>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-striped table-bordered table-responsive">
+                        <thead>
+                            <tr>
+                                <th style="width:224px">User</th>
+                                <th style="width:152px">Date/Time</th>
+                                <th style="width:80px">Type</th>
+                                <th>Comment</th>
+                                <th style="width:64px">Options</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: values">
+                            <tr>
+                                <td data-bind="text: User.Name"></td>
+                                <td data-bind="text: moment(Created).format('YYYY/MM/DD HH:mm')"></td>
+                                <td data-bind="text: $root.contentTypeText(ContentType), style: {color: $root.contentTypeColor(ContentType)}"></td>
+                                <td data-bind="text: Content"></td>
+                                <td><a class="btn btn-default btn-xs" data-bind="attr: {href: 'mailto:' + ko.unwrap(User.Email) + '?subject=' + encodeURIComponent('RE: ' + Subject) }">Respond</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+
+
+
+    ko.bindingHandlers.selectPicker = {
+
+         after: ['options'],   /* KO 3.0 feature to ensure binding execution order */
+        init: function (element, valueAccessor, allBindingsAccessor) {
+
+            var $element = $(element);
+            $element.addClass('selectpicker').selectpicker();
+
+            var doRefresh = function () {
+
+             $element.selectpicker('refresh');
+            },  subscriptions = [];
+
+            // KO 3 requires subscriptions instead of relying on this binding's update
+            // function firing when any other binding on the element is updated.
+
+            // Add them to a subscription array so we can remove them when KO
+            // tears down the element.  Otherwise you will have a resource leak.
+            var addSubscription = function(bindingKey) {
+                var targetObs = allBindingsAccessor.get(bindingKey);
+
+                if ( targetObs && ko.isObservable(targetObs )) {
+                    subscriptions.push( targetObs.subscribe(doRefresh) );
+                }
+            };
+
+            addSubscription('options');
+            addSubscription('value');           // Single
+            addSubscription('selectedOptions'); // Multiple
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                while( subscriptions.length ) {
+                    subscriptions.pop().dispose();
+                }
+            } );
+        },
+        update: function (element, valueAccessor, allBindingsAccessor) {
+        }
+    };
+
+    var Controller = function() {
+
+        var self = this;
+
+        self.fromDate = ko.observable();
+
+        self.fromDate.subscribe(function (newValue) {
+            $('#ToDate').data('DateTimePicker').minDate(new Date(newValue));
+        });
+
+        self.toDate = ko.observable();
+
+        self.toDate.subscribe(function (newValue) {
+            $('#FromDate').data('DateTimePicker').maxDate(new Date(newValue));
+        });
+
+        self.documents = ko.observableArray([]);
+
+        self.selectedDocuments = ko.observableArray([]);
+
+        self.selectedDocumentTypes = ko.observableArray([]);
+
+        self.selectedDocumentTypes.subscribe(function (changes) {
+            var docTypes = [];
+            $.each(ko.unwrap(self.selectedDocumentTypes), function (key, value) {
+                docTypes.push(value);
+            });
+            if (docTypes !== []) {
+                $.ajax({
+                    method: 'POST',
+                    url: '@Url.Action("DocumentsByType", "Document", new {Area = ""})',
+                    data: {
+                        documentTypes: docTypes
+                    }
+                }).done(function(data) {
+                    self.documents(data);
+                    //console.log(ko.unwrap(self.documents));
+                });
+            }
+        }, null, 'arrayChange');      
+
+        self.selectedFeedbackTypes = ko.observableArray([]);
+
+        self.search = ko.observable('');
+
+        self.feedback = ko.observableArray();
+
+        self.feedbackGlobal = ko.observableArray();
+
+        self.memos = ko.computed(function() {
+            return ko.utils.arrayFilter(self.feedback(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 4;
+                }).groupBy('DocumentId');
+        });
+
+        self.policies = ko.computed(function() {
+            return ko.utils.arrayFilter(self.feedback(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 3;
+                }).groupBy('DocumentId');
+        });
+
+        self.tests = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedback(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 2;
+                }).groupBy('DocumentId');
+        });
+
+        self.trainingManuals = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedback(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 1;
+                }).groupBy('DocumentId');
+        });
+
+        self.checkLists = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedback(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 6;
+                }).groupBy('DocumentId');
+        });
+
+        self.customDocument = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedback(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 7;
+                }).groupBy('DocumentId');
+        });
+
+        self.memosGlobal = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedbackGlobal(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 4;
+                }).groupBy('DocumentId');
+        });
+
+        self.policiesGlobal = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedbackGlobal(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 3;
+                }).groupBy('DocumentId');
+        });
+
+        self.testsGlobal = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedbackGlobal(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 2;
+                }).groupBy('DocumentId');
+        });
+
+        self.trainingManualsGlobal = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedbackGlobal(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 1;
+                }).groupBy('DocumentId');
+        });
+
+        self.checkListsGlobal = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedbackGlobal(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 6;
+                }).groupBy('DocumentId');
+        });
+
+        self.customDocumentGlobal = ko.computed(function () {
+            return ko.utils.arrayFilter(self.feedbackGlobal(),
+                function (item) {
+                    return ko.unwrap(item.DocumentType) === 7;
+                }).groupBy('DocumentId');
+        });
+
+        self.contentTypeColor = function(contentType) {
+            switch (contentType) {
+            case 2:
+                return 'red';
+            case 3:
+                return 'green';
+            case 4:
+                return '#C70039';
+            default:
+                return 'blue';
+            }
+        };
+
+        self.contentTypeText = function (contentType) {
+            switch (contentType) {
+            case 0:
+                return 'Other';
+            case 1:
+                return 'Question';
+            case 2:
+                return 'Complaint';
+            case 3:
+                return 'Praise';
+            case 4:
+                return 'Suggestion';
+            default:
+                return '';
+            }
+        };
+
+        self.submit = function() {
+            $('#LoadingImageDiv').show();           
+            var docs = [];
+            $.each(ko.unwrap(self.selectedDocuments), function (key, value) {
+                var res = $.grep(ko.unwrap(self.documents), function (v) {
+                    return v.Id==value;
+                });
+
+                docs.push({ DocumentId: value, DocumentType:res[0].DocumentType});
+            });         
+
+            $.ajax({
+                method: 'POST',
+                url: '@Url.Action("ContentFeedbackData", "Feedback")',
+                data: {
+                    fromDate: self.fromDate(),
+                    toDate: self.toDate(),
+                    documentTypes: self.selectedDocumentTypes().map(function(value) {
+                        return value;
+                    }),
+                    feedbackTypes: self.selectedFeedbackTypes().map(function(value) {
+                        return value;
+                    }),
+                    documents: docs,
+                    search: self.search()
+                }
+            }).done(function(data) {
+                self.feedback(data.feedback);
+                self.feedbackGlobal(data.feedbackGlobal);
+            }).always(function() {
+                $('#LoadingImageDiv').hide();
+            });
+        };
+
+        self.downloadGlobal = function () {
+            if (self.selectedDocumentTypes().length === 0) {
+                notif({
+                    type: 'warning',
+                    msg: 'Please select at least 1 document type'
+                });
+                return;
+            }
+            var docs = [];
+            $.each(ko.unwrap(self.selectedDocuments), function (key, value) {
+                var res = $.grep(ko.unwrap(self.documents), function (v) {
+                    return v.Id == value;
+                });
+
+                docs.push({ DocumentId: value, DocumentType: res[0].DocumentType });
+            });
+
+            var url = '@Url.Action("DownloadGlobalEXCEL", "Feedback")',
+                params = {
+                        FromDate: self.fromDate(),
+                        ToDate: self.toDate(),
+                        Text: self.search(),
+                        DocumentTypes: self.selectedDocumentTypes().map(function(value) {
+                            return value;
+                        }),
+                        FeedbackTypes: self.selectedFeedbackTypes().map(function(value) {
+                            return value;
+                        }),
+                    Documents: docs
+                    };
+            var request = new XMLHttpRequest();
+            request.open("POST", url);
+            request.setRequestHeader('Content-type', 'application/json');
+            request.responseType = 'blob';
+            request.onload = function() {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                }
+            }
+            request.onreadystatechange = function() {
+                if (this.readyState === 4) {
+                    $('#LoadingImageDiv').hide();
+                }
+            };
+            $('#LoadingImageDiv').show();
+            request.send(JSON.stringify(params));
+        };
+
+
+        self.download = function () {
+            if (self.selectedDocumentTypes().length === 0) {
+                notif({
+                    type: 'warning',
+                    msg: 'Please select at least 1 document type'
+                });
+                return;
+                  }
+                  var docs = [];
+                  $.each(ko.unwrap(self.selectedDocuments), function (key, value) {
+                      var res = $.grep(ko.unwrap(self.documents), function (v) {
+                          return v.Id == value;
+                      });
+
+                      docs.push({ DocumentId: value, DocumentType: res[0].DocumentType });
+                  });
+            var url = '@Url.Action("DownloadEXCEL", "Feedback")',
+                params = {
+                        FromDate: self.fromDate(),
+                        ToDate: self.toDate(),
+                        Text: self.search(),
+                        DocumentTypes: self.selectedDocumentTypes().map(function(value) {
+                            return value;
+                        }),
+                        FeedbackTypes: self.selectedFeedbackTypes().map(function(value) {
+                            return value;
+                        }),
+                    Documents: docs
+                    };
+            var request = new XMLHttpRequest();
+            request.open("POST", url);
+            request.setRequestHeader('Content-type', 'application/json');
+            request.responseType = 'blob';
+            request.onload = function() {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                }
+            }
+            request.onreadystatechange = function() {
+                if (this.readyState === 4) {
+                    $('#LoadingImageDiv').hide();
+                }
+            };
+            $('#LoadingImageDiv').show();
+            request.send(JSON.stringify(params));
+        };
+
+        self._collapseObservable = ko.observable();
+
+        self.toggleCollapse = function (panelBodyId) {
+            $(panelBodyId).collapse('toggle');
+            self._collapseObservable.notifySubscribers();
+        };
+
+        self.panelCollapse = function (panelBodyId) {
+            return ko.computed(function () {
+                self._collapseObservable();
+                return $(panelBodyId).attr('aria-expanded') !== "false" ? 'glyphicon-triangle-bottom' : 'glyphicon-triangle-top';
+            });
+        };
+
+        self.enums = {
+            documentType: @Html.ToJson(PortalContext.Current.UserCompany.EnableChecklistDocument? EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)) : EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType))),
+            feedbackType: @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(UserFeedbackContentType)))
+        };
+
+        self.documentTypes = $.map(self.enums.documentType,
+            function(i, index) {
+                if (index != 0 && index != 5 && index != 2 && index != 9 && index != 10) {
+                    return {
+                        id: index,
+                        name: i
+                    };
+                }
+            }).reverse();
+
+        self.feedbackTypes = $.map(self.enums.feedbackType,
+            function(i, index) {
+                if (index != 0) {
+                    return {
+                        id: index,
+                        name: i
+                    };
+                }
+            });
+    };
+    var vm = new Controller();
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>

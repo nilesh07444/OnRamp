@@ -1,0 +1,209 @@
+﻿@using Web.UI.Code.Extensions
+@using Ramp.Contracts.ViewModel
+
+@model CopyDocumentsViewModel
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "../Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Copy Documents</h1>
+        <br />
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Copy Documents To Customers
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label>From the below Customer Company</label>
+                            @Html.DropDownListFor(m => m.FromSelectedCustomerCompany, Model.Companies.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+                        </div>
+                        <div id="FromCustomerCompany">
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            <label>To this Customer Company</label>
+                            @Html.DropDownListFor(m => m.ToSelectedCustomerCompany, Model.Companies.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+                        </div>
+                        <div id="ToCustomerCompany">
+                        </div>
+                    </div>
+                    <div class="col-lg-11">
+                        <button type="submit" id="CopyDocuments" class="btn btn-default" style="float: right" disabled="disabled">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var fromSelectedProvisionalCompany;
+    var toSelectedProvisionalCompany;
+
+    $('#FromSelectedCustomerCompany').change(function () {
+
+        fromSelectedProvisionalCompany = $(this).val();
+        if (fromSelectedProvisionalCompany === "00000000-0000-0000-0000-000000000000") {
+            $('#FromCustomerCompany').empty();
+        } else {
+            $('#LoadingImageDiv').show();
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CopyDocumentsFromCompanyPartial", "Admin")",
+                data: { companyId: fromSelectedProvisionalCompany }
+            }).done(function(data) {
+                $('#FromCustomerCompany').html(data);
+                var noRecordFoundDiv = $('#FromCustomerCompany #NoRecordFoundDiv');
+                if (noRecordFoundDiv.length === 0) {
+                    $('#CopyDocuments').removeAttr('disabled');
+                } else {
+                    $('#CopyDocuments').attr('disabled', 'disabled');
+                }
+            }).always(function() {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+    });
+
+    $('#ToSelectedCustomerCompany').change(function () {
+        toSelectedProvisionalCompany = $(this).val();
+        if (toSelectedProvisionalCompany === "00000000-0000-0000-0000-000000000000") {
+            toSelectedProvisionalCompany = null;
+            $('#ToCustomerCompany').empty();
+        } else {
+            $('#LoadingImageDiv').show();
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CopyDocumentsToCompanyPartial", "Admin")",
+                data: { companyId: toSelectedProvisionalCompany }
+            }).done(function(data) {
+                $('#ToCustomerCompany').html(data);
+            }).always(function() {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+    });
+
+    $('#CopyDocuments').click(function () {
+        var documents = new Array();
+
+        $('#FromCustomerCompany :checkbox:checked').each(function (i) {
+            var title = $(this).parent().prev().text();
+            
+            documents.push({
+                title: title,
+                typeAndId: $(this).val()
+            });
+        });
+
+        var documentsRemaining = parseInt($('#NumberOfDocumentRemain').attr('value'), 10);
+
+        if (documents.length <= documentsRemaining) {
+            copyDocuments(documents);
+        } else {
+            if (documentsRemaining === 0) {
+                notif({
+                    msg: "<b>Error :</b> Your Document limit has been reached.",
+                    type: "error"
+                });
+            } else if (isNaN(documentsRemaining)) {
+                notif({
+                    msg: "<b>Error :</b> Please select a Company to copy to",
+                    type: "error"
+                });
+            } else {
+                notif({
+                    msg: "<b>Error :</b> Please select " + documentsRemaining + " or less Documents",
+                    type: "error"
+                });
+            }
+        }
+    });
+
+
+    function copyDocuments(documents) {
+        if (toSelectedProvisionalCompany === fromSelectedProvisionalCompany) {
+            notif({
+                msg: "<b>Error :</b> Please select different Companies.",
+                type: "error"
+            });
+        } else if (documents.length === 0) {
+            notif({
+                msg: "<b>Error :</b> Please select Document(s) you want to copy.",
+                type: "error"
+            });
+        } else {
+            $('#LoadingImageDiv').show();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GenerateCopyDocumentsCommand", "Admin")',
+                data: {
+                    fromCustomerCompanyId: fromSelectedProvisionalCompany,
+                    toCustomerCompanyId: toSelectedProvisionalCompany,
+                    documents: $.map(documents, function (item) {
+                        return item.typeAndId;
+                    }) // string[], processed server-side
+                }
+            }).then(function(data) {
+                var request = $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("CopyDocumentsToAnotherCustomer", "Admin")',
+                    data: {
+                        commandId: data
+                    }
+                });
+
+                request.done(function() {
+                    $('#FromCustomerCompany :checkbox:checked').each(function(i) {
+                        $(this).prop('checked', false);
+                    });
+
+                    var documentsRemaining = parseInt($('#NumberOfDocumentRemain').attr('value'), 10);
+                    var available = documentsRemaining - documents.length;
+                    $('#NumberOfDocumentRemain').attr('value', available);
+                    if (available === 0) {
+                        $('#NumberOfDocumentRemain').text('Your Document limit has been reached.');
+                    } else {
+                        $('#NumberOfDocumentRemain').text('You can only copy ' + available + ' more Documents');
+                    }
+
+                    var noRecoredFoundDiv = $('#ToCustomerCompany #NoRecordFoundDiv');
+                    if (noRecoredFoundDiv.length > 0) {
+                        noRecoredFoundDiv.hide();
+                    }
+                    for (var i = 0; i < documents.length; i++) {
+                        $('#ToCustomerCompany').append('<div class="alert alert-success" style="padding: 6px; width: 283px;"><label style="width:90%;">' +
+                            documents[i].title + '</label></div>');
+                    }
+
+                    window.setTimeout(function () { location.reload(); }, 1500);
+
+                    notif({
+                        msg: "<b>Success :</b> Copy Document(s) Successful.",
+                        type: "success"
+                    });
+                });
+
+                return request;
+            }).fail(function() {
+                notif({
+                    msg: "<b>Error :</b> Something went wrong. Please try again.",
+                    type: "error"
+                });
+            }).always(function() {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+    }
+
+</script>

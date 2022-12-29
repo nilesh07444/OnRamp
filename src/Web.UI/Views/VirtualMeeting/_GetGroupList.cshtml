@@ -1,0 +1,79 @@
+﻿@model string
+@{
+    var check = Convert.ToBoolean(ViewBag.Check);
+
+}
+<div class="row">
+    <div class="col-lg-12">
+        @if (ViewBag.Check) {
+            <h4 id="heading">Please select the users you want to assign the Virtual Meeting Room to: <br /></h4><br />
+        } else {
+            <h4 id="heading">Please select the users you want to remove from Virtual Meeting Room to: <br /></h4><br />
+        }
+
+        <input type="hidden" id="hdnDocumentId" value="@Model" />
+        <input type="hidden" id="hdnCheck" value="@check" />
+        <div class="pull-right form-group form-inline text-center">
+
+            <select id="boot-multiselect-demo" multiple="multiple">
+                @foreach (var item in ViewBag.Groups) {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </select>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="panel panel-info">
+    <div class="panel-heading">Who is this for?</div>
+    <div class="panel-body" style="padding: 0" id="divParticipants">
+
+    </div>
+</div>
+
+<script>
+
+    $('#hdnCheck').val('@check');
+
+    $('#boot-multiselect-demo').attr("multiple", "multiple").val('');
+    $('#boot-multiselect-demo').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 250,
+        enableFiltering: true,
+        maxHeight: 350
+
+    });
+    $(function () {
+
+        $('#boot-multiselect-demo').change(function () {
+            var ids = $(this).val().toString();
+            var documentId = $('#hdnDocumentId').val();
+           
+            GetUserByGroups(ids, documentId);
+        });
+    });
+
+    function GetUserByGroups(ids, documentId) {
+        
+               var virtualClass = $.post("@Url.Action("GetUserToAddRemoveParticipants", "VirtualMeeting", new { Area = "" })", {
+                   groupIds: ids,
+            documentId: documentId,
+            check: $('#hdnCheck').val()
+                });
+
+        virtualClass.done(function (data) {
+
+            $("#divParticipants").html(data);
+
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        virtualClass.always(function () {
+
+                });
+    }
+</script>

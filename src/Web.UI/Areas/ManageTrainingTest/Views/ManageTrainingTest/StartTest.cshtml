@@ -1,0 +1,292 @@
+﻿@using Domain.Customer.Models
+@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@using System.Threading
+
+@model Ramp.Contracts.ViewModel.TestViewModel
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    int index = 0;
+    int indexForLabel = 0;
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header"> Time left : <span id="RemainingTime" class="label label-info"></span> Minutes</h1>
+    </div>
+</div>
+
+@using (Html.BeginForm("TestEnded", "ManageTrainingTest", FormMethod.Post, new { id = "SubmitTest" }))
+{
+    @Html.HiddenFor(m => m.TrainingTestId)
+    @Html.HiddenFor(m => m.ReferenceId)
+    @Html.HiddenFor(m => m.SelectedTrainingGuideId)
+    @Html.HiddenFor(m => m.TestTitle)
+    @Html.HiddenFor(m => m.TrainingGuideName)
+    <div class="row">
+        <input type="hidden" value="0" id="viewLaterQuestionCount" />
+        <div class="col-lg-12">
+            <div class="row">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        @Model.TestTitle
+                        <span class="pull-right">
+                            Test Duration : @Model.TestDuration Minutes
+                        </span>
+                    </div>
+                    <div class="panel-body">
+                        <div id="AllQuestion">
+                            @foreach (QuestionsViewModel trainingTestQuestionViewModel in Model.QuestionsList)
+                            {
+                                <label class="QuestionLabelButton">
+                                    <input type="hidden" value="@(indexForLabel + 1)" />
+                                    <button type="button" class="btn btn-info btn-circle">
+                                        @(indexForLabel + 1)
+                                    </button>
+                                </label>
+                                indexForLabel++;
+                            }
+                        </div>
+                        @foreach (QuestionsViewModel trainingTestQuestionViewModel in Model.QuestionsList)
+                        {
+                            <div class="wizard-step col-lg-12" style="border: none">
+                                <div class="col-lg-12" style="border: none">
+                                    <div class="row">
+                                        <div class="panel">
+                                            <div class="col-lg-6" style="border: none; padding: 20px 26px 28px 26px;">
+                                                <h4>Question @(index + 1)</h4>
+                                                <input type="hidden" value="@(index)" class="IndexValue" />
+                                                <div style="padding: 6px 20px 20px 0px;">
+                                                    @trainingTestQuestionViewModel.TestQuestion
+                                                    <input type="hidden" name="QuestionsList[@(index)].TrainingTestQuestionId" value="@(trainingTestQuestionViewModel.TrainingTestQuestionId) " />
+                                                </div>
+                                                <div>
+                                                    @Html.DropDownListFor(m => m.QuestionsList[index].CorrectAnswer, Model.QuestionsList[index].AnswerList.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select your answer", new { @class = "form-control SelectCorrectAnswer" })
+                                                </div>
+                                                <div>
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" onclick="ViewLater(this, @(index + 1))" name="questionslist[@(index)].viewlaterflag" value="" />
+                                                            View later
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div>
+                                                    @if (trainingTestQuestionViewModel.ImageUrl != null)
+                                                    {
+                                                        <a href="@(trainingTestQuestionViewModel.ImageUrl)" class="fancybox">
+                                                            <img src="@(trainingTestQuestionViewModel.ImageUrl)" style="max-height: 250px; max-width:500px" alt="img" title="img" style="padding-top: 10px;" />
+                                                        </a>
+                                                    }
+                                                </div>
+                                                <div>
+                                                    @if (trainingTestQuestionViewModel.VideoUrl != null)
+                                                    {
+                                                        <div style="padding-top: 10px;">
+
+                                                            <video id="example_video_11" class="video-js vjs-default-skin"
+                                                                   controls preload="none" width="470" height="264"
+                                                                   poster=""
+                                                                   data-setup='{"example_option":true}'>
+                                                                <source src="@trainingTestQuestionViewModel.VideoUrl" type='video/mp4' />
+                                                                <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                                                            </video>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            index++;
+                        }
+                        <div class="wizard-step wizard-confirmation col-lg-12">
+                            <h4>Would you like to submit the test?</h4>
+                            <div class="alert alert-info">
+                                * Please review any unattempted questions before submitting. If you are happy to proceed, Click the “Finish Test” button.
+                            </div>
+                            @*<div id="field-summary1"></div>
+                                <div id="validation-summary">
+                                    <label> </label>
+                                    <span>Please correct the following errors;</span>
+                                    @Html.ValidationSummary(true)
+                                </div>*@<div id="field-summary1"></div>
+                            <div id="validation-summary">
+                                <label></label>
+                                <span></span>
+                            </div><div id="field-summary1"></div>
+                            <div id="validation-summary">
+                                <label></label>
+                                <span></span>
+                            </div>
+                            <div id="field-summary1"></div>
+                            <div id="validation-summary">
+                                <label></label>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <div class="wizard-nav col-lg-12">
+                            <input type="button" id="wizard-prev" class="btn btn-sm btn-primary" value="<< Previous" />
+                            <input type="button" id="wizard-next" class="btn btn-sm btn-primary" value="Next >>" />
+                            @if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+                            {
+                                @*<a id="ActiveFinishPreview" href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/"))" style="text-decoration: none;">*@
+                                <button type="button" id="ActiveFinishPreview" class="btn btn-sm" disabled>finish preview</button>
+                                @*</a>*@
+                                @*<input type="submit" id="wizard-submit" class="btn btn-sm disabled" value="Finish Test" />*@
+                            }
+                            else
+                            {
+                                <input type="button" id="wizard-submit" class="btn btn-sm Submit" value="Finish Test" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script type="text/javascript">
+    document.createElement('video');
+    document.createElement('audio');
+    document.createElement('track');
+    var redirectUrl = "@(Url.Action("~/ManageTrainingTest/ManageTrainingTest/"))";
+</script>
+<script type="text/javascript">
+    $(function () {
+        $('#ActiveFinishPreview').click(function () {
+
+            window.location.href = "@(Url.Action("Index","ManageTrainingTest",new {Area="ManageTrainingTest"}))";
+
+        });
+    });
+
+    var submitTest = 0;
+    var timer = 0;
+    document.onkeydown = function () {
+        switch (event.keyCode) {
+            case 116: //F5 button
+                event.returnValue = false;
+                event.keyCode = 0;
+                return false;
+            case 82: //R button
+                if (event.ctrlKey) {
+                    event.returnValue = false;
+                    event.keyCode = 0;
+                    return false;
+                }
+        }
+    };
+
+    $(function () {
+
+        setTimeout("disableBackButton()", 0);
+
+        $('.SelectCorrectAnswer').change(function () {
+            //
+            var selected = $(this).val();
+            var requiredLabel;
+            var button;
+            var allLabels = $('#AllQuestion').find('label');
+            var index = $(this).parent().parent().find('.IndexValue').val();
+            if (selected == "") {
+                requiredLabel = $(allLabels[parseInt(index)]);
+                button = requiredLabel.find('button');
+                $(button).removeClass('btn-info');
+                $(button).removeClass('btn-warning');
+                $(button).addClass('btn-danger');
+            } else {
+                requiredLabel = $(allLabels[parseInt(index)]);
+                button = requiredLabel.find('button');
+                $(button).removeClass('btn-warning');
+                $(button).removeClass('btn-danger');
+                $(button).addClass('btn-info');
+            }
+        });
+        var viewLaterQuestionCount = 0;
+        var allAmswers = $('select');
+
+        timer = window.setInterval(function () {
+            $.ajax({
+                url: "TimeLeft",
+                type: 'POST',
+                dataType: 'json',
+                data: {},
+                success: function (data) {
+                    if (data.timeleft != "ExamEnded") {
+                        var a = data.timeleft.split(':');
+                        if (a[1] < "10") {
+                            $("#RemainingTime").css('color', 'red');
+                        }
+                        $("#RemainingTime").text(data.timeleft);
+                        submitTest = 0;
+                    } else {
+                        submitTest++;
+                        submitFormTest();
+                    }
+                },
+                error: function () {
+                }
+            });
+        }, 500);
+
+        $('.QuestionLabelButton').click(function () {
+            var wizardStepNumberToShow = $(this).find('input').val();
+            var allSteps = $('.wizard-step');
+            $(allSteps).each(function () {
+                $(this).hide();
+            });
+            $(allSteps[parseInt(wizardStepNumberToShow) - 1]).show();
+        });
+    });
+
+    function submitFormTest() {
+        if (submitTest == 1) {
+            $('#SubmitTest').submit();
+        }
+    }
+
+    function ViewLater(element, questionNumber) {
+        var allLabels = $('#AllQuestion').find('label');
+        var requiredLabel;
+        var button;
+        var count = 0;
+        if (element.checked) {
+            requiredLabel = $(allLabels[parseInt(questionNumber) - 1]);
+            button = requiredLabel.find('button');
+            $(button).removeClass('btn-info');
+            $(button).removeClass('btn-danger');
+            $(button).addClass('btn-warning');
+            count = $('#viewLaterQuestionCount').val();
+            $('#viewLaterQuestionCount').val(parseInt(count) + 1);
+        } else {
+            requiredLabel = $(allLabels[parseInt(questionNumber) - 1]);
+            button = requiredLabel.find('button');
+            $(button).removeClass('btn-warning');
+            $(button).removeClass('btn-danger');
+            $(button).addClass('btn-info');
+            count = $('#viewLaterQuestionCount').val();
+            $('#viewLaterQuestionCount').val(parseInt(count) - 1);
+        }
+    }
+
+    function disableBackButton() {
+        window.history.forward();
+    }
+
+    $('.fancybox').fancybox({ type: 'image' });
+</script>

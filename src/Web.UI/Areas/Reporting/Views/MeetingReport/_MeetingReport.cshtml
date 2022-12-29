@@ -1,0 +1,37 @@
+﻿@model List<Ramp.Contracts.ViewModel.MeetingReportUsageModel>
+<table id="documents" class="table table-hover table-fixed" style="">
+    <thead>
+        <tr>
+            <th class=" UserName">User Name</th>
+            <th class="">Meeting Room name</th>
+            <th class="Attendance">Attendance</th>
+            <th class="DateJoined">Date Joined </th>
+   
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+            <tr>
+                
+                <td class="UserName">
+                    @item.UserName
+                </td>
+                <td>
+                    @item.DocumentName
+                </td>
+                <td class="Attendance">
+                    @item.Status
+                </td>
+                <td class="DateJoined">
+                    @item.DateJoined
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+<script>
+    @if (!Model.Any()) {
+        @: $('.MeetingroomCss').hide();
+    }
+</script>

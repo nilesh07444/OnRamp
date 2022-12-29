@@ -1,0 +1,377 @@
+﻿@using Domain.Customer.Models
+@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+@model Ramp.Contracts.ViewModel.UserActivityStatsViewModel
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Areas/ProvisionalManagement/Views/../../../Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInAdminRole())
+    {
+        Layout = "~/Areas/ProvisionalManagement/Views/../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">User Login Report</h1>
+        <div class="well well-sm">
+            This report allows you to view an audit trail of all login activities for a user.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <br />
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*</span></b>
+        <div class="panel panel-info">
+            <div class="panel-heading">Filtering Options</div>
+            <div class="panel-body">
+                @if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+                {
+                    <div class="form-group">
+                        <label class="radio-inline">
+                            <input id="optProvisionalUsers" type="radio" checked="checked" value="optionProvisionalUsers" name="optionsRadiosInline">
+                            Provisional Users
+                        </label>
+                        <label class="radio-inline">
+                            <input id="optCompanyUsers" type="radio" value="optionCompanyUsers" name="optionsRadiosInline">
+                            Company Users
+                        </label>
+                    </div>
+
+                    <div class="col-lg-2" id="divProvisionalCompany">
+                        <div class="form-group">
+                            <label><span style="color:red"><b>*</b></span> Provisional Company</label>
+                            @Html.DropDownListFor(m => m.SelectedProvisionalCompanyId, Model.ProvisionalCompanyDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select Company", new {@class = "form-control"})
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2" id="divCustomerCompany">
+                        <div class="form-group">
+                            <label><span style="color:red"><b>*</b></span> Customer Company</label>
+                            <select id="SelectedCustomerCompanyId" name="SelectedCustomerCompanyId" class="form-control cke_required" data-val="true" data-val-required="Please select customer company"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2" id="divUser">
+                        <div class="form-group">
+                            <label><span style="color:red"><b>* </b></span> User</label>
+                            <select id="SelectedUserId" name="SelectedUserId" class="form-control cke_required" data-val="true" data-val-required="Please select User" data-bind="value: selectedUser"></select>
+                        </div>
+                    </div>
+                }
+
+                @if (Thread.CurrentPrincipal.IsInAdminRole())
+                {
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label><span style="color:red"><b>* </b></span> User</label>
+                            @Html.DropDownListFor(m => m.SelectedUserId, Model.UserDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select User", new {@class = "form-control", data_bind = "value: selectedUser" })
+                        </div>
+                    </div>
+                }
+
+                @if (Thread.CurrentPrincipal.IsInResellerRole())
+                {
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            <label><span style="color:red"><b>* </b></span> Customer Company</label>
+                            @Html.DropDownListFor(m => m.SelectedCustomerCompanyId, Model.CustomerCompanyDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select User", new {@class = "form-control"})
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            <label><span style="color:red"><b>*</b></span> User</label>
+                            <select id="SelectedUserId" name="SelectedUserId" class="form-control cke_required" data-val="true" data-val-required="Please select User " data-bind="value: selectedUser"></select>
+                        </div>
+                    </div>
+                }
+
+                <div class="form-group col-md-3">
+                    <div class="input-group date" id='FromDate'>
+                        @Html.Label("From Date")
+                        <div class="form-group input-group">
+                            <input type='text' id="inputFromDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-md-3">
+                    <div class="input-group date" id='ToDate'>
+                        @Html.Label("To Date")
+                        <div class="form-group input-group">
+                            <input type='text' id="inputToDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-md-3">
+                    <div class="input-group date">
+                     
+                        <div class="form-group input-group">
+                            <label style="display: block;">&nbsp;</label>
+                            <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="Generate" data-bind="enable: selectedUser"  />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="ActivityDiv">
+            <div class="panel-heading">
+                User Activities
+            </div>
+            <div class="panel-body" id="UserActivitiesData">
+                <div class="col-md-12" style="display: none; text-align: center;" id="divNoData">
+                    <label id="lblNoData">No Data Found</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#ToDate').datetimepicker();
+        $('#FromDate').datetimepicker();
+
+        var forProvisionalUsers = true;
+        $("#divProvisionalCompany").removeClass('hide');
+        $("#divCustomerCompany").addClass('hide');
+        $("#divdivUser").removeClass('hide');
+
+        $("input[name=optionsRadiosInline]").click(function () {
+            //
+            var type = $(this).val();
+            //alert(type);
+            if (type == "optionProvisionalUsers") {
+                //$('#SelectedProvisionalCompanyId option:eq(0)').attr('selected', 'selected');
+                $("#SelectedProvisionalCompanyId option").attr("selected", false);
+                $('#UserActivitiesData').empty();
+                $('#SelectedCustomerCompanyId').empty();
+                $('#SelectedUserId').empty();
+                $("#divProvisionalCompany").removeClass('hide');
+                $("#divCustomerCompany").addClass('hide');
+                $("#divdivUser").removeClass('hide');
+                forProvisionalUsers = true;
+            }
+            else {
+                //$('#SelectedProvisionalCompanyId option:eq(0)').attr('selected', 'selected');
+                $("#SelectedProvisionalCompanyId option").attr("selected", false);
+                $('#UserActivitiesData').empty();
+                $('#SelectedCustomerCompanyId').empty();
+                $('#SelectedUserId').empty();
+                $("#divProvisionalCompany").removeClass('hide');
+                $("#divCustomerCompany").removeClass('hide');
+                $("#divdivUser").removeClass('hide');
+                forProvisionalUsers = false;
+            }
+        });
+
+        var fromSelectedProvisionalCompany;
+
+        $('#SelectedProvisionalCompanyId').change(function () {
+            //
+            fromSelectedProvisionalCompany = $(this).val();
+            $('#LoadingImageDiv').show();
+            $('#SelectedCustomerCompanyId').empty();
+            $('#SelectedUserId').empty();
+
+            if (forProvisionalUsers == true) {
+                //Get the List of 'ProvisionalUsers'
+
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("ResellersByProvisionalCompanyId", "ProvisionalMgmt", new { Area = "ProvisionalManagement" }))",
+                    data: { companyId: fromSelectedProvisionalCompany },
+                    success: function (data) {
+                        if (data.trim() == "") {
+                            $('#LoadingImageDiv').hide();
+                            $('#ActivityDiv').hide();
+                        } else {
+
+                            $('#SelectedUserId').empty();
+                            $('#SelectedUserId').append(data);
+                            $('#LoadingImageDiv').hide();
+                        }
+                    },
+                    error: function (data) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            } else {
+                //Get the List of 'CustomerCompany'
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("CustomerCompaniesFromProvisionalCompanyId", "ProvisionalMgmt", new {Area = "ProvisionalManagement"}))",
+                    data: { companyId: fromSelectedProvisionalCompany },
+                    success: function (data) {
+                        $('#SelectedCustomerCompanyId').empty();
+                        $('#SelectedCustomerCompanyId').append(data);
+                        $('#LoadingImageDiv').hide();
+                    },
+                    error: function (data) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            }
+        });
+
+        $('#SelectedCustomerCompanyId').change(function () {
+
+            $('#LoadingImageDiv').show();
+            var selectedId = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "@(Url.Action("CustomerUsersByCustomerCompanyId", "CustomerMgmt", new {Area = "CustomerManagement"}))",
+                data: { companyId: selectedId },
+                success: function (data) {
+                    if (data.trim() == "") {
+                        $('#ActivityDiv').hide();
+                        $('#LoadingImageDiv').hide();
+                    } else {
+
+                        $('#SelectedUserId').empty();
+                        $('#SelectedUserId').append(data);
+                        $('#LoadingImageDiv').hide();
+                    }
+                },
+                error: function (data) {
+                    $('#LoadingImageDiv').hide();
+                }
+            });
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $("#btnView").click(function () {
+        //
+        $('#LoadingImageDiv').show();
+        var frmDateInstance = new Date($('#inputFromDate').val());
+        var toDateInstance = new Date($('#inputToDate').val());
+        var selectedOption;
+        if ($('#optProvisionalUsers').is(':checked')) {
+            selectedOption = "ProvisionalUsers";
+        } else {
+            selectedOption = "CompanyUsers";
+        }
+        if (frmDateInstance > toDateInstance) {
+            $('#LoadingImageDiv').hide();
+            notif({
+                msg: "<b>Error :</b> From date cannot be greater than To Date ",
+                type: "error"
+            });
+        } else if ($('#SelectedUserId').val() == null || $('#SelectedUserId').val() == "") {
+            //
+            $('#LoadingImageDiv').hide();
+            notif({
+                msg: "<b>Error :</b> Please select User ",
+                type: "error"
+            });
+        } else {
+            $.ajax({
+                type: "POST",
+                url: "@(Url.Action("GetUserActivities", "ManagerUser", "Configurations"))",
+                data: {
+                    userId: $('#SelectedUserId').val(),
+                    fromDate: $('#inputFromDate').val(),
+                    toDate: $('#inputToDate').val(),
+                    selectedOption: selectedOption,
+                    provisionalCompanyId: $('#SelectedProvisionalCompanyId').val(),
+                    companyId: $('#SelectedCustomerCompanyId').val()
+                },
+                success: function (data) {
+                    //
+                    $('#LoadingImageDiv').hide();
+                    $('#ActivityDiv').hide();
+                    $('#divNoData').hide();
+                    if (data.length == 0) {
+                        $('#ActivityDiv').fadeIn();
+                        $('#divNoData').show();
+                    } else {
+                        $('#ActivityDiv').fadeIn();
+                        $('#UserActivitiesData').empty();
+                        $('#UserActivitiesData').append(data);
+                        // ShowTable(activityList);
+                        var colorArray = [
+                            'rgb(77, 167, 77)', 'rgb(37, 119, 181)', 'rgb(167, 179, 188)', '#62CBB2', '#AACB62', '#D58281',
+                            '#CBC062', '#71D0AC', '#85C2D6', '#CE94DB', '#9A94DB', '#BCA3E0', '#8DCD6A', '#71D087', '#A271D0', '#75A8D1', '#85D6D3',
+                            '#B89EFF', '#7C70FF', '#2974FF', '#4DB5FF', '#4DEDFF', '#8FCBFF', '#8FEEFF', '#00ADAD', '#00BD32', '#0077C7', '#0044B3', '#24FFD3'
+                        ];
+                    }
+                    if (_adjustPageFooter)
+                        _adjustPageFooter();
+                },
+                error: function (data) {
+                    $('#LoadingImageDiv').hide();
+                }
+            });
+        }
+    });
+
+    function ShowTable(data) {
+        var parentTableDiv = $('<div class="table-responsive">');
+        var parentTable = $('<table class="table table-hover">');
+        var thead = $('<thead>');
+        var headTr = $('<tr>');
+        var headCompanyNameTh = $('<th>');
+        var headTotalLoginPercentageTh = $('<th>');
+
+        //Add heading to table
+        headCompanyNameTh.append("Company");
+        headTotalLoginPercentageTh.append("Percentage");
+
+        //Append headings to <tr> tag
+        headTr.append(headCompanyNameTh);
+        headTr.append(headTotalLoginPercentageTh);
+
+        //Append headTr to <thead> tag
+        thead.append(headTr);
+
+        //Append thead to <table> tag
+        parentTable.append(thead);
+
+        //Append parentTable to table <div> tag
+        parentTableDiv.append(parentTable);
+        var tableBody = $('<tbody>');
+        for (var i = 0; i < data.length; i++) {
+            var innerTr = $('<tr>');
+            var innerUserNameTd = $('<td>');
+            innerUserNameTd.append(data[i].CompanyName);
+            var innerTotalLoginsTd = $('<td>');
+            innerTotalLoginsTd.append(data[i].CompanyLoginPercentage);
+            innerTr.append(innerUserNameTd);
+            innerTr.append(innerTotalLoginsTd);
+            tableBody.append(innerTr);
+        }
+        parentTable.append(tableBody);
+
+        $('#UserActivitiesData').empty();
+        $('#UserActivitiesData').append(parentTableDiv);
+    }
+
+    var Controller = function() {
+        var self = this;
+        self.selectedUser = ko.observable();
+    }
+
+    var vm = new Controller();
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>

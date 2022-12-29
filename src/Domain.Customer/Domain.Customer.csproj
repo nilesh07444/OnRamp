@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6894940B-7242-4321-8FF2-C8AD228DD87C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Domain.Customer</RootNamespace>
+    <AssemblyName>Domain.Customer</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Syncfusion.Licensing, Version=17.4451.0.53, Culture=neutral, PublicKeyToken=632609b4d040f6b4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Licensing.17.4.0.53\lib\net451\Syncfusion.Licensing.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="VirtuaCon, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\VirtuaCon.2.1.368.1854\lib\net35\VirtuaCon.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Base\ScheduleReportObject.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="Models\AcrobatField\AcrobatField.cs" />
+    <Compile Include="Models\AcrobatField\AcrobatFieldChapter.cs" />
+    <Compile Include="Models\AcrobatField\AcrobatFieldChapterUserResult.cs" />
+    <Compile Include="Models\AcrobatField\AcrobatFieldChapterUserUploadResult.cs" />
+    <Compile Include="Models\AcrobatField\AcrobatFieldContentBox.cs" />
+    <Compile Include="Models\AcrobatField\AcrobatFieldListUserResult.cs" />
+    <Compile Include="Models\AcrobatField\StandardUserAdobeFieldValues.cs" />
+    <Compile Include="Models\AutoAssignWorkflow\AutoAssignGroups.cs" />
+    <Compile Include="Models\AutoAssignWorkflow\AutoAssignDocuments.cs" />
+    <Compile Include="Models\AutoAssignWorkflow\AutoAssignWorkflow.cs" />
+    <Compile Include="Models\Certificates\BEECertificate.cs" />
+    <Compile Include="Models\Certificates\Certificate.cs" />
+    <Compile Include="Models\CheckLists\CheckList.cs" />
+    <Compile Include="Models\CheckLists\CheckListChapter.cs" />
+    <Compile Include="Models\CheckLists\CheckListChapterUserUploadResult.cs" />
+    <Compile Include="Models\CheckLists\CheckListChapterUserResult.cs" />
+    <Compile Include="Models\CheckLists\CheckListUserResult.cs" />
+    <Compile Include="Models\Configuration\CustomConfiguration.cs" />
+    <Compile Include="Models\Course\AssignedCourse.cs" />
+    <Compile Include="Models\Course\AssociatedDocument.cs" />
+    <Compile Include="Models\Course\Course.cs" />
+    <Compile Include="Models\CustomFields\Fields.cs" />
+    <Compile Include="Models\CustomDocument\ConditionalTable.cs" />
+    <Compile Include="Models\CustomDocument\CustomDocument.cs" />
+    <Compile Include="Models\CustomDocument\CustomDocumentAnswerSubmission.cs" />
+    <Compile Include="Models\CustomDocument\CustomDocumentCheckList.cs" />
+    <Compile Include="Models\CustomDocument\CustomDocumentMessageCenter.cs" />
+    <Compile Include="Models\CustomRole\CustomUserRole.cs" />
+    <Compile Include="Models\DocumentTrack\DocumentAuditTrack.cs" />
+    <Compile Include="Models\DocumentWorkflowAuditMessages\DocumentWorkflowAuditMessages.cs" />
+    <Compile Include="Models\Document\DocumentNotification.cs" />
+    <Compile Include="Models\Document\DocumentUrl.cs" />
+    <Compile Include="Models\Document\DocumentUsage.cs" />
+    <Compile Include="Models\Document\IContentBox.cs" />
+    <Compile Include="Models\Document\IContentUploads.cs" />
+    <Compile Include="Models\Document\IDocument.cs" />
+    <Compile Include="Models\Document\IDocumentNewForParallel.cs" />
+    <Compile Include="Models\ExternalTrainingProviders\ExternalTrainingProvider.cs" />
+    <Compile Include="Models\Feedback\Feedback.cs" />
+    <Compile Include="Models\Feedback\FeedbackRead.cs" />
+    <Compile Include="Models\Feedback\UserFeedback.cs" />
+    <Compile Include="Models\Feedback\UserFeedbackRead.cs" />
+    <Compile Include="Models\Forms\Form.cs" />
+    <Compile Include="Models\Forms\FormChapter.cs" />
+    <Compile Include="Models\Forms\FormChapterUserResult.cs" />
+    <Compile Include="Models\Forms\FormField.cs" />
+    <Compile Include="Models\Forms\FormFiledUserResult.cs" />
+    <Compile Include="Models\Groups\CustomerGroup.cs" />
+    <Compile Include="Models\Memo\MemoListUserResult.cs" />
+    <Compile Include="Models\Memo\MemoChapter.cs" />
+    <Compile Include="Models\Memo\MemoChapterUserResult.cs" />
+    <Compile Include="Models\Memo\MemoChapterUserUploadResult.cs" />
+    <Compile Include="Models\Policy\PolicyContentBoxUserResult.cs" />
+    <Compile Include="Models\Policy\PolicyContentBoxUserUploadResult.cs" />
+    <Compile Include="Models\ScheduleReport\ScheduleReportModel.cs" />
+    <Compile Include="Models\ScheduleReport\ScheduleReportParameter.cs" />
+    <Compile Include="Models\ScheduleReport\ScheduleReportParams.cs" />
+    <Compile Include="Models\ScheduleReport\SelectedScheduleReportParameter.cs" />
+    <Compile Include="Models\StandatdUserGroup\StandardUserGroup.cs" />
+    <Compile Include="Models\Memo\Memo.cs" />
+    <Compile Include="Models\Memo\MemoContentBox.cs" />
+    <Compile Include="Models\Playbooks\Categories.cs" />
+    <Compile Include="Models\Playbooks\ChapterLink.cs" />
+    <Compile Include="Models\Playbooks\ChapterUpload.cs" />
+    <Compile Include="Models\Playbooks\CKEUpload.cs" />
+    <Compile Include="Models\Playbooks\CourseContent.cs" />
+    <Compile Include="Models\Playbooks\TrainingGuide.cs" />
+    <Compile Include="Models\Playbooks\TraningGuideChapter.cs" />
+    <Compile Include="Models\Playbooks\FileUploads.cs" />
+    <Compile Include="Models\PolicyResponse\PolicyResponse.cs" />
+    <Compile Include="Models\Policy\Policy.cs" />
+    <Compile Include="Models\Policy\PolicyContentBox.cs" />
+    <Compile Include="Models\Restore\RestoreTrack.cs" />
+    <Compile Include="Models\Stats\CustomerSurveyDetail.cs" />
+    <Compile Include="Models\Stats\StandardUserCorrespondanceLog.cs" />
+    <Compile Include="Models\Stats\StandardUserActivityLog.cs" />
+    <Compile Include="Models\Stats\StandardUserDisclaimerActivityLog.cs" />
+    <Compile Include="Models\Stats\StandardUserLoginStats.cs" />
+    <Compile Include="Models\Stats\StandardUserTrainingActivityLog.cs" />
+    <Compile Include="Models\Tests\TestChapterUserResult.cs" />
+    <Compile Include="Models\Tests\TestChapterUserUploadResult.cs" />
+    <Compile Include="Models\Tests\TestListUserResult.cs" />
+    <Compile Include="Models\Tests\QuestionUpload.cs" />
+    <Compile Include="Models\Tests\TestAnswer.cs" />
+    <Compile Include="Models\Tests\TestCertificate.cs" />
+    <Compile Include="Models\Tests\TestResult.cs" />
+    <Compile Include="Models\Tests\TestUserAnswer.cs" />
+    <Compile Include="Models\Tests\TrainingQuestion.cs" />
+    <Compile Include="Models\Tests\TrainingTest.cs" />
+    <Compile Include="Base\CustomerDomainObject.cs" />
+    <Compile Include="Models\Tests\TrainingTestsUsageStats.cs" />
+    <Compile Include="Models\Test\Test.cs" />
+    <Compile Include="Models\Test\TestQuestion.cs" />
+    <Compile Include="Models\Test\TestQuestionAnswer.cs" />
+    <Compile Include="Models\Test\TestSession.cs" />
+    <Compile Include="Models\Test\Test_Result.cs" />
+    <Compile Include="Models\TrainingActivityDetails\BursaryTrainingActivityDetail.cs" />
+    <Compile Include="Models\TrainingActivityDetails\ExternalTrainingActivityDetail.cs" />
+    <Compile Include="Models\TrainingActivityDetails\InternalTrainingActivityDetail.cs" />
+    <Compile Include="Models\TrainingActivityDetails\MentoringAndCoachingTrainingActivityDetail.cs" />
+    <Compile Include="Models\TrainingActivityDetails\ToolboxTalkTrainingActivityDetail.cs" />
+    <Compile Include="Models\TrainingActivityDetails\TrainingActivityType.cs" />
+    <Compile Include="Models\TrainingLabels\TrainingLabel.cs" />
+    <Compile Include="Models\TrainingManual\TrainingManualChapterUserResult.cs" />
+    <Compile Include="Models\TrainingManual\TrainingManualChapterUserUploadResult.cs" />
+    <Compile Include="Models\TrainingManual\TrainingManualListUserResult.cs" />
+    <Compile Include="Models\TrainingManual\TrainingManual.cs" />
+    <Compile Include="Models\TrainingManual\TrainingManualChapter.cs" />
+    <Compile Include="Models\Document\AssignedDocument.cs" />
+    <Compile Include="Models\Users\AssignedTrainingGuides.cs" />
+    <Compile Include="Models\Users\CustomerRole.cs" />
+    <Compile Include="Models\Users\TestAssigned.cs" />
+    <Compile Include="Models\Playbooks\TrainingGuideusageStats.cs" />
+    <Compile Include="Models\Users\StandardUser.cs" />
+    <Compile Include="Models\Versioning\TestVersion.cs" />
+    <Compile Include="Models\VirtualClassRooms\ExternalMeetingUser.cs" />
+    <Compile Include="Models\VirtualClassRooms\VirtualClassRoom.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{BBBB998D-2C63-4093-98DC-6D5B452997D0}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain\Domain.csproj">
+      <Project>{CA18CB88-47DE-4DF8-9592-6E9B4FB018ED}</Project>
+      <Name>Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Serialization\Spec.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

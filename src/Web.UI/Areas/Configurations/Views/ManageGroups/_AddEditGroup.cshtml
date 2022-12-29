@@ -1,0 +1,109 @@
+﻿@using Ramp.Security.Authorization
+@model Ramp.Contracts.ViewModel.GroupViewModelLong
+@using (Html.BeginForm("CreateOrUpdateGroup", "ManageGroups", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @* @Html.AntiForgeryToken()*@
+    <div class="row">
+        <div class="col-lg-12 ">
+            <div class="panel panel-info">
+                <div class="panel-heading"> Create Group</div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-10">
+                            @Html.ValidationSummary(true)
+                            @Html.HiddenFor(model => model.GroupViewModel.GroupId)
+                            <div class="form-group">
+                                @Html.Label("Title")
+                                @Html.TextBoxFor(model => model.GroupViewModel.Title, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.GroupViewModel.Title)
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Description")
+                                @Html.TextBoxFor(model => model.GroupViewModel.Description, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.GroupViewModel.Description)
+                            </div>
+
+                            @if (Model.GroupViewModel.IsforSelfSignUpGroup == true)
+                            {
+
+                                <div class="form-group">
+                                    @Html.Label("Make the default sign up Group :")
+                                    @Html.DisplayFor(model => model.GroupViewModel.IsforSelfSignUpGroup, new { @id = "IsforSelfSignUpGroupTrue", disabled ="disabled"})
+                                    @Html.HiddenFor(model => model.GroupViewModel.IsforSelfSignUpGroup)
+                                    @*@Html.CheckBoxFor(model => model.PackageViewModelShort.IsForSelfProvision, new { @style = "display: initial; width:10%;", @id = "IsForSelfProvision" })*@
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    @Html.Label("Default sign up group :")
+                                    @Html.CheckBoxFor(model => model.GroupViewModel.IsforSelfSignUpGroup, new { @id = "IsforSelfSignUpGroup" })
+                                    @*@Html.CheckBoxFor(model => model.PackageViewModelShort.IsForSelfProvision, new { @style = "display: initial; width:10%;", @id = "IsForSelfProvision" })*@
+                                </div>
+                            }
+
+
+
+                            @Html.HiddenFor(m => m.GroupViewModel.SelectedCustomerCompanyId)
+
+                            <input type="submit" value="Save" id="SaveGroupButton" class="btn btn-default pull-right" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script type="text/javascript" language="javascript">
+    $(function () {
+
+        $('#GroupViewModel_SelectedCustomerCompanyId').change(function () {
+            var selectedCompanyId = $(this).val();
+            var groupTitle = $('#GroupViewModel_Title').val();
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("CheckForGropNameForACompanySelectedInDropdown", "ManageGroups", "Configurations")",
+                data: { companyId: selectedCompanyId, groupTitle: groupTitle },
+                success: function (data) {
+                    if (data) {
+                        $('#SaveGroupButton').removeClass('disabled');
+                    } else {
+                        notif({
+                            msg: "<b>Error :</b> Group name already exists for this customer company.",
+                            type: "error",
+                        });
+                        $('#SaveGroupButton').addClass('disabled');
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+        });
+
+        var fromSelectedProvisionalCompany;
+
+        $('#GroupViewModel_SelectedProvisionalCompanyId').change(function () {
+
+            $('#LoadingImageDiv').show();
+            fromSelectedProvisionalCompany = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "@(Url.Action("CustomerCompaniesFromProvisionalCompanyId", "ProvisionalMgmt", new { Area = "ProvisionalManagement" }))",
+                // url :"/ProvisionalManagement/ProvisionalMgmt/CustomerCompaniesFromProvisionalCompanyId",
+                data: { companyId: fromSelectedProvisionalCompany },
+                success: function (data) {
+                    $('#GroupViewModel_SelectedCustomerCompanyId').empty();
+                    $('#GroupViewModel_SelectedCustomerCompanyId').append(data);
+                    $('#LoadingImageDiv').hide();
+                },
+                error: function (data) {
+                    $('#LoadingImageDiv').hide();
+                }
+            });
+        });
+
+
+    });
+
+</script>

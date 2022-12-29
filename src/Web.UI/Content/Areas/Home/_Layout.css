@@ -1,0 +1,77 @@
+﻿#LoadingImageDiv {
+    background-color: #FFF !important;
+    display: none;
+}
+
+.loadingImageContainer {
+    left: 47%;
+    position: absolute !important;
+    top: 34%;
+}
+.nav > li > a > img{
+    max-width:100px;
+    max-height:100px;
+    margin:auto;
+}
+.nav navbar-nav{
+    background-color:#1bbc9b !important;
+    color: white !important;
+}
+@media (min-width: 768px) {
+    .navbar .navbar-nav {
+        display: inline-block;
+        float: none;
+        vertical-align: top;
+    }
+
+    .navbar .navbar-collapse {
+        text-align: center;
+    }
+}
+.menuLink {
+    font-size:1em;
+    color:black;
+    text-align:left;
+}
+.subMenuLink {
+    text-align:left;
+}
+.top-menu{
+    background-color: #1bbc9b;
+    color: #fff;
+    text-align:center;
+}
+@media (min-width:1058px) {
+    .resize {
+        padding-top:100px;
+    }
+    .no-resize {
+        padding-top: 100px;
+    }
+}
+@media (min-width:768px) and (max-width:1057px) {
+    .resize {
+        padding-top:200px;
+    }
+    .no-resize {
+        padding-top: 100px;
+    }
+}
+@media (max-width:767px) {
+    .resize {
+        padding-top:0px;
+    }
+    .no-resize{
+        padding-top:0px;
+    }
+}
+.row{
+    margin-left:0px;
+    margin-right:0px;
+}
+.body-wrapper{
+    background-color:white;
+}
+.nav{
+    display:block;
+}

@@ -1,0 +1,181 @@
+﻿@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@using System.Threading
+@using Web.UI.Code.Extensions
+@model List<TrainingTestViewModel>
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+}
+
+<style type="text/css">
+    div.hopscotch-bubble .hopscotch-bubble-close {
+        top: -2px !important;
+        right: 5px !important;
+    }
+
+    div.hopscotch-bubble .hopscotch-bubble-number {
+        padding: 0px !important;
+    }
+</style>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header"> My Tests </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        @{
+            Html.RenderPartial("_MyNotTakenTests", Model);
+        }
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        @{
+            Html.RenderPartial("_MyTakenTests", Model);
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    /* globals hopscotch: false */
+
+    /* ============ */
+    /* EXAMPLE TOUR */
+    /* ============ */
+    var tour = {
+        id: 'hello-hopscotch',
+        steps: [
+          {
+              target: 'recordId',
+              title: 'Show Entries',
+              content: 'You can use this to limit the number of Playbooks displayed in the list.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: 200
+          },
+          {
+              target: 'Sorting',
+              placement: 'top',
+              title: 'Sorting',
+              content: 'You can click on the header of any column to sort the data.',
+              xOffset: 'center',
+              arrowOffset: 'center'
+          },
+          {
+              target: 'searchId',
+              placement: 'top',
+              title: 'Search',
+              content: 'You can search for Tests using the text search field.',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: 240
+          },
+          {
+              target: 'Options',
+              placement: 'top',
+              title: 'Options',
+              content: 'Click the icon to view a past test results or to take a new Test.',
+              arrowOffset: 100,
+              xOffset: 'center',
+              arrowOffset: 'center'
+          }
+        ],
+        showPrevButton: true,
+        scrollTopMargin: 100
+    },
+
+    /* ========== */
+    /* TOUR SETUP */
+    /* ========== */
+    addClickListener = function (el, fn) {
+        if (el.addEventListener) {
+            el.addEventListener('click', fn, false);
+        }
+        else {
+            el.attachEvent('onclick', fn);
+        }
+    },
+
+    init = function () {
+        var startBtnId = 'startTourBtn',
+            calloutId = 'startTourCallout',
+            mgr = hopscotch.getCalloutManager(),
+            state = hopscotch.getState();
+
+        if (state && state.indexOf('hello-hopscotch:') === 0) {
+            // Already started the tour at some point!
+            $('#TourCheckBox').bootstrapToggle('on');
+            hopscotch.startTour(tour);
+        }
+        else {
+            // Looking at the page for the first(?) time.
+            //setTimeout(function () {
+            //    mgr.createCallout({
+            //        id: calloutId,
+            //        target: startBtnId,
+            //        placement: 'bottom',
+            //        title: 'Take an example tour',
+            //        content: 'Start by taking an example tour to see Hopscotch in action!',
+            //        xOffset: 'right',
+            //        arrowOffset: 'left',
+            //        width: 240
+            //    });
+            //}, 100);
+        }
+
+        addClickListener(document.getElementById(startBtnId), function () {
+            if (!hopscotch.isActive) {
+                mgr.removeAllCallouts();
+                hopscotch.startTour(tour);
+            }
+        });
+    };
+
+    init();
+
+    //$('#TourCheckBox').click(function () {
+    //
+    //    if ($(this).is(':checked')) {
+    //        hopscotch.startTour(tour);
+    //    }
+    //    else {
+
+    //        hopscotch.endTour(tour);
+    //        //alert("Unchecked");
+    //    }
+    //});
+
+    $('#TourCheckBox').change(function () {
+        //alert($(this).prop('checked'));
+        if ($(this).prop('checked')) {
+            hopscotch.startTour(tour);
+        }
+        else {
+            hopscotch.endTour(tour);
+        }
+    });
+
+    $(document).on('click', '#hopscotch-done', function (e) {
+        $('#TourCheckBox').bootstrapToggle('off');
+
+    });
+
+    $(document).on('click', '.hopscotch-bubble-close', function (e) {
+        $('#TourCheckBox').bootstrapToggle('off');
+    });
+</script>

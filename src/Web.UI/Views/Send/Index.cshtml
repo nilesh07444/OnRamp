@@ -1,0 +1,3429 @@
+﻿@model IEnumerable<Ramp.Contracts.ViewModel.DocumentListModel>
+@using Common.Web
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@using System.Threading
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<style>
+     #jstree-marker {
+        z-index: 1100;
+    }
+    #manageCategoriesModal {
+        overflow-x: auto;
+    }
+    #manageCategoriesModal .modal-dialog {
+        display: table;
+    }
+    .searchSubmit, .searchReset {
+        top: 50px;
+        left: 10px;
+    }
+    .searchReset {
+        left: 10px;
+    }
+    .searchposText {
+        position: absolute;
+        z-index: 9;
+        top: 50px;
+        left: 10px;
+    }
+
+    .seachpos {
+        position: relative;
+    }
+    .policy-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+
+    .memo-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .test-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .training-manual-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .checklist-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+
+    .custom-icon {
+        background-image: url('../../Content/images/CustomDocument.png') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+
+    .form-inline .twitter-typeahead {
+        width: auto;
+        float: none;
+        vertical-align: middle;
+    }
+
+    .document-panelbody {
+        max-height: 468px;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+        .document-panelbody > table {
+            margin: 0;
+        }
+
+    .spacer {
+        margin-top: 6em;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .not-selected, .not-selected > img {
+        zoom: 1;
+        filter: alpha(opacity=50);
+        -ms-opacity: 0.5;
+        opacity: 0.5;
+    }
+
+        .not-selected:hover, .not-selected > img:hover {
+            filter: alpha(opacity=100);
+            -ms-opacity: 1;
+            opacity: 1;
+            -ms-transition: all .15s ease-in-out;
+            -o-transition: all .15s ease-in-out;
+            -webkit-transition: all .15s ease-in-out;
+            transition: all .15s ease-in-out;
+            -ms-transform: scale(1.1);
+            -webkit-transform: scale(1.1);
+            transform: scale(1.1)
+        }
+
+    .no-underline:hover, .no-underline:focus {
+        text-decoration: none;
+    }
+
+    .panel-container > div.panel:last-child {
+        margin-bottom: 0;
+    }
+
+    .selected {
+        background-color: #666;
+        color: #fff;
+    }
+
+    .title {
+        width: 80%;
+        float: left;
+        font-weight: bold;
+        padding: 8px;
+        border: 1px solid #ddd;
+        margin: 0px 0px 0px 0px
+    }
+
+    .noOfUsers {
+        width: 20%;
+        float: right;
+        font-weight: bold;
+        padding: 8px;
+        border: 1px solid #ddd;
+        margin: 0px 0px 0px 0px
+    }
+
+    .title-value {
+        width: 80%;
+        float: left;
+        border: 1px solid #ddd;
+        padding: 1px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+     .untitle-value {
+        width: 80%;
+        float: left;
+        border: 1px solid #ddd;
+        padding: 8px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+
+    .noOfUsers-value {
+        width: 20%;
+        float: right;
+        border: 1px solid #ddd;
+        padding: 8px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+
+    table th {
+    position:sticky;
+    top:0;
+    z-index:1;
+    background: #ededed;
+   }
+
+</style>
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<script>
+    $(document).ready(function () {
+        // #boot-multiselect-demo.multiselect({ })
+        $('.multiselect').multiselect({
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+            buttonWidth: 250,
+            enableFiltering: true,
+            maxHeight: 350
+        });
+    });
+
+</script>
+@*<div class="container">
+        <h1 data-bind="visible: selectedTypes().length > 0">Manage Document Assignment</h1>
+        <div class="row">
+            <div data-bind="visible: selectedTypes().length > 0">
+                <h4>Please select the title of your documents you would like to perform the action on:</h4>
+
+                <div class=" panel panel-info">
+                    <div class=" panel-heading">Document Titles</div>
+                    <div class="panel-body panel-container" style="padding: 0">
+                        <!-- ko if: selectedTypes.indexOf(1) !== -1 -->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#trainingManuals" data-bind="click: toggleCollapse('#trainingManuals')">
+                                Training Manuals <span class="glyphicon" data-bind="css: panelCollapse('#trainingManuals')"></span>
+                            </div>
+                            <div class="panel-body collapse document-panelbody" id="trainingManuals">
+                                <table class="table table-hover table-fixed">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Titles" class="form-control" data-bind="textInput: $root.trainingManualQuery" />
+                                            </th>
+                                            <th style="width: 100px" class="text-center">Select</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: trainingManuals">
+                                        <tr data-bind="if:visible">
+                                            <td data-bind="text: Title"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="value: $data, checked: $root.selectedDocuments" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if:trainingManuals().length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No published training manuals available</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                    <!-- ko if:trainingManuals().length > 0 && ko.utils.arrayFilter(trainingManuals(),function(i) {return i.visible();}).length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching training manuals found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if: selectedTypes.indexOf(2) !== -1 -->
+                        <div class="panel panel-default">
+                            <div class=" panel panel-heading" data-toggle="collapse" data-target="#tests" data-bind="click: toggleCollapse('#tests')">
+                                Tests <span class="glyphicon" data-bind="css: panelCollapse('#tests')"></span>
+                            </div>
+                            <div class="panel-body collapse document-panelbody" id="tests">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Titles" class="form-control" data-bind="textInput: $root.testQuery" />
+                                            </th>
+                                            <th style="width: 100px" class="text-center">Select</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: tests">
+                                        <tr data-bind="if:visible">
+                                            <td data-bind="text: Title"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="value: $data, checked: $root.selectedDocuments" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if:tests().length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No published tests available</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                    <!-- ko if:tests().length > 0 && ko.utils.arrayFilter(tests(),function(i) {return i.visible();}).length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching tests found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if: selectedTypes.indexOf(3) !== -1 -->
+                        <div class="panel panel-default">
+                            <div class="panel panel-heading" data-toggle="collapse" data-target="#policies" data-bind="click: toggleCollapse('#policies')">
+                                Policies <span class="glyphicon" data-bind="css: panelCollapse('#policies')"></span>
+                            </div>
+                            <div class="panel-body collapse document-panelbody" id="policies">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Titles" class="form-control" data-bind="textInput: $root.policyQuery" />
+                                            </th>
+                                            <th style="width: 100px" class="text-center">Select</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: policies">
+                                        <tr data-bind="if:visible">
+                                            <td data-bind="text: Title"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="value: $data, checked: $root.selectedDocuments" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if:policies().length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No published policies available</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                    <!-- ko if:policies().length > 0 && ko.utils.arrayFilter(policies(),function(i) {return i.visible();}).length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching policies found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if: selectedTypes.indexOf(6) !== -1 -->
+
+                        <div class="panel panel-default">
+                            <div class="panel panel-heading" data-toggle="collapse" data-target="#checklists" data-bind="click: toggleCollapse('#checklists')">
+                                Checklist <span class="glyphicon" data-bind="css: panelCollapse('#checklists')"></span>
+                            </div>
+                            <div class="panel-body collapse document-panelbody" id="checklists">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Titles" class="form-control" data-bind="textInput: $root.checklistQuery" />
+                                            </th>
+                                            <th style="width: 100px" class="text-center">Select</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: checklists">
+                                        <tr data-bind="if:visible">
+                                            <td data-bind="text: Title"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="value: $data, checked: $root.selectedDocuments" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if:checklists().length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No published checklists available</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                    <!-- ko if:checklists().length > 0 && ko.utils.arrayFilter(checklists(),function(i) {return i.visible();}).length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching checklists found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if: selectedTypes.indexOf(4) !== -1 -->
+                        <div class="panel panel-default">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#memos" data-bind="click: toggleCollapse('#memos')">
+                                Memos <span class="glyphicon" data-bind="css: panelCollapse('#memos')"></span>
+                            </div>
+                            <div class="panel-body collapse document-panelbody" id="memos">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Titles" class="form-control" data-bind="textInput: $root.memoQuery" />
+                                            </th>
+                                            <th style="width: 100px" class="text-center">Select</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: memos">
+                                        <tr data-bind="if:visible">
+                                            <td data-bind="text: Title"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="value: $data, checked: $root.selectedDocuments" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if:memos().length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No published memos available</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                    <!-- ko if:memos().length > 0 && ko.utils.arrayFilter(memos(),function(i) {return i.visible();}).length == 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching memos found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+            <br>
+
+
+            <div data-bind="visible: selectedDocuments().length > 0">
+                    <div>
+                        <h4 style="display: inline-block">Please select the Group/ Users you would like to perform the action on:</h4>
+                        <div class="pull-right form-group form-inline text-center" data-bind="visible: selectedDocuments().length > 0">
+                            <select class="multiselect" id="boot-multiselect-demo" multiple="multiple">
+                                @foreach (var item in ViewBag.Groups) {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                            <input type="text" class="form-control" placeholder="Search User Group" data-bind="typeahead: $root.userGroupSearch.options, value: $root.userGroupSearch.value" />
+                        </div>
+                    </div>
+                    <div class="panel panel-info">
+                        <div class="panel-heading">Who is this for?</div>
+                        <div class="panel-body" style="padding: 0">
+                            <!-- ko if: selectedAction() === 'Assign' -->
+                            <div data-bind="foreach: usersPerDocument">
+                                <div data-bind="template: { name: 'document-users-assign-template', data: $data }" class="panel-template"></div>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko if: selectedAction() === 'Unassign' -->
+                            <div data-bind="foreach: usersPerDocument">
+                                <div data-bind="template: { name: 'document-users-unassign-template', data: $data }" class="panel-template"></div>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko if: selectedAction() === 'Reassign' -->
+                            <div data-bind="foreach: usersPerDocument">
+                                <div data-bind="template: { name: 'document-users-reassign-template', data: $data }" class="panel-template"></div>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+
+            <div data-bind="visible: selectedUsersPerDocument().length > 0">
+                    <br />
+                    <div class="text-center">
+                        <h4>Please click here to complete the action</h4>
+                        <button class="btn btn-primary" data-bind="text: selectedAction" data-toggle="modal" data-target="#confirmModal"></button>
+                    </div>
+                </div>
+
+
+        </div>
+        <div class="spacer"></div>
+    </div>*@
+
+<div class="modal fade" id="actionModal" role="dialog" aria-hidden="true" data-backdrop="static" data-bind="with: modals.action">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">What would you like to do?</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <div class="col-sm-4 hover-zoom">
+                            <a id="assign" href="javascript:void(0)" data-bind="click:pick.bind('Assign')" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.SendAssign], true)" />
+                                Assign
+                            </a>
+                        </div>
+                        <div class="col-sm-4 hover-zoom">
+                            <a id="unassign" href="javascript:void(0)" data-bind="click:pick.bind('Unassign')" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.SendUnassign], true)" />
+                                Unassign
+                            </a>
+                        </div>
+                        <div class="col-sm-4 hover-zoom">
+                            <a id="reassign" href="javascript:void(0)" data-bind="click:pick.bind('Reassign')" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Reassign], true)" />
+                                Reassign
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="assignDocumentToUserModal" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-toggle="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: modals.type.closeAssignModal.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">User & Group selection</h4>
+            </div>
+            <div class="modal-body">
+                <div data-bind="visible: selectedDocuments().length > 0">
+                    <div>
+                        <p>Please select the Groups or Users you would like to perform the action on:</p>
+                        <br>
+
+                        @*<div data-bind="foreach: usersPerDocument">
+                                <ng-container data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(document.DocumentType))}" />
+                                    <span style="cursor:pointer" data-bind="text:ko.unwrap(document.Title)"></span>
+                                    <!-- ko if: $index() < $parent.usersPerDocument().length - 1 -->
+                                    <span>-</span>
+                                    <!-- /ko -->
+                                </ng-container>
+                            </div><br />*@
+                        <div data-bind="visible: selectedDocuments().length > 0">
+                            <div>
+                                <select class="multiselect" id="boot-multiselect-demo" multiple="multiple">
+                                    @foreach (var item in ViewBag.Groups)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div><br />
+                            @*<input type="text" class="form-control" placeholder="Search User Group" data-bind="typeahead: $root.userGroupSearch.options, value: $root.userGroupSearch.value" />*@
+                        </div>
+                        @*<div data-bind="foreach: usersPerDocument">
+                            <ng-container data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(document.DocumentType))}" />
+                                <span style="cursor:pointer" data-bind="text:ko.unwrap(document.Title) + ' - '"></span>*@
+                        @*<span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>*@
+                        @*</ng-container>*@
+                        @*<div class="panel panel-default">*@
+                        @*<div class="panel-heading" data-toggle="collapse" data-bind="attr: { 'data-target': '#body_' + ko.unwrap(document.Id) }, click: $root.toggleCollapse('#body_' + ko.unwrap(document.Id))">
+                            <span data-bind="text: ko.unwrap(document.Title) + ' - ' + $root.document.getType(ko.unwrap(document.DocumentType))"></span> <span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>
+                             </div>*@
+                        @*</div>*@
+                        <div class="seachpos">
+                            <form class="form-inline">
+                                <div class="input-group">
+                                    <input type="text" placeholder="Search Users" id="txtAssign" class="form-control searchposText" data-bind="visible:allusers().length > 0" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default searchSubmit" data-bind="click:$root.searchFilter(),visible:allusers().length > 0" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                                        <button class="btn btn-default searchReset" data-bind="click:$root.searchReset(),visible:allusers().length > 0" type="button"><span class="glyphicon glyphicon-refresh"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+                            <div data-bind="foreach: allusers">
+                                @*<div style="overflow-y:scroll;max-height:260px">*@
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+
+                                            </th>
+                                            <th style="width: 130px">
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" data-bind="checked: $root.allUsersSelected($element)" /> Assign All
+                                                    </label>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: users" style="display: table-caption;height: 200px;caption-side: bottom;overflow: auto;">
+                                        <tr>
+                                            <td style="width:437px;">
+                                                <span data-bind="text: Name"></span>
+                                                <span class="fa fa-info-circle" style="color:orange" data-bind="visible: AssignedDocumentUsers.length > 0, bootstrapPopover: ko.unwrap(AssignedDocumentUsers)"></span>
+                                                <br>
+                                            </td>
+                                            <td class="text-center" style="width:113px;">
+                                                <input class="sauassign" type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: Id + ';' + GroupId " />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if: users.length === 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching users found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+
+                                @*<!-- /ko -->
+                                    <!-- ko ifnot: users.length > 0 -->
+                                    <p>No users available in selected groups</p>
+                                    <!-- /ko -->*@
+                                @*</div>*@
+                            </div>
+                        </div>
+                        <!-- ko if: isUserGet -->
+                        <p class="text-center">
+                            <span>
+                                Please wait while we fetch your users
+                            </span>
+                        </p>
+                        <!-- /ko -->
+                        @*<div data-bind="foreach: usersPerDocument" id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter(ko.unwrap(document.Id))" />
+                                            </th>
+                                            <th style="width: 130px">
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" data-bind="checked: $root.allUsersSelected($element, ko.unwrap(document.Id))" /> Assign All
+                                                    </label>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: $root.filteredUsers(ko.unwrap(document.Id))">
+                                        <tr>
+                                            <td data-bind="text: Name"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: ko.unwrap($parent.document.Id) + ';' + ko.unwrap($parent.document.DocumentType) + ';' + Id + ';' + GroupId" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>*@
+
+                        @*</div>*@
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" type="button" data-bind="click: modals.type.openConfirmModal.bind(),enable: $root.selectedUsersPerDocument().length > 0">Next</button>
+                        <button class="btn btn-default" type="button" data-dismiss="modal" data-bind="click: modals.type.modalback.bind()">Back</button>
+                    </div>
+                </div>
+            </div>
+            @*<div class="modal-footer">
+                    <div class="text-center">
+                        <div data-bind="visible: selectedUsersPerDocument().length > 0">
+                        <br />
+                        <div class="text-center">
+                            <button class="btn btn-primary" data-bind="click: modals.type.openConfirmModal.bind(),enable: $root.selectedUsersPerDocument().length > 0">Next</button>
+                            <button class="btn btn-primary">Back</button>
+                        </div>
+                        </div>
+                    </div>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div id="unAssignDocumentToUserModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: modals.type.closeAssignModal.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">User & Group Selection</h4>
+            </div>
+            <div class="modal-body">
+                <div data-bind="visible: selectedDocuments().length > 0">
+                    <div>
+                        <p>Please select the Groups or Users you would like to perform the action on:</p>
+                        <br>
+                        @*<div data-bind="foreach: usersPerDocument">
+                                <ng-container data-toggle="collapse1" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                    <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(document.DocumentType))}" />
+                                    <span style="cursor:pointer" data-bind="text: ko.unwrap(document.Title)"></span>
+                                    <!-- ko if: $index() < $parent.usersPerDocument().length - 1 -->
+                                    <span>-</span>
+                                    <!-- /ko -->
+                                </ng-container>
+                            </div><br />*@
+                        <div data-bind="visible: selectedDocuments().length > 0">
+                            <div>
+                                <select class="multiselect" id="boot-multiselect-demo" multiple="multiple">
+                                    @foreach (var item in ViewBag.Groups)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div><br />
+                            @*<input type="text" class="form-control" placeholder="Search User Group" data-bind="typeahead: $root.userGroupSearch.options, value: $root.userGroupSearch.value" />*@
+                        </div>
+                        @*<div data-bind="foreach: usersPerDocument">*@
+                        @*<div class="panel panel-default">*@
+                        @*<ng-container data-toggle="collapse1" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                            <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(document.DocumentType))}" />
+                            <span style="cursor:pointer" data-bind="text: ko.unwrap(document.Title) + ' - '"></span>*@
+                        @*<span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>*@
+                        @*</ng-container>*@
+                        @*<div class="panel-heading" data-toggle="collapse" data-bind="attr: { 'data-target': '#body_' + ko.unwrap(document.Id) }, click: $root.toggleCollapse('#body_' + ko.unwrap(document.Id))">
+                                <span data-bind="text: ko.unwrap(document.Title) + ' - ' + $root.document.getType(ko.unwrap(document.DocumentType))"></span> <span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>
+                            </div>*@
+                        @*</div>*@
+                        <div class="seachpos">
+                            <form class="form-inline">
+                                <div class="input-group">
+                                    <input type="text" placeholder="Search Users" id="txtReassign" class="form-control searchposText" data-bind=" visible:allusers().length > 0" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default searchSubmit" data-bind="click:$root.searchFilter(),visible:allusers().length > 0" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                                        <button class="btn btn-default searchReset" data-bind="click:$root.searchReset(),visible:allusers().length > 0" type="button"><span class="glyphicon glyphicon-refresh"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+                            <div data-bind="foreach: allusers" id="collapseTwo" class="panel-collapse collapse1" role="tabpanel" aria-labelledby="headingOne">
+                                <div style="overflow-y:scroll;max-height:260px">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>
+
+                                                </th>
+                                                <th style="width: 130px">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" data-bind="checked: $root.allUsersSelected($element)" /> UnAssign All
+                                                        </label>
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: users">
+                                            <tr>
+                                                <td data-bind="text: Name"></td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: Id + ';' + GroupId " />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <!-- ko if: users.length === 0 -->
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="2" class="text-center">No matching users found</td>
+                                            </tr>
+                                        </tbody>
+                                        <!-- /ko -->
+                                    </table>
+                                    @*<!-- /ko -->
+                                        <!-- ko ifnot: users.length > 0 -->
+                                        <p>No users available in selected groups</p>
+                                        <!-- /ko -->*@
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ko if: isUserGet -->
+                        <p class="text-center">
+                            <span>
+                                Please wait while we fetch your users
+                            </span>
+                        </p>
+                        <!-- /ko -->
+                        @*<div class="panel-body collapse in document-panelbody" data-bind="attr: { id: 'body_' + ko.unwrap(document.Id) }">
+                                <!-- ko if: users.length > 0 -->
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter(ko.unwrap(document.Id))" />
+                                            </th>
+                                            <th style="width: 130px">
+
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" data-bind="checked: $root.allUsersSelected($element, ko.unwrap(document.Id))" /> Unassign All
+                                                    </label>
+                                                </div>
+
+
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: $root.filteredUsers(ko.unwrap(document.Id))">
+                                        <tr>
+                                            <td data-bind="text: Name"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: ko.unwrap($parent.document.Id) + ';' + ko.unwrap($parent.document.DocumentType) + ';' + Id + ';' + GroupId" checked="checked" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if: $root.filteredUsers(ko.unwrap(document.Id))().length === 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching users found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+                                <!-- /ko -->
+                                <!-- ko ifnot: users.length > 0 -->
+                                <p>No users available in selected groups</p>
+                                <!-- /ko -->
+                            </div>*@
+
+                        @*</div>*@
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="click: modals.type.openConfirmModal.bind(),enable: $root.selectedUsersPerDocument().length > 0">Next</button>
+                        <button class="btn btn-default" data-bind="click: modals.type.modalback.bind()">Back</button>
+                    </div>
+                </div>
+            </div>
+            @*<div class="modal-footer">
+                    <div class="text-center">
+                        <div data-bind="visible: selectedUsersPerDocument().length > 0">
+                            <br />
+                            <div class="text-center">
+                                <button class="btn btn-primary" data-bind="click: modals.type.openConfirmModal.bind()">Next</button>
+                                <button class="btn btn-primary">Back</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div id="reAssignDocumentToUserModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: modals.type.closeAssignModal.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">User & Group Selection</h4>
+            </div>
+            <div class="modal-body">
+                <div data-bind="visible: selectedDocuments().length > 0">
+                    <div>
+                        <p>Please select the Groups or Users you would like to perform the action on:</p>
+                        <br>
+                        @*<div data-bind="foreach: usersPerDocument">
+                                <ng-container data-toggle="collapse2" data-parent="#accordion" href="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                                    <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(document.DocumentType))}" />
+                                    <span style="cursor:pointer" data-bind="text: ko.unwrap(document.Title)"></span>
+                                    <!-- ko if: $index() < $parent.usersPerDocument().length - 1 -->
+                                    <span>-</span>
+                                    <!-- /ko -->
+                                </ng-container>
+                            </div><br />*@
+                        <div data-bind="visible: selectedDocuments().length > 0">
+                            <div>
+                                <select class="multiselect" id="boot-multiselect-demo" multiple="multiple">
+                                    @foreach (var item in ViewBag.Groups)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div><br />
+                            @*<input type="text" class="form-control" placeholder="Search User Group" data-bind="typeahead: $root.userGroupSearch.options, value: $root.userGroupSearch.value" />*@
+                        </div>
+                        @*<div data-bind="foreach: usersPerDocument">
+                            <ng-container data-toggle="collapse2" data-parent="#accordion" href="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                                <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(document.DocumentType))}" />
+                                <span style="cursor:pointer" data-bind="text: ko.unwrap(document.Title) + ' - '"></span>*@
+                        @*<span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>*@
+                        @*</ng-container>*@
+                        @*<div class="panel panel-default">*@
+                        @*<div class="panel-heading" data-toggle="collapse" data-bind="attr: { 'data-target': '#body_' + ko.unwrap(document.Id) }, click: $root.toggleCollapse('#body_' + ko.unwrap(document.Id))">
+                                <span data-bind="text: ko.unwrap(document.Title) + ' - ' + $root.document.getType(ko.unwrap(document.DocumentType))"></span> <span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>
+                            </div>*@
+                        @*</div>*@
+
+                        <div class="seachpos">
+                            <form class="form-inline">
+                                <div class="input-group">
+                                    <input type="text" placeholder="Search Users" id="txtUnassign" class="form-control searchposText" data-bind="visible:allusers().length > 0" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default searchSubmit" data-bind="click:$root.searchFilter(),visible:allusers().length > 0" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                                        <button class="btn btn-default searchReset" data-bind="click:$root.searchReset(),visible:allusers().length > 0" type="button"><span class="glyphicon glyphicon-refresh"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+
+                            <div data-bind="foreach: allusers" id="collapseTwo" class="panel-collapse collapse1" role="tabpanel" aria-labelledby="headingOne">
+                                <div style="overflow-y:scroll;max-height:260px">
+                                    <table class="table table-striped table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>
+
+                                                </th>
+                                                <th style="width: 130px">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                            <input type="checkbox" data-bind="checked: $root.allUsersSelected($element)" /> ReAssign All
+                                                        </label>
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: users">
+                                            <tr>
+                                                <td data-bind="text: Name"></td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: Id + ';' + GroupId " />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                        <!-- ko if: users.length === 0 -->
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="2" class="text-center">No matching users found</td>
+                                            </tr>
+                                        </tbody>
+                                        <!-- /ko -->
+                                    </table>
+                                    @*<!-- /ko -->
+                                        <!-- ko ifnot: users.length > 0 -->
+                                        <p>No users available in selected groups</p>
+                                        <!-- /ko -->*@
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ko if: isUserGet -->
+                        <p class="text-center">
+                            <span>
+                                Please wait while we fetch your users
+                            </span>
+                        </p>
+                        <!-- /ko -->
+                        @*<div class="panel-body collapse in document-panelbody" data-bind="attr: { id: 'body_' + ko.unwrap(document.Id) }">
+                                <!-- ko if: users.length > 0 -->
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter(ko.unwrap(document.Id))" />
+                                            </th>
+                                            <th style="width: 130px">
+
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" data-bind="checked: $root.allUsersSelected($element, ko.unwrap(document.Id))" /> Reassign All
+                                                    </label>
+                                                </div>
+
+
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: $root.filteredUsers(ko.unwrap(document.Id))">
+                                        <tr>
+                                            <td data-bind="text: Name"></td>
+                                            <td class="text-center">
+                                                <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: ko.unwrap($parent.document.Id) + ';' + ko.unwrap($parent.document.DocumentType) + ';' + Id + ';' + GroupId" checked="checked" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- ko if: $root.filteredUsers(ko.unwrap(document.Id))().length === 0 -->
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No matching users found</td>
+                                        </tr>
+                                    </tbody>
+                                    <!-- /ko -->
+                                </table>
+                                <!-- /ko -->
+                                <!-- ko ifnot: users.length > 0 -->
+                                <p>No users available in selected groups</p>
+                                <!-- /ko -->
+                            </div>*@
+                        @*</div>*@
+
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="click: modals.type.openConfirmModal.bind(),enable: $root.selectedUsersPerDocument().length > 0">Next</button>
+                        <button class="btn btn-default" data-bind="click: modals.type.modalback.bind()">Back</button>
+                    </div>
+                </div>
+            </div>
+            @*<div class="modal-footer">
+                    <div class="text-center">
+                        <div data-bind="visible: selectedUsersPerDocument().length > 0">
+                            <br />
+                            <div class="text-center">
+                                <button class="btn btn-primary" data-bind="click: modals.type.openConfirmModal.bind()">Next</button>
+                                <button class="btn btn-primary">Back</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div id="assignModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with: modals.type" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document & Catergory selection</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select the documents or catergories you would like to perform the action on.</p>
+                <br>
+                <div class="tree" id="tree"></div>
+                @*<!-- ko ifnot: isDocumentGet -->
+                     <div>
+                        Please wait while we fetch your documents
+                      </div>
+                    <!-- /ko -->*@
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="click: nextModalAssign.bind(), enable: $root.DocumentsInJSTree().length > 0">Next</button>
+                        <button class="btn btn-default" data-bind="click: back.bind()">Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--old assign Modal below -->
+@*<div class="modal fade" id="assignModal" role="dialog" aria-hidden="true" data-backdrop="static" data-bind="with: modals.type">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Select the type of document/s you would like to perform the action on:</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12 text-center text-capitalize">
+                            @if (PortalContext.Current.UserCompany.EnableChecklistDocument) {
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(1),css:{'not-selected' : $root.selectedTypes.indexOf(1) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                        Training Manual
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(4),css:{'not-selected' : $root.selectedTypes.indexOf(4) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                        Memo
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(2),css:{'not-selected' : $root.selectedTypes.indexOf(2) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                        Test
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(3),css:{'not-selected' : $root.selectedTypes.indexOf(3) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                        Policy
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(6),css:{'not-selected' : $root.selectedTypes.indexOf(6) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)" />
+                                        Checklist
+                                    </a>
+                                </div>
+
+                            } else {
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(1),css:{'not-selected' : $root.selectedTypes.indexOf(1) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                        Training Manual
+                                    </a>
+                                </div>
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(4),css:{'not-selected' : $root.selectedTypes.indexOf(4) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                        Memo
+                                    </a>
+                                </div>
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(2),css:{'not-selected' : $root.selectedTypes.indexOf(2) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                        Test
+                                    </a>
+                                </div>
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(3),css:{'not-selected' : $root.selectedTypes.indexOf(3) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                        Policy
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-bind="click: nextAssign.bind(), enable: $root.selectedTypes().length > 0">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+<div id="unAssignModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with: modals.type" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document & Catergory selection</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select the documents or catergories you would like to perform the action on.</p>
+                <br>
+                <div class="tree" id="tree"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="click: nextModalUnAssign.bind(), enable: $root.DocumentsInJSTree().length > 0">Next</button>
+                        <button class="btn btn-default" data-bind="click: back.bind()">Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- old unAssignModal modal below-->
+@*<div class="modal fade" id="unAssignModal" role="dialog" aria-hidden="true" data-backdrop="static" data-bind="with: modals.type">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Select the type of document/s you would like to perform the action on:</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12 text-center text-capitalize">
+
+                            @if (PortalContext.Current.UserCompany.EnableChecklistDocument) {
+
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(1),css:{'not-selected' : $root.selectedTypes.indexOf(1) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                        Training Manual
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(4),css:{'not-selected' : $root.selectedTypes.indexOf(4) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                        Memo
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(2),css:{'not-selected' : $root.selectedTypes.indexOf(2) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                        Test
+                                    </a>
+                                </div>
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(3),css:{'not-selected' : $root.selectedTypes.indexOf(3) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                        Policy
+                                    </a>
+                                </div>
+
+                                <div class="col-sm-4 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(6),css:{'not-selected' : $root.selectedTypes.indexOf(6) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)" />
+                                        Checklist
+                                    </a>
+                                </div>
+                            } else {
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(1),css:{'not-selected' : $root.selectedTypes.indexOf(1) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                        Training Manual
+                                    </a>
+                                </div>
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(4),css:{'not-selected' : $root.selectedTypes.indexOf(4) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                        Memo
+                                    </a>
+                                </div>
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(2),css:{'not-selected' : $root.selectedTypes.indexOf(2) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                        Test
+                                    </a>
+                                </div>
+                                <div class="col-sm-3 hover-zoom">
+                                    <a href="javascript:void(0)" data-bind="click:pick.bind(3),css:{'not-selected' : $root.selectedTypes.indexOf(3) === -1}" class="no-underline">
+                                        <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                        Policy
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-bind="click: nextUnAssign.bind(), enable: $root.selectedTypes().length > 0">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+<div id="reAssignModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with: modals.type" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document & Catergory selection</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select the documents or catergories you would like to perform the action on.</p>
+                <br>
+                <div class="tree" id="tree"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="click: nextModalReAssign.bind(), enable: $root.DocumentsInJSTree().length > 0">Next</button>
+                        <button class="btn btn-default" data-bind="click: back.bind()">Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="assignconfirmModal" role="dialog" aria-hidden="true" data-backdrop="static" style="overflow-y:auto">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <h4 class="modal-title">You are about to <span data-bind="text: selectedAction"></span></h4>
+            </div>
+            <div class="modal-body">
+                <p class="title">Title</p>
+                <p class="noOfUsers">No of Users</p>
+
+                <div data-bind="foreach:modalDocuments, uiSortableList: modalDocuments">
+                    <div>
+                        <p class="title-value">
+                            <span style='max-width: 50px'>
+                                <a class='btn'><span title="Hold and drag to rearrange" class='glyphicon glyphicon-sort uploadhandle' style='color: black'></span></a>
+                            </span>
+                            <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(type))}" />
+                            <span data-bind="text: title"></span>
+                        </p>
+                        <p data-bind="text: userCount" class="noOfUsers-value"></p>
+                        <div data-bind="if: ko.unwrap($parent.selectedAction) == 'Assign' ||  ko.unwrap($parent.selectedAction) == 'Reassign' || ko.unwrap($parent.selectedAction) == 'Unassign' " style="border: 1px solid #ddd; padding: 8px">
+                            <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100" data-bind="text:additionalMsg,attr: { role: id }"></textarea>
+                        </div>
+                    </div>
+                </div>
+                @*<div style="border: 1px solid #ddd; padding: 8px">
+                        <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100"></textarea>
+                    </div>*@
+                @*<table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>No of Users</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: modalDocuments">
+                        <tr>
+                            <td data-bind="text: title"></td>
+                            <td data-bind="text: userCount"></td>
+                        </tr>
+                        <tr data-bind="if: ko.unwrap($parent.selectedAction) == 'Assign' ||  ko.unwrap($parent.selectedAction) == 'Reassign' || ko.unwrap($parent.selectedAction) == 'Unassign' ">
+                            <td colspan="2">
+                                <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100" data-bind="text:additionalMsg,attr: { role: id }"></textarea>
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>*@
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <h4>Please click here to complete the action</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="text: selectedAction, click: applyChanges" data-dismiss="modal"></button>
+                        <button class="btn btn-default" data-bind="click: modals.type.cancelConfirmModal.bind()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="unassignconfirmModal" role="dialog" aria-hidden="true" data-backdrop="static" style="overflow-y:auto">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <h4 class="modal-title">You are about to <span data-bind="text: selectedAction"></span></h4>
+            </div>
+            <div class="modal-body">
+                <p class="title">Title</p>
+                <p class="noOfUsers">No of Users</p>
+
+                <div data-bind="foreach:modalDocuments">
+                    <div>
+                        <p class="untitle-value">
+                            <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(type))}" />
+                            <span data-bind="text: title"></span>
+                        </p>
+                        <p data-bind="text: userCount" class="noOfUsers-value"></p>
+                        <div data-bind="if: ko.unwrap($parent.selectedAction) == 'Assign' ||  ko.unwrap($parent.selectedAction) == 'Reassign' || ko.unwrap($parent.selectedAction) == 'Unassign' " style="border: 1px solid #ddd; padding: 8px">
+                            <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100" data-bind="text:additionalMsg,attr: { role: id }"></textarea>
+                        </div>
+                    </div>
+                </div>
+                @*<div style="border: 1px solid #ddd; padding: 8px">
+                        <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100"></textarea>
+                    </div>*@
+                @*<table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>No of Users</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: modalDocuments">
+                        <tr>
+                            <td data-bind="text: title"></td>
+                            <td data-bind="text: userCount"></td>
+                        </tr>
+                        <tr data-bind="if: ko.unwrap($parent.selectedAction) == 'Assign' ||  ko.unwrap($parent.selectedAction) == 'Reassign' || ko.unwrap($parent.selectedAction) == 'Unassign' ">
+                            <td colspan="2">
+                                <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100" data-bind="text:additionalMsg,attr: { role: id }"></textarea>
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>*@
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <h4>Please click here to complete the action</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="text: selectedAction, click: applyChanges" data-dismiss="modal"></button>
+                        <button class="btn btn-default" data-bind="click: modals.type.cancelConfirmModal.bind()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reassignconfirmModal" role="dialog" aria-hidden="true" data-backdrop="static" style="overflow-y:auto">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <h4 class="modal-title">You are about to <span data-bind="text: selectedAction"></span></h4>
+            </div>
+            <div class="modal-body">
+                <p class="title">Title</p>
+                <p class="noOfUsers">No of Users</p>
+
+                <div data-bind="foreach:modalDocuments">
+                    <div>
+                        <p class="untitle-value">
+                            <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: $root.document.getImage(ko.unwrap(type))}" />
+                            <span data-bind="text: title"></span>
+                        </p>
+                        <p data-bind="text: userCount" class="noOfUsers-value"></p>
+                        <div data-bind="if: ko.unwrap($parent.selectedAction) == 'Assign' ||  ko.unwrap($parent.selectedAction) == 'Reassign' || ko.unwrap($parent.selectedAction) == 'Unassign' " style="border: 1px solid #ddd; padding: 8px">
+                            <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100" data-bind="text:additionalMsg,attr: { role: id }"></textarea>
+                        </div>
+                    </div>
+                </div>
+                @*<div style="border: 1px solid #ddd; padding: 8px">
+                        <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100"></textarea>
+                    </div>*@
+                @*<table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>No of Users</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: modalDocuments">
+                        <tr>
+                            <td data-bind="text: title"></td>
+                            <td data-bind="text: userCount"></td>
+                        </tr>
+                        <tr data-bind="if: ko.unwrap($parent.selectedAction) == 'Assign' ||  ko.unwrap($parent.selectedAction) == 'Reassign' || ko.unwrap($parent.selectedAction) == 'Unassign' ">
+                            <td colspan="2">
+                                <textarea id="additionalMsg" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100" data-bind="text:additionalMsg,attr: { role: id }"></textarea>
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>*@
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <h4>Please click here to complete the action</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="text: selectedAction, click: applyChanges" data-dismiss="modal"></button>
+                        <button class="btn btn-default" data-bind="click: modals.type.cancelConfirmModal.bind()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="assignDateModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" id="btnCancel2" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">When would you like to send the documents?</h4>
+            </div>
+            <div class="modal-body">
+                <label>* Assign Date</label>
+                <div class="input-group" id='AssignDate' data-bind="datepicker: docAssignDate">
+                    <input type='text' id="inputToDate" class="form-control" style="max-width: none" autocomplete="off" />
+                    <span class="input-group-addon">
+                        <i class="fa fa-calendar"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary pull-right" data-bind="click: closeScheduleDateModal, enable: docAssignDate">Select Date</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="assignTodayDateModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" id="btnCancel" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">When would you like to send the documents?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <div id="btnToday" class="col-sm-4  col-sm-offset-2 hover-zoom">
+                            <a href="javascript:void(0)" data-bind="click:todaySelected" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Today], true)" />
+                                Send it out today
+                            </a>
+                        </div>
+                        <div id="btnSchedule" class="col-sm-4 hover-zoom">
+                            <a href="javascript:void(0)" data-bind="click:scheduleDate" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Schedule], true)" />
+                                Schedule the document
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="userSelectedDocuments" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click: close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <div data-bind="foreach: assignedusers">
+                    <div style="overflow-y:scroll;max-height:260px">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter('')" />
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: assigneduser">
+                                <tr>
+                                    <td style="width:550px;">
+                                        <span data-bind="text: Name"></span>
+                                        <span class="fa fa-info-circle" style="color:orange" data-bind="visible: AssignedDocumentUsers.length > 0, bootstrapPopover: ko.unwrap(AssignedDocumentUsers)"></span>
+                                        <br>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <!-- ko if: assigneduser.length === 0 -->
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="text-center">No matching users found</td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" data-bind="click: modals.type.openNewConfirmModal.bind(),enable: $root.selectedUsersPerDocument().length > 0">Next</button>
+                        <button class="btn btn-default" data-bind="click: modals.type.cancelConfirmModal.bind()">Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="document-users-assign-template">
+    <div class="panel panel-default">
+        <div class="panel-heading" data-toggle="collapse" data-bind="attr: { 'data-target': '#body_' + ko.unwrap(document.Id) }, click: $root.toggleCollapse('#body_' + ko.unwrap(document.Id))">
+            <span data-bind="text: ko.unwrap(document.Title) + ' - ' + $root.document.getType(ko.unwrap(document.DocumentType))"></span> <span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>
+        </div>
+        <div class="panel-body collapse in  document-panelbody" data-bind="attr: { id: 'body_' + ko.unwrap(document.Id) }">
+            <!-- ko if: users.length > 0 -->
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter(ko.unwrap(document.Id))" />
+                        </th>
+                        <th style="width: 130px">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" data-bind="checked: $root.allUsersSelected($element, ko.unwrap(document.Id))" /> Assign All
+                                </label>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: $root.filteredUsers(ko.unwrap(document.Id))">
+                    <tr>
+                        <td data-bind="text: Name"></td>
+                        <td class="text-center">
+                            <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: ko.unwrap($parent.document.Id) + ';' + ko.unwrap($parent.document.DocumentType) + ';' + Id + ';' + GroupId" />
+                        </td>
+                    </tr>
+                </tbody>
+                <!-- ko if: $root.filteredUsers(ko.unwrap(document.Id))().length === 0 -->
+                <tbody>
+                    <tr>
+                        <td colspan="2" class="text-center">No matching users found</td>
+                    </tr>
+                </tbody>
+                <!-- /ko -->
+            </table>
+            <!-- /ko -->
+            <!-- ko ifnot: users.length > 0 -->
+            <p>No users available in selected groups</p>
+            <!-- /ko -->
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="document-users-unassign-template">
+    <div class="panel panel-default">
+        <div class="panel-heading" data-toggle="collapse" data-bind="attr: { 'data-target': '#body_' + ko.unwrap(document.Id) }, click: $root.toggleCollapse('#body_' + ko.unwrap(document.Id))">
+            <span data-bind="text: ko.unwrap(document.Title) + ' - ' + $root.document.getType(ko.unwrap(document.DocumentType))"></span> <span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>
+        </div>
+        <div class="panel-body collapse in document-panelbody" data-bind="attr: { id: 'body_' + ko.unwrap(document.Id) }">
+            <!-- ko if: users.length > 0 -->
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter(ko.unwrap(document.Id))" />
+                        </th>
+                        <th style="width: 130px">
+
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" data-bind="checked: $root.allUsersSelected($element, ko.unwrap(document.Id))" /> Unassign All
+                                </label>
+                            </div>
+
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: $root.filteredUsers(ko.unwrap(document.Id))">
+                    <tr>
+                        <td data-bind="text: Name"></td>
+                        <td class="text-center">
+                            <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: ko.unwrap($parent.document.Id) + ';' + ko.unwrap($parent.document.DocumentType) + ';' + Id + ';' + GroupId" checked="checked" />
+                        </td>
+                    </tr>
+                </tbody>
+                <!-- ko if: $root.filteredUsers(ko.unwrap(document.Id))().length === 0 -->
+                <tbody>
+                    <tr>
+                        <td colspan="2" class="text-center">No matching users found</td>
+                    </tr>
+                </tbody>
+                <!-- /ko -->
+            </table>
+            <!-- /ko -->
+            <!-- ko ifnot: users.length > 0 -->
+            <p>No users available in selected groups</p>
+            <!-- /ko -->
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="document-users-reassign-template">
+    <div class="panel panel-default">
+        <div class="panel-heading" data-toggle="collapse" data-bind="attr: { 'data-target': '#body_' + ko.unwrap(document.Id) }, click: $root.toggleCollapse('#body_' + ko.unwrap(document.Id))">
+            <span data-bind="text: ko.unwrap(document.Title) + ' - ' + $root.document.getType(ko.unwrap(document.DocumentType))"></span> <span class="glyphicon" data-bind="css: $root.panelCollapse('#body_' + ko.unwrap(document.Id))"></span>
+        </div>
+        <div class="panel-body collapse in document-panelbody" data-bind="attr: { id: 'body_' + ko.unwrap(document.Id) }">
+            <!-- ko if: users.length > 0 -->
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter(ko.unwrap(document.Id))" />
+                        </th>
+                        <th style="width: 130px">
+
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" data-bind="checked: $root.allUsersSelected($element, ko.unwrap(document.Id))" /> Reassign All
+                                </label>
+                            </div>
+
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: $root.filteredUsers(ko.unwrap(document.Id))">
+                    <tr>
+                        <td data-bind="text: Name"></td>
+                        <td class="text-center">
+                            <input type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: ko.unwrap($parent.document.Id) + ';' + ko.unwrap($parent.document.DocumentType) + ';' + Id + ';' + GroupId" checked="checked" />
+                        </td>
+                    </tr>
+                </tbody>
+                <!-- ko if: $root.filteredUsers(ko.unwrap(document.Id))().length === 0 -->
+                <tbody>
+                    <tr>
+                        <td colspan="2" class="text-center">No matching users found</td>
+                    </tr>
+                </tbody>
+                <!-- /ko -->
+            </table>
+            <!-- /ko -->
+            <!-- ko ifnot: users.length > 0 -->
+            <p>No users available in selected groups</p>
+            <!-- /ko -->
+        </div>
+    </div>
+</script>
+
+<script>
+
+
+            $('#assign').tooltip({ title: "Click here to send documents to users in your portal.", delay: 500 });
+        $('#unassign').tooltip({ title: "Click here to retract documents from users.", delay: 500 });
+        $('#reassign').tooltip({ title: "Click here to resend documents to users.", delay: 500 });
+
+    var selectedDocumentsInJSTree = [];
+    var selectedUserGroupIds = [];
+    var selectedDocumentId = [];
+    var selectedUsers = [];
+    var selectedDocuments = [];
+    var allUserList = [];
+    var assignedUsers = [];
+    self.isDocumentGet = ko.observable(false);
+    self.isDocumentGet.subscribe(function (changes) {
+    });
+    //var additionalMessage = "";
+    $(function () {
+        $('#AssignDate').data('DateTimePicker').minDate(new Date());
+        $("#btnCancel").click(function () {
+  window.location = '@Url.Action("Index", "Document", new {Area = ""})';
+        });
+             $("#btnCancel2").click(function () {
+  window.location = '@Url.Action("Index", "Document", new {Area = ""})';
+        });
+        $('.date').datepicker(
+            {
+            multidate: true,
+                format: 'mm-dd-yyyy'
+        }
+
+        );
+
+    });
+    //function refreshTree() {
+    //    $('.tree').jstree(true).refresh();
+    //};
+
+    function isUnique(node) {
+        var tree = $('.tree').jstree(true);
+        var collection = tree.get_node('#').children_d;
+        $(".tree").jstree(true).load_node('#');
+        collection = $.map(collection,
+            function (id) {
+                return tree.get_node(id);
+            });
+        for (var i = 0; i < collection.length; i++) {
+            if (node.id === collection[i].id || collection[i].type !== 'default') continue;
+            var current = collection[i].text;
+            current = current.toLowerCase().replace(' ', '').trim();
+            if (current.indexOf('\n') > 0) {
+                current = current.substring(0, current.indexOf('\n'));
+            }
+            if (node.text.toLowerCase().replace(' ', '').trim() === current) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function containsDocument(collection) {
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].type !== 'default') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    function closeassign() {
+        $('#assignDateModal').modal('hide');
+        window.location = '@Url.Action("Index", "Document", new {Area = ""})';
+    }
+    var Controller = function(documents, groups) {
+        var self = this;
+        var tree = $('.tree');
+        var to = false;
+        $('#categorySearch').keyup(function() {
+            if (to) {
+                clearTimeout(to);
+            }
+            to = setTimeout(function() {
+                    var value = $('#categorySearch').val();
+                    tree.jstree(true).search(value);
+                },
+                250);
+        });
+        $('#categorySearchClear').click(function(e) {
+            $('#categorySearch').val('')
+                .trigger('keyup').focus();
+        });
+
+        tree.jstree({
+            core: {
+                data: {
+                    url: '@Url.Action("GetJSTreeDocuments", "Send", new { Area = "" })'
+                },
+                check_callback: function (operation, node, node_parent, node_position, more) {
+                    if (operation === 'move_node') {
+                        if (node.text === 'Default') {
+                            return false;
+                        }
+                        if (node.type !== 'default' && node_parent.type === 'default') {
+                            if (node_parent.text === 'Category') {
+                                return false;
+                            }
+                            return true;
+                        }
+                        if (node.type === 'default' && node_parent.type === 'default') {
+                            return true;
+                        }
+                        return false;
+                    } else if (operation === 'delete_node') {
+                        var descendants = $.map(node.children_d,
+                            function(id) {
+                                return $('.tree').jstree(true).get_node(id);
+                            });
+                        if (containsDocument(descendants)) {
+                            notif({
+                                msg: 'Categories that contain documents cannot be deleted.',
+                                type: 'error'
+                            });
+                            return false;
+                        }
+                        return true;
+                    }
+                }
+            },
+            contextmenu: {
+
+                //items: function(node) {
+                //    var tree = $('.tree').jstree(true);
+                //    if (node.type === 'default') {
+                //        if (node.text === 'Category' || node.text === 'Default') {
+                //            return {
+                //                createCategory: {
+                //                    label: 'Create',
+                //                    action: createCategory
+                //                }
+                //            };
+                //        }
+                //        return {
+                //            renameCategory: {
+                //                label: 'Rename',
+                //                action: function(obj) {
+                //                    tree.edit(node);
+                //                }
+                //            },
+                //            deleteItem: {
+                //                label: 'Delete',
+                //                action: function(obj) {
+                //                    bootbox.confirm(
+                //                        'Are you sure you want to delete the "' + node.text + '" category?',
+                //                        function(result) {
+                //                            if (result) tree.delete_node(node);
+                //                        });
+                //                }
+                //            },
+                //            createCategory: {
+                //                label: 'Create',
+                //                action: createCategory
+                //            }
+                //        }
+                //    } else {
+                //        return {};
+                //    }
+
+                //    function createCategory(obj) {
+                //        tree.create_node(node,
+                //            {
+                //                text: generateTitle(),
+                //                id: generateUUID()
+                //            });
+                //    }
+
+                //    function generateTitle() {
+                //        var newNodeTitle = "New Category";
+                //        var newNum = 1;
+                //        var tree = $('.tree').jstree(true);
+                //        var nodes = $.map(tree.get_node('#').children_d,
+                //            function(id) {
+                //                return tree.get_node(id);
+                //            });
+                //        var unnamedCategories = $.grep(nodes,
+                //            function(node) {
+                //                var pattern = /^New Category(?: \(\d+\))?$/;
+                //                return node.type === 'default' && pattern.test(node.text);
+                //            });
+                //        if (unnamedCategories.length > 0) {
+                //            var categoryNumbers = $.map(unnamedCategories,
+                //                function(node) {
+                //                    if (node.text === newNodeTitle) return 1;
+                //                    var pattern = /^New Category \((\d+)\)$/;
+                //                    var match = pattern.exec(node.text);
+                //                    var num = parseInt(match[1], 10);
+                //                    return num;
+                //                });
+                //            newNum = lowestMissing(categoryNumbers);
+                //        }
+
+                //        if (newNum === 1) {
+                //            return newNodeTitle;
+                //        }
+                //        return newNodeTitle + ' (' + newNum + ')';
+                //    }
+
+                //    function lowestMissing(arr) {
+                //        arr.sort(function (a, b) { return a - b; });
+                //        var max = arr[arr.length - 1];
+                //        if (arr.length === max) return max + 1;
+                //        for (var i = 1; i < max; i++) {
+                //            if (arr.indexOf(i) === -1) {
+                //                return i;
+                //            }
+                //        }
+                //    }
+                //}
+            },
+            sort: function(a, b) {
+                var n1 = this.get_node(a);
+                var n2 = this.get_node(b);
+
+                if (n1.type === 'default' && n1.type === n2.type) { // folders
+                    return (n1.text > n2.text) ? 1 : -1;
+                } else if (n1.type === 'default' || n2.type === 'default') {
+                    return (n1.type !== 'default') ? 1 : -1; // folder first
+                } else {
+                    return (n1.text > n2.text) ? 1 : -1;
+                }
+            },
+            types: {
+                Memo: {
+                    icon: 'memo-icon'
+                },
+                Policy: {
+                    icon: 'policy-icon'
+                },
+                Test: {
+                    icon: 'test-icon'
+                },
+                TrainingManual: {
+                    icon: 'training-manual-icon'
+                },
+                Checklist: {
+                    icon: 'checklist-icon'
+                },
+                custom: {
+                    icon: 'custom-icon'
+                },
+               default: {
+                    icon: 'glyphicon glyphicon-plus-sign category-icon'
+                },
+            },
+            checkbox: {
+                "keep_selected_style": false,
+            },
+            //multiple: false, // disables multiple selection if false
+            plugins: ['sort', 'contextmenu', 'types', 'checkbox']
+        });
+        //$('.tree').on('select_node.jstree', function (e, data) {
+        //    console.log("dataaaaaaaaaaa", data);
+        //    if (data.node.children.length > 0) {
+        //       // $('.tree').jstree(true).deselect_node(data.node);
+        //        data.instance.deselect_node(data.node);
+        //    }
+        //})
+        $(".tree").bind("changed.jstree",
+            function (e, data) {
+                if (data.selected.length > 0) {
+                    console.log("data...", data);
+                    if (data.action == "deselect_node") {
+                        if (!(data.node.original.isParentNode)) {
+                            var index = selectedDocumentsInJSTree.findIndex(el => el.id === data.node.id);
+                            if (index != -1) {
+                                selectedDocumentsInJSTree.splice(index, 1);
+                                self.DocumentsInJSTree.removeAll();
+                                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                    //;
+                                    self.DocumentsInJSTree.push(item);
+                                    self.selectedDocuments.push(item);
+                                });
+                            }
+                        } else {
+                            var childNodesInArr = data.node.children_d;
+                            for (var i = 0; i < childNodesInArr.length; i++) {
+                                var childId = childNodesInArr[i];
+                                for (var j = 0; j < selectedDocumentsInJSTree.length; j++) {
+                                    if (selectedDocumentsInJSTree[j].id == childId) {
+                                        selectedDocumentsInJSTree.splice(j, 1);
+
+                                    }
+                                }
+                            }
+                            self.DocumentsInJSTree.removeAll();
+                            ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                self.DocumentsInJSTree.push(item);
+                                self.selectedDocuments.push(item);
+                            });
+                        }
+                    } else {
+                        if (!(data.node.original.isParentNode)) {
+                            var obj = {
+                                id: data.node.id,
+                                text: data.node.text,
+                                type: data.node.type
+                                //changed by neeraj
+                                //type: 0
+                            }
+                            selectedDocumentsInJSTree.push(obj);
+                            ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                if (obj.id == item.id) {
+                                    self.DocumentsInJSTree.push(item);
+                                    self.selectedDocuments.push({ Title: item.text, DocumentType: item.type, Id:item.id });
+                                }
+                            });
+                            console.log("self.DocumentsInJSTree..", ko.unwrap(self.DocumentsInJSTree));
+                        } else {
+                            var child_nodes = data.node.children_d;
+                            var child_node_arr = [];
+                            for (var i = 0; i < child_nodes.length; i++) {
+                                var node = {
+                                    id: data.node.children_d[i],
+                                    text: '',
+                                    type:0
+                                }
+                                selectedDocumentsInJSTree.push(node);
+                                child_node_arr.push(node)
+                            }
+                            ko.utils.arrayForEach(child_node_arr, function (item) {
+                                self.DocumentsInJSTree.push(item);
+                                self.selectedDocuments.push({ Title: item.text, DocumentType: item.type, Id: item.id });
+                            });
+                            console.log("self.DocumentsInJSTree..", ko.unwrap(self.DocumentsInJSTree));
+                        }
+                    }
+                } else {
+                    selectedDocumentsInJSTree = [];
+                    self.DocumentsInJSTree.removeAll();
+                    self.selectedDocuments.removeAll()
+                }
+            });
+        tree
+            .on('open_node.jstree',
+                function(event, data) {
+                    if (_adjustPageFooter) _adjustPageFooter();
+                });
+        self.selectedUsersPerDocument = ko.observableArray();
+
+        self.docAssignDate = ko.observable();
+
+        self.docAssignDate.subscribe(function (newValue) {
+            $('#AssignDate').data('DateTimePicker').minDate( new Date() );
+        });
+
+        self.todaySelected = function () {
+            self.docAssignDate(new Date());
+            $.each(self.selectedDocuments(),
+                function (index, document) {
+                    var newDocEntry = {
+                        document: document,
+                        users: []
+                    };
+                    var oldDocEntry = ko.utils.arrayFirst(self.usersPerDocument(),
+                        function (item) {
+                            return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                        });
+                    if (!oldDocEntry) {
+                        self.usersPerDocument.push(newDocEntry);
+                    } else {
+                        self.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                    }
+                });
+
+
+            $('#assignTodayDateModal').modal('hide');
+            if (self.selectedAction() === 'Assign') {
+                $('#assignDocumentToUserModal').modal('show');
+            } else if (self.selectedAction() === 'Reassign') {
+                $('#reAssignDocumentToUserModal').modal('show');
+            }
+            else {
+                console.log("Unassign")
+                $('#unAssignDocumentToUserModal').modal('show');
+            }
+
+        }
+
+        self.scheduleDate = function () {
+            self.docAssignDate();
+            $('#assignTodayDateModal').modal('hide');
+            $('#assignDateModal').modal('show');
+        }
+
+        self.closeScheduleDateModal = function () {
+            $('#assignDateModal').modal('hide');
+            if (self.selectedAction() === 'Assign') {
+                $('#assignDocumentToUserModal').modal('show');
+            } else if (self.selectedAction() === 'Reassign') {
+                // show reassign when working on reassigning
+            }
+            else {
+                $('#unAssignDocumentToUserModal').modal('show');
+            }
+        }
+
+        self.recurrence= function () {
+            self.docAssignDate();
+            $('#assignTodayDateModal').modal('hide');
+            $('#assignRecurrenceDateModal').modal('show');
+        }
+
+        self.selectedAction = ko.observable(null);
+        self.selectedAction.subscribe(function(newValue) {
+            loadUsers();
+            self.selectedUsersPerDocument([]);
+        });
+
+        self.documentTypes = ko.observableArray([
+            { value: 1, title: 'Training Manual' },
+            { value: 2, title: 'Test' },
+            { value: 3, title: 'Policy' },
+            { value: 4, title: 'Memo' },
+            { value: 6, title: 'CheckList' },
+            { value: 7, title: 'custom' }
+        ]);
+        self.selectedTypes = ko.observableArray([]);
+        self.selectedTypes.subscribe(function(changes) {
+                $.each(changes,
+                    function(index, change) {
+                        if (change.status === 'deleted') {
+                            removeDocumentSelectionByType(change.value);
+                        }
+                    });
+            },
+            null,
+            'arrayChange');
+
+        self.DocumentsInJSTree = ko.observableArray([]);
+
+        self.users = ko.observableArray([]);
+        self.groups = ko.mapping.fromJS(groups);
+        self.documents = ko.mapping.fromJS(documents);
+        //console.log("documents...", ko.unwrap(self.documents));
+        self.userGroupSearch = {
+            options: {
+                display: 'Name',
+                source: new Bloodhound({
+                    datumTokenizer: function(d) {
+                        return d.Tokens;
+                    },
+                    queryTokenizer: Bloodhound.tokenizers.whitespace,
+                    prefetch: {
+                        ttl: 1,
+                        url: '@Url.Action("UsersAndGroups", "AutoComplete", new {Area = ""})'
+                    },
+                    limit: 10
+                }),
+                templates: {
+                    empty: '<div class="text-center">User does not exist</div>',
+                    suggestion: function(data) {
+                        return '<div><strong>' + data.Value + '</strong> - ' + data.Extra + '</div>';
+                    }
+                },
+                value: 'Extra'
+            },
+            value: ko.observable()
+        }
+        self.userGroupSearch.value.subscribe(function(newValue) {
+            if (newValue === null || newValue === "") return;
+            var group = ko.utils.arrayFirst(self.groups(),
+                function(item) {
+                    return item.Name() === newValue;
+                });
+            if (group === null) return;
+            var match = ko.utils.arrayFirst(self.selectedGroups(),
+                function(item) {
+                    return item.Id() === group.Id();
+                });
+            if (match === null) {
+                self.selectedGroups.push(group);
+                $('.selectpicker').selectpicker('refresh');
+            }
+        });
+        self.filterVisible = function (observableArray, filter) {
+            $.each(ko.unwrap(observableArray), function (index, c) {
+                c.visible(true);
+            });
+            if (filter != '') {
+                var nonMatching = ko.utils.arrayFilter(ko.unwrap(observableArray), function (i) {
+                    return ko.unwrap(i.Title).toLowerCase().indexOf(filter.toLowerCase()) === -1;
+                });
+                $.each(nonMatching, function (index, c) {
+                    c.visible(false);
+                });
+            }
+        }
+        self.trainingManuals = ko.mapping.fromJS($.grep(documents,
+            function(document) {
+                return document.DocumentType === 1;
+            }).map(function (c) { c.visible = true; return c;}));
+        self.trainingManualQuery = ko.observable('');
+        self.trainingManualQuery.subscribe(function (n) { self.filterVisible(self.trainingManuals, n); });
+
+        self.tests = ko.mapping.fromJS($.grep(documents,
+            function(document) {
+                return document.DocumentType === 2;
+            }).map(function (c) { c.visible = true; return c; }));
+        self.testQuery = ko.observable('');
+        self.testQuery.subscribe(function (n) { self.filterVisible(self.tests, n); });
+
+        self.policies = ko.mapping.fromJS($.grep(documents,
+            function(document) {
+                return document.DocumentType === 3;
+            }).map(function (c) { c.visible = true; return c; }));
+        self.policyQuery = ko.observable('');
+        self.policyQuery.subscribe(function (n) { self.filterVisible(self.policies, n); });
+
+        self.checklists = ko.mapping.fromJS($.grep(documents,
+            function(document) {
+                return document.DocumentType === 6;
+            }).map(function (c) { c.visible = true; return c; }));
+        self.checklistQuery = ko.observable('');
+        self.checklistQuery.subscribe(function (n) { self.filterVisible(self.checklists, n); });
+
+        self.memos = ko.mapping.fromJS($.grep(documents,
+            function(document) {
+                return document.DocumentType === 4;
+            }).map(function (c) { c.visible = true; return c; }));
+        self.memoQuery = ko.observable('');
+        self.memoQuery.subscribe(function (n) { self.filterVisible(self.memos, n); });
+
+        self.custom = ko.mapping.fromJS($.grep(documents,
+            function (document) {
+                return document.DocumentType === 7;
+            }).map(function (c) { c.visible = true; return c; }));
+        self.customQuery = ko.observable('');
+        self.customQuery.subscribe(function (n) { self.filterVisible(self.custom, n); });
+
+
+        self.usersPerDocument = ko.observableArray();
+
+        self.query = ko.observable({});
+
+        self._collapseObservable = ko.observable();
+        self.toggleCollapse = function(panelBodyId) {
+            $(panelBodyId).collapse('toggle');
+            self._collapseObservable.notifySubscribers();
+        };
+        self.panelCollapse = function(panelBodyId) {
+            return ko.computed(function () {
+                self._collapseObservable();
+                return $(panelBodyId).attr('aria-expanded') !== "false" ? 'glyphicon-triangle-bottom' : 'glyphicon-triangle-top';
+            });
+        };
+
+        //new code start
+        self.userFilter = function (documentId) {
+            console.log(" documentId new ", documentId)
+
+            return ko.computed({
+                read: function () {
+                    console.log(" read ", documentId)
+                    if (self.query().hasOwnProperty(documentId)) {
+
+                        return self.query()[documentId];
+                    } else {
+
+                        var query = self.query();
+                        query[documentId] = '';
+                        self.query(query);
+                        return '';
+                    }
+                },
+                write: function (value) {
+
+                    console.log(" write ", value);
+                    callSearchText(value)
+                },
+                owner: this
+            });
+        };
+        //new code end
+        $(".searchposText").keypress(
+            function (event) {
+                if (event.which == '13') {
+                    event.preventDefault();
+
+                    if ($('#txtAssign').val() != "")
+                        callSearchText($('#txtAssign').val());
+                    else if ($('#txtReassign').val() != "")
+                        callSearchText($('#txtReassign').val());
+                    else if ($('#txtUnassign').val() != "")
+                        callSearchText($('#txtUnassign').val());
+                    else
+                        callSearchText('');
+                }
+            });
+
+        self.searchReset = function () {
+            $(".searchposText").val('');
+            callSearchText('');
+        }
+
+        self.searchFilter = function (documentId) {
+            if ($('#txtAssign').val() != "")
+                callSearchText($('#txtAssign').val());
+            else if ($('#txtReassign').val() != "")
+                callSearchText($('#txtReassign').val());
+            else if ($('#txtUnassign').val() != "")
+                callSearchText($('#txtUnassign').val());
+        };
+        function callSearchText(value) {
+
+            var docId = self.DocumentsInJSTree();
+            var documentId = [];
+            $.each(docId, function (i, item) {
+                documentId.push(item.id);
+            });
+            selectedDocumentId = documentId;
+            if (docId.length > 0) {
+                var usersSelectedForDocument = self.allusers();
+                var actionType = self.selectedAction() === 'Assign' ? "Assign" : "Reassign";
+                var url = '@Url.Action("FilterUsers", "Send", new {Area = ""})';
+                $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        documentId: "",
+                        documentType: 0,
+                        groupIds: selectedUserGroupIds,
+                        searchText: value,
+                        allDocumentId: selectedDocumentId,
+                        actionType: actionType
+                    }
+                }).done(function (data) {
+
+                    console.log("done ", data);
+                    //self.userList.removeAll(ko.unwrap(self.userList()));
+                    //self.userList.push(data);
+                    var userList = {
+                        users: data
+                    }
+                    if (value != "") {
+
+                        //$.each(ko.unwrap(self.allusers()[0]), function (i, item) {
+                        //    $.each(ko.unwrap(self.allusers()[0].users), function (j, item1) {
+                        //        item.remove(item1);
+                        //    });
+                        //});
+                        //self.allusers()[0].remove(self.allusers()[0].users);
+                        //console.log(ko.unwrap(self.allusers()));
+                        //self.allusers()[0].users = data;
+                        self.allusers.removeAll(usersSelectedForDocument);
+                        self.allusers.push(userList);
+                        //console.log("users", ko.unwrap(self.allusers()));
+                    } else {
+                        ;
+                        self.allusers.removeAll(usersSelectedForDocument);
+                        self.allusers.push(userList);
+                        console.log("users", ko.unwrap(self.allusers()));
+                    }
+                });
+            }
+
+        }
+
+
+        self.allusers = ko.observableArray([]);
+        self.allusers.subscribe(function (changes) {
+            console.log("userchanges", changes);
+        });
+        self.isUserGet = ko.observable(false);
+        self.isUserGet.subscribe(function (changes) {
+        });
+        self.assignedusers = ko.observableArray([]);
+        self.assignedusers.subscribe(function (changes) {
+        });
+        //self.userList = ko.observableArray();
+        //self.userList.subscribe(function (changes) {
+        //    console.log("userList", changes);
+        //});
+
+        //old code start
+        self.filteredUsers = function (documentId) {
+            console.log("documentid..", documentId);
+            return ko.computed(function() {
+                var filter = self.query()[documentId].toLowerCase();
+                var usersPerDocument = ko.utils.arrayFirst(self.usersPerDocument(),
+                    function (item) {
+                        return ko.unwrap(item.document.Id) === documentId;
+                    });
+                if (!usersPerDocument) return [];
+
+                if (filter === '') {
+                    return usersPerDocument.users;
+                } else {
+                    return ko.utils.arrayFilter(usersPerDocument.users,
+                        function(item) {
+                            return item.Name.toLowerCase().indexOf(filter) !== -1;
+                     });
+                }
+            });
+        }
+        //old code end
+
+        //new code start
+        self.allUsersSelected = function (element) {
+            return ko.computed({
+                read: function () {
+                    var usersForDocument = self.allusers();
+                    var usersSelectedForDocument =
+                        $.grep($.map(self.selectedUsersPerDocument(),
+                            function (item) {
+                                return parseDocumentSelection(item);
+                            }),
+                            function(item) {
+                                return item
+                            });
+
+                    return usersSelectedForDocument.length === usersForDocument[0].users.length;
+                },
+                write: function (checked) {
+                    if (checked) {
+
+
+                        var temp = document.getElementsByClassName("sauassign");
+                        setTimeout(() => {
+                            for (let i = 0; i < temp.length; i++) {
+                                console.log("i ", temp[i]);
+                                temp[i].checked = true;
+                            } },100)
+
+                        ///////////////////////
+
+                        var usersForDocument = self.allusers();
+                        var toAdd = [];
+                        $.each(usersForDocument[0].users,
+                            function (i, user) {
+                                    var fields = [
+                                        user.Id,
+                                        user.GroupId
+                                    ];
+                                    var item = fields.join(';');
+                                    if (self.selectedUsersPerDocument.indexOf(item) < 0)
+                                        toAdd.push(item);
+                            });
+                        self.selectedUsersPerDocument.valueWillMutate();
+                        self.selectedUsersPerDocument.push.apply(self.selectedUsersPerDocument, toAdd);
+                        self.selectedUsersPerDocument.valueHasMutated();
+                    } else {
+                        deselectAllUsers();
+                    }
+                },
+                disposeWhenNodeIsRemoved: element
+            });
+        }
+       // new code end
+
+        //old code start
+        //self.allUsersSelected = function(element, documentId) {
+        //    return ko.computed({
+        //        read: function() {
+        //            var usersPerDocument = (ko.utils.arrayFirst(self.usersPerDocument(),
+        //                function(item) {
+        //                    return ko.unwrap(item.document.Id) === documentId;
+        //                }));
+
+        //            var usersForDocument = usersPerDocument.users;
+
+        //            var usersSelectedForDocument =
+        //                $.grep($.map(self.selectedUsersPerDocument(),
+        //                        function(item) {
+        //                            return parseDocumentSelection(item);
+        //                        }),
+        //                    function(item) {
+        //                        return item.documentId === documentId;
+        //                    });
+
+        //            return usersSelectedForDocument.length === usersForDocument.length;
+        //        },
+        //        write: function(checked) {
+        //            if (checked) {
+        //                var usersPerDocument = ko.utils.arrayFirst(self.usersPerDocument(),
+        //                    function (item) {
+        //                        return ko.unwrap(item.document.Id) === documentId;
+        //                    });
+
+        //                var toAdd = [];
+        //                $.each(usersPerDocument.users,
+        //                    function (i, user) {
+        //                        var fields = [
+        //                            ko.unwrap(usersPerDocument.document.Id),
+        //                            ko.unwrap(usersPerDocument.document.DocumentType),
+        //                            user.Id,
+        //                            user.GroupId
+        //                        ];
+        //                        var item = fields.join(';');
+        //                        if (self.selectedUsersPerDocument.indexOf(item) < 0)
+        //                            toAdd.push(item);
+        //                    });
+        //                self.selectedUsersPerDocument.valueWillMutate();
+        //                self.selectedUsersPerDocument.push.apply(self.selectedUsersPerDocument, toAdd);
+        //                self.selectedUsersPerDocument.valueHasMutated();
+        //            } else {
+        //                deselectAllUsers(documentId);
+        //            }
+        //        },
+        //        disposeWhenNodeIsRemoved: element
+        //    });
+        //};
+       // old code end
+
+        self.selectedGroups = ko.observableArray([]);
+        self.selectedGroups.subscribe(function(changes) {
+                $.each(changes,
+                    function(index, change) {
+                        if (change.status === 'deleted') {
+                            deselectAllUsersForGroup(change.value.Id());
+                        }
+                    });
+                loadUsers();
+            },
+            null,
+            'arrayChange');
+
+        self.selectedDocuments = ko.observableArray([]);
+        self.selectedDocuments.subscribe(function (changes) {
+            console.log("changes..", changes);
+            console.log("self.selectedDocuments...", ko.unwrap(self.selectedDocuments));
+                $.each(changes,
+                    function(index, change) {
+                        if (change.status === 'deleted') {
+                            var oldDocEntry = ko.utils.arrayFirst(self.usersPerDocument(),
+                                function(item) {
+                                    return ko.unwrap(item.document.Id) === ko.unwrap(change.value.Id);
+                                });
+                            self.usersPerDocument.remove(oldDocEntry);
+                            deselectAllUsers(ko.unwrap(change.value.Id));
+                            var query = self.query();
+                            query[ko.unwrap(change.value.Id)] = '';
+                            self.query(query);
+                        } else if (change.status === 'added') {
+
+                        }
+                    });
+                loadUsers();
+            },
+            null,
+            'arrayChange');
+
+        //new code start
+        self.modalDocuments = ko.pureComputed(function () {
+
+            var selections = $.map(self.selectedUsersPerDocument(),
+                function (item) {
+                    //;
+                    return selectedDocumentSelection(item);
+                });
+            selectedDocuments = selections;
+            console.log("selecteduser", selections);
+            @*var url = '@Url.Action("GetDocumentType", "Send", new {Area = ""})';
+            var promises = [];
+            var ids = [];
+            $.each(self.DocumentsInJSTree(),
+                function (index, document) {
+                    ids.push(document.id)
+                    promises.push($.ajax({
+                        method: 'POST',
+                        url: url,
+                        data: {
+                            documentId: ids // ko.unwrap(document.id)
+                        }
+                    }).done(function (data) {
+                        if (data.length > 0) {
+                            $.each(documentId, function (i, item) {
+                                if (item.id == data[0].Id) {
+                                    item.type = data[0].Type;
+                                }
+                            });
+                        }
+                    }));
+                }
+            );*@
+
+            //var currentRequest = null;
+            //self.currentRequest =
+            //promises.push(
+            //$.ajax({
+            //    //beforeSend: function () {
+            //    //    if (self.currentRequest) {
+            //    //        self.currentRequest.abort();
+            //    //    }
+            //    //},
+            //            method: 'POST',
+            //            url: url,
+            //            data: {
+            //                documentId: ko.unwrap(ids)
+            //            }
+            //}).done(function (data) {
+            //   // ;
+            //    console.log("data from api ", data)
+            //            if (data.length > 0) {
+            //                $.each(documentId, function (i, item) {
+            //                    //;
+            //                    if (item.id == data[0].Id) {
+            //                        item.type = data[0].Type;
+            //                    }
+
+            //                    //;
+            //                    if (self.DocumentsInJSTree.length > 0) {
+            //                        //;
+            //                        $.each(self.DocumentsInJSTree, function (i, item) {
+            //                            //
+            //                            //if (item.id == data) {
+            //                            //    documentType = data.type
+            //                            //}
+            //                        });
+            //                    }
+
+            //                });
+            //            }
+            //    })
+            //);
+
+            //;
+            var selectedDocument = [];
+            var documentId = self.DocumentsInJSTree();
+            console.log("documentId vvvvvvvvvvv ", documentId)
+            //;
+            $.each(documentId, function (i, item) {
+               //;
+                $.each(selections, function (j, item1) {
+                    //;
+                    var all = {
+                        documentId: item.id,
+                        documentType: item.type,
+                        userId: item1.userId,
+                        groupId: item1.groupId
+                    }
+                    selectedDocument.push(all);
+                    //selectedUsers = selectedDocument;
+                });
+            });
+            console.log("selectedDocument bbbbb", selectedDocument);
+            var childDocuments = [];
+            $.each(selectedDocument, function (i, item) {
+                //;
+              if (item.documentType != 0) {
+                    childDocuments.push(item);
+                }
+            });
+            console.log("childDocuments", childDocuments);
+            selectedUsers = childDocuments;
+            var groupedById = childDocuments.groupBy('documentId');
+            var a = self.usersPerDocument();
+
+                return $.map(groupedById,
+                    function (item) {
+                        var title = ko.unwrap(self.usersPerDocument().where(function (doc) {
+                            return ko.unwrap(doc.document.Id) === item.key;
+                        }));
+                        if (title.length > 0) {
+                            title = ko.unwrap(title[0].document.Title);
+                        }
+                        var id = ko.unwrap(self.usersPerDocument().where(function (doc) {
+                            return ko.unwrap(doc.document.Id) === item.key;
+                        }));
+                        if (id.length > 0) {
+                            id = ko.unwrap(id[0].document.Id);
+                        }
+                        var type = ko.unwrap(self.usersPerDocument().where(function (doc) {
+                            return ko.unwrap(doc.document.Id) === item.key;
+                        }));
+                        if (type.length > 0) {
+                            type = ko.unwrap(type[0].document.DocumentType);
+                        }
+                        return {
+                            title: title,
+                            userCount: item.values.length,
+                            additionalMsg: '',
+                            id: id,
+                            type: type
+                        }
+                    });
+
+        });
+        console.log("aaaa", JSON.stringify(self.modalDocuments))
+        //new code end
+
+        //old code start
+        //self.modalDocuments = ko.pureComputed(function() {
+        //    var selections = $.map(self.selectedUsersPerDocument(),
+        //        function(item) {
+        //            return parseDocumentSelection(item);
+        //        });
+
+        //    var groupedById = selections.groupBy('documentId');
+
+        //    return $.map(groupedById,
+        //        function(item) {
+        //            var title = ko.unwrap(self.usersPerDocument().where(function(doc) {
+        //                return ko.unwrap(doc.document.Id) === item.key;
+        //            })[0].document.Title);
+        //            var id = ko.unwrap(self.usersPerDocument().where(function (doc) {
+        //                return ko.unwrap(doc.document.Id) === item.key;
+        //            })[0].document.Id);
+        //            return {
+        //                title: title,
+        //                userCount: item.values.length,
+        //                additionalMsg: '',
+        //                id:id
+        //            }
+        //        });
+        //});
+        //old code end
+
+        self.applyChanges = function () {
+
+            var additionalMsgs = "";
+            var orderId = [];
+            $('.additionalMsgCss').each(function () {
+                var msg = $(this).val();
+                var id = $(this).attr('role');
+                orderId.push(id);
+                if (additionalMsgs == "") {
+                    additionalMsgs = id + '~' + msg;
+                } else {
+                    additionalMsgs = additionalMsgs + "^" + id + '~' + msg;
+                }
+                //if (additionalMessage == "") {
+                //    additionalMsgs = additionalMessage;
+                //} else {
+                //    additionalMsgs = additionalMessage;
+                //}
+
+            });
+
+            //new code start
+            var selectedUsersPerDocument = $.map(selectedUsers,
+                function (item) {
+                    var reorderIndex = orderId.indexOf(item.documentId)
+
+                    if ($('#multiDateSelect').val() != null) {
+                        self.docAssignDate = $('#multiDateSelect').val();
+                    }
+                    return {
+                        DocumentId: item.documentId,
+                        DocumentType: item.documentType,
+                        UserId: item.userId,
+                        AssignedDate: self.docAssignDate,
+                        AdditionalMsg: additionalMsgs.toString(),
+                        MultipleAssignedDates: $('#multiDateSelect').val(),
+                        OrderNumber: reorderIndex
+                    };
+                });
+            console.log("selected", selectedUsersPerDocument);
+            //new code end
+
+            //old code start
+            //var selectedUsersPerDocument = $.map(self.selectedUsersPerDocument(),
+            //    function(item) {
+
+            //        var parsed = parseDocumentSelection(item);
+
+            //        var reorderIndex = orderId.indexOf(parsed.documentId)
+
+            //        if ($('#multiDateSelect').val() != null) {
+            //            self.docAssignDate = $('#multiDateSelect').val();
+
+            //        }
+            //        return {
+            //            DocumentId: parsed.documentId,
+            //            DocumentType: parsed.documentType,
+            //            UserId: parsed.userId,
+            //            AssignedDate: self.docAssignDate,
+            //            AdditionalMsg: additionalMsgs.toString(),
+            //            MultipleAssignedDates: $('#multiDateSelect').val(),
+            //            OrderNumber: reorderIndex
+            //        };
+            //    });
+            //console.log("selected", selectedUsersPerDocument);
+           // old code end
+
+            selectedUsersPerDocument.sort(function (a, b) {
+                return a.OrderNumber - b.OrderNumber;
+            });
+
+            var url = self.selectedAction() === 'Assign'
+                ? '@Url.Action("AssignDocumentsToUsers", "Send", new {Area = ""})'
+                : '@Url.Action("UnassignDocumentsFromUsers", "Send", new {Area = ""})';
+
+            if (self.selectedAction() === 'Reassign') {
+                url = '@Url.Action("ReassignDocumentsToUsers", "Send", new {Area = ""})';
+            }
+            $('#LoadingImageDiv').show();
+          
+            $.ajax({
+                method: 'POST',
+                url: url,
+                data: {
+                    data: selectedUsersPerDocument
+                }
+            }).done(function (data) {
+                if (self.selectedAction() === 'Reassign') {
+                    notif({
+                        msg: '<b>Success -</b> Successfully reassign documents',
+                        type: 'success'
+                    });
+                } else {
+                    notif({
+                        msg: '<b>Success -</b> Successfully ' +
+                            (self.selectedAction() === 'Assign' ? 'assigned' : 'unassigned') +
+                            ' documents',
+                        type: 'success'
+                    });
+                }
+
+                // Clear page selections
+                self.selectedUsersPerDocument.removeAll();
+                self.selectedDocuments.removeAll();
+                $('.selectpicker').selectpicker('deselectAll');
+                self.selectedTypes.removeAll();
+                self.selectedAction(null);
+                //$('#actionModal').modal('show');
+                window.location.reload();
+                }).fail(function () {
+                    if (self.selectedAction() === 'Assign') {
+                        notif({
+                            msg: '<b>Error -</b> Error Assigning documents',
+                            type: 'error'
+                        });
+                    } else {
+                        notif({
+                            msg: '<b>Error -</b> Failed to ' +
+                                (self.selectedAction() === 'Reassign' ? 'reassign' : 'unassign' + ' documents'),
+                            type: 'error'
+                        });
+                    }
+                    window.location.reload();
+            }).always(function() {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+
+        self.document = {
+            getType: function(type) {
+                switch (type) {
+                case 1:
+                    return 'Training Manual';
+                case 2:
+                    return 'Test';
+                case 3:
+                    return 'Policy';
+                case 4:
+                        return 'Memo';
+                    case 6:
+                        return 'CheckList';
+                    case 7:
+                        return 'custom';
+                    default:
+                        return '';
+                }
+            },
+            getImage: function (type) {
+                 switch (type) {
+                     case 1:
+                         return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)';
+                     case 2:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)';
+                    case 3:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)';
+                    case 4:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)';
+                    case 6:
+                         return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)' ;
+                    case 7:
+                        return '@Href("~/Content/images/CustomDocument.png")';
+                    default:
+                        return '';
+                }
+            }
+        }
+
+       // old code start
+        @*$('.multiselect').change(function () {
+            var url = self.selectedAction() === 'Assign'
+                ? '@Url.Action("UsersNotAssignedDocument", "Send", new {Area = ""})'
+                : '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+
+            if (self.selectedAction() === 'Reassign') {
+                url = '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+            }
+            var groupIds = $(this).val();
+            if (groupIds.length > 0 && typeof groupIds !== 'undefined' && groupIds !== null) {
+                var promises = [];
+                if (groupIds != null && groupIds != '') {
+                    $('#LoadingImageDiv').show();
+                    $.each(self.selectedDocuments(),
+                        function (index, document) {
+                            promises.push($.ajax({
+                                method: 'POST',
+                                url: url,
+                                data: {
+                                    documentId: ko.unwrap(document.Id),
+                                    documentType: ko.unwrap(document.DocumentType),
+                                    groupIds: groupIds
+                                }
+                            }).done(function (data) {
+                                var newDocEntry = {
+                                    document: document,
+                                    users: data
+                                };
+                                var oldDocEntry = ko.utils.arrayFirst(self.usersPerDocument(),
+                                    function (item) {
+                                        return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                                    });
+                                if (!oldDocEntry) {
+                                    self.usersPerDocument.push(newDocEntry);
+                                } else {
+                                    self.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                                }
+                            }));
+                        });
+                    $.when.apply($, promises).then(function () {
+                        $('#LoadingImageDiv').hide();
+                    });
+                }
+            }
+            else {
+                self.usersPerDocument([]);
+            }
+        });*@
+        //old code end
+
+        //new code start
+        $('.multiselect').change(function () {
+            //alert(1)
+            var currentRequest = null;
+            self.isUserGet(true);
+            var url = self.selectedAction() === 'Assign'
+                ? '@Url.Action("UsersNotAssignedDocument", "Send", new {Area = ""})'
+                : '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+
+            //if (self.selectedAction() === 'Reassign') {
+              //  url = '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+            //}
+            var groupIds = $(this).val();
+            if (groupIds == null) {
+                groupIds = [];
+            }
+            var docId = self.DocumentsInJSTree();
+            var documentId = [];
+            $.each(docId, function (i, item) {
+                documentId.push(item.id);
+            });
+            selectedDocumentId = documentId;
+            //console.log("documentId", documentId);
+            //console.log("groupId", groupIds);
+            selectedUserGroupIds = groupIds;
+            if (groupIds.length > 0 && typeof groupIds != 'undefined' && groupIds != null) {
+                //console.log('sending post ajax request')
+                var promises = [];
+                //if (groupIds != null && groupIds != '') {
+                   // $('#LoadingImageDiv').show();
+                self.currentRequest = $.ajax({
+                    beforeSend: function () {
+                        if (self.currentRequest) {
+                            self.currentRequest.abort();
+                        }
+                        self.allusers.removeAll();
+                        //assignedUser = [];
+                       /// allUserList.length = 0;
+                        var x = self.allusers();
+                        self.selectedUsersPerDocument.removeAll(x);
+                    },
+                    method: 'POST',
+                            url: url,
+                            data: {
+                                groupIds: groupIds,
+                                allDocumentId: documentId
+                            }
+                        }).done(function (data) {
+                            //alert(3);
+                            allUserList = data;
+                            var assignedUser = [];
+                            $.each(data,
+                                function (index, userdata) {
+                                    if (userdata.AssignedDocumentUsers.length > 0) {
+                                        assignedUser.push(userdata);
+                                    }
+                                });
+                            console.log("assignedUser", assignedUser)
+                            assignedUsers = assignedUser;
+                            var a = {
+                                assigneduser: assignedUser
+                            }
+                            self.assignedusers.push(a);
+                            self.isUserGet(false);
+                            var usersSelectedForDocument = self.allusers();
+                            self.allusers.removeAll(usersSelectedForDocument);
+                            //self.userList.push(data);
+                            //var userList = {
+                            //    users: ko.unwrap(self.userList()[0])
+                            //}
+                            var userList = {
+                                users: data
+                            }
+                            self.allusers.push(userList);
+                            console.log("allusers", ko.unwrap(self.allusers));
+
+                            $.each(self.selectedDocuments(),
+                                function (index, document) {
+                                    var newDocEntry = {
+                                        document: document,
+                                        users: data
+                                    };
+                                    var oldDocEntry = ko.utils.arrayFirst(self.usersPerDocument(),
+                                        function (item) {
+                                            return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                                        });
+                                    if (!oldDocEntry) {
+                                        self.usersPerDocument.push(newDocEntry);
+                                    } else {
+                                        self.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                                    }
+                                });
+                        });
+                    $.when.apply($, promises).then(function () {
+                        $('#LoadingImageDiv').hide();
+                    });
+                //}
+            }
+            else {
+                //console.log('else inside');
+                if (self.currentRequest) {
+                    self.currentRequest.abort();
+                }
+                self.usersPerDocument([]);
+                self.allusers([]);
+                $('#LoadingImageDiv').hide();
+                self.isUserGet(false);
+            }
+        });
+        //new code end
+
+        function loadUsers() {
+            if (self.selectedGroups().length === 0 || self.selectedDocuments().length === 0) {
+                self.usersPerDocument([]);
+                self.allusers([]);
+                $('#LoadingImageDiv').hide();
+                return;
+            }
+
+            var groupIds = $.map(self.selectedGroups(),
+                function(group) {
+                    return ko.unwrap(group.Id);
+                });
+
+            var url = self.selectedAction() === 'Assign'
+                ? '@Url.Action("UsersNotAssignedDocument", "Send", new {Area = ""})'
+                : '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+
+            if (self.selectedAction() === 'Reassign') {
+                url = '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+            }
+
+            var promises = [];
+            var gIds = [];
+            $('#LoadingImageDiv').show();
+            $.each(self.selectedDocuments(),
+                function(index, document) {
+                    ids.push(document.id)
+                });
+
+            $.ajax({
+                method: 'POST',
+                url: url,
+                data: {
+                    documentId: ko.unwrap(document.Id),
+                    documentType: ko.unwrap(document.DocumentType),
+                    groupIds: ko.unwrap(gIds)
+                }
+            }).done(function (data) {
+                var newDocEntry = {
+                    document: document,
+                    users: data
+                };
+                var oldDocEntry = ko.utils.arrayFirst(self.usersPerDocument(),
+                    function (item) {
+                        return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                    });
+                if (!oldDocEntry) {
+                    self.usersPerDocument.push(newDocEntry);
+                } else {
+                    self.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                }
+            });
+
+            $.when.apply($, promises).then(function() {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+
+        function removeDocumentSelectionByType(type) {
+            var docsToRemove = [];
+
+            $.each(self.selectedDocuments(),
+                function(index, document) {
+                    if (document.type === type) {
+                        docsToRemove.push(document);
+                    }
+                });
+
+            self.selectedDocuments.removeAll(docsToRemove);
+        }
+
+       // new code start
+        function deselectAllUsers() {
+            var usersSelectedForDocument = self.selectedUsersPerDocument();
+            self.selectedUsersPerDocument.removeAll(usersSelectedForDocument);
+        }
+        //new code end
+
+        //old code start
+        //function deselectAllUsers(documentId) {
+        //    var usersSelectedForDocument = $.grep(self.selectedUsersPerDocument(),
+        //        function(item) {
+        //            return parseDocumentSelection(item).documentId === documentId;
+        //        });
+
+        //    self.selectedUsersPerDocument.removeAll(usersSelectedForDocument);
+        //}
+        //old code end
+
+        function deselectAllUsersForGroup(groupId) {
+            var usersSelectedForGroup = $.grep(self.selectedUsersPerDocument(),
+                function(item) {
+                    return parseDocumentSelection(item).groupId === groupId;
+                });
+
+            self.selectedUsersPerDocument.removeAll(usersSelectedForGroup);
+        }
+
+       // old code start
+        function parseDocumentSelection(item) {
+            var split = item.split(';');
+            return {
+                documentId: split[0],
+                documentType: parseInt(split[1]),
+                userId: split[2],
+                groupId: split[3]
+            };
+        }
+        //old code end
+
+        //new code start
+        function selectedDocumentSelection(item) {
+            var split = item.split(';');
+            return {
+                documentId: "",
+                documentType: 0,
+                userId: split[0],
+                groupId: split[1]
+            };
+        }
+        //new code end
+
+    };
+
+    var vm = new Controller(@Html.ToJson(Model), @Html.ToJson((IEnumerable<dynamic>) ViewBag.Groups));
+    vm.modals = {
+        action: {
+            open: function() {
+                $('#actionModal').modal('show');
+            },
+            close: function () {
+                $('#actionModal').modal('hide');
+                window.location = '@Url.Action("Index", "Document", new {Area = ""})';
+            },
+            pick: function() {
+                vm.selectedAction(this.toString());
+                $('#actionModal').modal('hide');
+                if (this.toString() == 'Assign') {
+                    vm.modals.type.openAssign();
+                }
+                else if (this.toString() == 'Unassign') {
+                    vm.modals.type.openUnAssign();
+                } else {
+                    vm.modals.type.openReassign();
+                }
+            }
+        },
+        type: {
+            openAssign: function () {
+                $('.modal').css('overflow-y', 'auto');
+                $('#assignModal').modal('show');
+            },
+            openUnAssign: function () {
+                $('.modal').css('overflow-y', 'auto');
+                $('#unAssignModal').modal('show');
+            },
+            openReassign: function () {
+                $('.modal').css('overflow-y', 'auto');
+                $('#reAssignModal').modal('show');
+            },
+            close: function () {
+                $('#typeModal').modal('hide');
+                window.location = '@Url.Action("Index", "Document", new {Area = ""})';
+            },
+            pick: function () {
+                var val = parseInt(this);
+                if (vm.selectedTypes.indexOf(val) === -1) {
+                    vm.selectedTypes.push(val);
+                } else {
+                    vm.selectedTypes.remove(val);
+                }
+            },
+            closeAssignModal: function () {
+                $('#assignDocumentToUserModal').modal('hide');
+                window.location = '@Url.Action("Index", "Document", new {Area = ""})';
+            },
+            openConfirmModal: function () {
+                //$('#assignDocumentToUserModal').modal('hide');
+                if (vm.selectedAction() === 'Assign') {
+                    $('#assignDocumentToUserModal').modal('hide');
+                    if (selectedDocuments.length == allUserList.length) {
+                        if (assignedUsers.length > 0) {
+                            $('#userSelectedDocuments').modal('show');
+                            $('#assignDocumentToUserModal')
+                                .modal('hide');
+                        } else {
+                            $('#assignconfirmModal').modal('show');
+                        }
+                    } else {
+                        $('#assignconfirmModal').modal('show');
+                    }
+                } else if (vm.selectedAction() === 'Reassign') {
+                    $('#reAssignDocumentToUserModal').modal('hide');
+                    $('#reassignconfirmModal').modal('show');
+                    // hide reassign modal when working on reassigning
+                }
+                else {
+                    $('#unAssignDocumentToUserModal').modal('hide');
+                    $('#unassignconfirmModal').modal('show');
+                }
+            },
+            openNewConfirmModal: function () {
+                if (vm.selectedAction() === 'Assign') {
+                    $('#userSelectedDocuments').modal('hide');
+                    $('#assignconfirmModal').modal('show');
+                }
+            },
+            cancelConfirmModal: function () {
+                //$('#confirmModal').modal('hide');
+                //$('#assignDocumentToUserModal').modal('show');
+                if (vm.selectedAction() === 'Assign') {
+                    $('#assignDocumentToUserModal').modal('show');
+                    $('#userSelectedDocuments').modal('hide');
+                    $('#assignconfirmModal').modal('hide');
+                } else if (vm.selectedAction() === 'Reassign') {
+                    $('#reAssignDocumentToUserModal').modal('show');
+                    $('#userSelectedDocuments').modal('hide');
+                    $('#reassignconfirmModal').modal('hide');
+                    // show reassign when working on reassigning
+                }
+                else {
+                    $('#unAssignDocumentToUserModal').modal('show');
+                    $('#userSelectedDocuments').modal('hide');
+                    $('#unassignconfirmModal').modal('hide');
+                }
+            },
+            nextAssign: function () {
+                $('#assignModal').modal('hide');
+                $('#assignTodayDateModal').modal('show');
+            },
+            nextModalUnAssign: function () {
+                $('#unAssignModal').modal('hide');
+                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                    vm.documents().forEach(function (document) {
+                        if (ko.unwrap(document.Id) == item.id) {
+                            vm.selectedDocuments.push(document);
+                        }
+                    });
+                });
+                $('#unAssignDocumentToUserModal').modal('show');
+                    vm.docAssignDate(new Date());
+                    $.each(vm.selectedDocuments(),
+                        function (index, document) {
+                            var newDocEntry = {
+                                document: document,
+                                users: []
+                            };
+                            var oldDocEntry = ko.utils.arrayFirst(vm.usersPerDocument(),
+                                function (item) {
+                                    return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                                });
+                            if (!oldDocEntry) {
+                                vm.usersPerDocument.push(newDocEntry);
+                            } else {
+                                vm.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                            }
+                        });
+                //$('#assignTodayDateModal').modal('show');
+            },
+            nextModalReAssign: function () {
+                $('#reAssignModal').modal('hide');
+                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                    vm.documents().forEach(function (document) {
+                        if (ko.unwrap(document.Id) == item.id) {
+                            vm.selectedDocuments.push(document);
+                        }
+                    });
+                });
+                $('#reAssignDocumentToUserModal').modal('show');
+                vm.docAssignDate(new Date());
+                $.each(vm.selectedDocuments(),
+                    function (index, document) {
+                        var newDocEntry = {
+                            document: document,
+                            users: []
+                        };
+                        var oldDocEntry = ko.utils.arrayFirst(vm.usersPerDocument(),
+                            function (item) {
+                                return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                            });
+                        if (!oldDocEntry) {
+                            vm.usersPerDocument.push(newDocEntry);
+                        } else {
+                            vm.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                        }
+                    });
+                //$('#assignTodayDateModal').modal('show');
+            },
+            nextModalAssign: function () {
+                $('#assignModal').modal('hide');
+                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                    vm.documents().forEach(function (document) {
+                        if (ko.unwrap(document.Id) == item.id) {
+                            vm.selectedDocuments.push(document);
+                            console.log("vm.selectedDocuments..", ko.unwrap(vm.selectedDocuments));
+                            console.log("usersPerDocument...", ko.unwrap(vm.usersPerDocument));
+                        }
+                    });
+                });
+                $('#assignTodayDateModal').modal('show');
+            },
+            nextUnAssign: function () {
+                $('#unAssignModal').modal('hide');
+            },
+            back: function () {
+                $('#actionModal').modal('show');
+                if (vm.selectedAction() === 'Assign') {
+                    $('#assignModal').modal('hide');
+                } else if (vm.selectedAction() === 'Reassign') {
+                    $('#reAssignModal').modal('hide');
+                } else {
+                    $('#unAssignModal').modal('hide');
+                }
+            },
+            modalback: function () {
+                if (vm.selectedAction() === 'Assign') {
+                    $('#assignDocumentToUserModal').modal('hide');
+                    $('#assignTodayDateModal').modal('show');
+                    vm.allusers.removeAll();
+                    $('#boot-multiselect-demo').multiselect("deselectAll", false).multiselect("refresh");
+                } else if (vm.selectedAction() === 'Reassign') {
+                    $('#reAssignDocumentToUserModal').modal('hide');
+                    $('#reAssignModal').modal('show');
+                    vm.allusers.removeAll();
+                    $('#boot-multiselect-demo').multiselect("deselectAll", false).multiselect("refresh");
+                } else {
+                    $('#unAssignDocumentToUserModal').modal('hide');
+                    $('#unAssignModal').modal('show');
+                    vm.allusers.removeAll();
+                    $('#boot-multiselect-demo').multiselect("deselectAll", false).multiselect("refresh");
+                }
+            },
+        }
+    };
+    ko.bindingHandlers.bootstrapPopover = {
+        init: function (element, valueAccessor) {
+            var $el = $(element);
+            var accessor = ko.unwrap(valueAccessor());
+            var assignedDocument = [];
+            var unassignedDocument = [];
+            if (accessor.length > 0) {
+                $.each(accessor,
+                    function (index, document) {
+                        if (document.IsDocumentAssign) {
+                            assignedDocument.push(document);
+                        } else {
+                            unassignedDocument.push(document);
+                        }
+                    });
+                console.log("assignedDocument", assignedDocument);
+                console.log("unassignedDocument", unassignedDocument);
+               // var a = assignedDocument.toString();
+                $.each(assignedDocument, function (index, assigndoc) {
+                    $.each(unassignedDocument, function (index, unassigndoc) {
+                            var info = "Information";
+                            var information = "<span style='font-size:12px'>" + info + "</span>";
+                           // var description = "Assigned Documents" + "<ul><li>" + document.assign.Title + "</li></ul>" + "UnAssigned Documents" + "<ul><li>" + document.unassign.Title + "</li></ul>" + "If you select the user than the unassigned documents is assigned to user";
+                        var description = "Assigned Documents" + "<ul><li>" + assigndoc.Title + "</li></ul>" + "UnAssigned Documents" + "<ul><li>" + unassigndoc.Title + "</li></ul>" + "If you select the user than the unassigned documents is assigned to him";
+                            var content = "<span style='font-size:12px;'></span> <span style='font-size:12px;'>" + description + "</span><br>";
+                            $el.attr('data-toggle', 'popover');
+                            $el.attr('data-trigger', 'hover');
+                            $el.attr('data-html', 'true');
+                            $el.attr('data-placement', 'right');
+                            $el.attr('title', information);
+                            $el.attr('data-content', content);
+                            $el.popover();
+                    });
+                });
+            }
+        }
+    };
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+
+    $(document).ready(function() {
+        $('#actionModal').modal('show');
+    });
+</script>

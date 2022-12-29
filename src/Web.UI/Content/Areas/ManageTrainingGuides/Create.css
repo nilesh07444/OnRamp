@@ -1,0 +1,122 @@
+﻿div.hopscotch-bubble .hopscotch-bubble-close {
+    top: -2px !important;
+    right: 5px !important;
+}
+
+div.hopscotch-bubble .hopscotch-bubble-number {
+    padding: 0px !important;
+}
+
+.ui-tooltip {
+    padding: 8px;
+    position: absolute;
+    z-index: 9999;
+    max-width: 300px;
+    background-color: rgba(0, 0, 0, 0.84) !important;
+    color: white !important;
+}
+
+#sortable1 {
+    margin: 0;
+    padding: 0;
+}
+
+    #sortable1 ul li {
+        list-style: none;
+    }
+
+.upload-thumbnail {
+    max-height: 100px;
+    max-width: 100px;
+    margin: auto;
+}
+
+.attachment-preview {
+    margin: auto;
+}
+
+.attachment-name {
+    text-align: center;
+    overflow: hidden;
+}
+
+.upload-thumbnail-sort {
+    max-height: 80px;
+    max-width: 80px;
+    margin: auto;
+}
+
+.coverPicture {
+    max-height: 100px;
+}
+
+.upload-detail-60 {
+    width: 60%;
+    max-width:60%;
+}
+
+.upload-detail-20 {
+    width: 20%;
+    max-width:20%;
+}
+
+.upload-detail-40 {
+    width: 40%;
+    max-width:40%;
+}
+
+.close {
+    color: white;
+}
+
+.glyphicon-sort {
+    cursor: pointer;
+}
+
+.chapterName, .linkedGuide, .uploadLauncher {
+    display: inline;
+}
+
+.linkUpload {
+    max-width: 320px;
+}
+
+.arrangeLable {
+    background-color: #555;
+    border-color:#bce8f1;
+    text-align: center;
+    width: 100%;
+    border-bottom:1px solid;
+    border-top-left-radius:3px;
+    border-top-right-radius:3px;
+    color:white;
+    padding:5px 10px;
+}
+
+.arrangeTable {
+    width: 100%;
+}
+
+.arrange60 {
+    width: 60%;
+}
+
+.arrange50 {
+    width: 50%;
+}
+
+.embededLable {
+    overflow: hidden;
+}
+.upload-thumbnail-embeded{
+    max-width:200px;
+    max-height:200px;
+    margin:auto;
+}
+.errors td{
+    font-size:smaller;
+}
+.errorsSpan{
+    font-size:smaller;
+    color:red;
+}

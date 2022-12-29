@@ -1,0 +1,350 @@
+﻿@model Ramp.Contracts.ViewModel.PolicyModel
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer
+@using Common.Enums
+
+@using System.Threading
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var IsGlobalAccessed = Request["isGlobal"];
+    var numberNorm = 0;
+    if (Model.ContentModels.FirstOrDefault() != null && Model.ContentModels.First().Number == 0)
+    {
+        numberNorm = 1;
+    }
+}
+<link href="~/Content/Areas/Document/Preview.css" rel="stylesheet" />
+<style>
+    #divContent .form-control {
+        max-width: unset;
+    }
+
+                 .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+
+        }
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-3">
+        <div id="divContent">
+            <div class="panel panel-info" data-bind="with:data">
+                <div class="panel-heading">
+                    <h4>Contents</h4>
+                </div>
+                <div class="panel-footer">
+                    <table>
+                        <tbody data-bind="foreach: ContentModels">
+                            <tr>
+                                <td><span data-bind="text:ko.unwrap(Number) + @numberNorm"></span></td>
+                                <td>&nbsp;<span class="anchor" data-bind="click:$root.content.set.bind(),text:app.data.utils.string.truncate(Title,30),css:{'active-chapter' : $root.content.isSelected($data)}"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h4>Feedback</h4>
+                </div>
+                <div class="panel-footer text-center" data-bind="with:$root.feedback">
+                    <select class="form-control" data-bind="options:contentTypes,
+                                                            optionsValue:'Id',
+                                                            optionsText:'Name',
+                                                            optionsCaption : 'What type of feedback ?',
+                                                            value:ContentType"></select>
+                    <p></p>
+                    <textarea class="form-control" data-bind="textInput:Content" rows="7"></textarea>
+                    <p></p>
+                    <button class="btn btn-success btn-sm" type="button" data-bind="click:save.bind()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-9" data-bind="with:data">
+        <h1 class="lead" data-bind="text:ko.unwrap(Title).toUpperCase()"></h1>
+        <h4><strong><span class="pageHeading_ref" data-bind="text:$root.enums.documentType[ko.unwrap(DocumentType)].toUpperCase() + ' REF: '"></span><span data-bind="text:ReferenceId"></span></strong></h4>
+        <div class="well">
+            <p data-bind="text:Description"></p>
+        </div>
+        <div class="input-group">
+            <label>View Mode</label>
+            <span class="btn-group-sm" data-bind="with:$root.content.previewMode">
+                <button type="button" class="btn btn-default" data-bind="click:set.bind(0),css : {'btn-primary' : isPortraitMode()}">Portrait</button>
+                <button type="button" class="btn btn-default" data-bind="click:set.bind(1) ,css : {'btn-primary' : isStorybookMode()}">Storybook</button>
+            </span>
+        </div>
+        <!-- ko if: $root.content.previewMode.isStorybookMode() -->
+        <div class="pull-right" data-bind="with:$root.paging">
+            <button class="btn btn-default" data-bind="click:previous.bind(),disable:isCover() || (!hasCover() && isFirst())">Prev</button>
+            <button class="btn btn-primary" data-bind="click:next.bind(),disable:isLast()">Next</button>
+        </div>
+        <br />
+        <!--/ko -->
+        <!-- ko if:$root.paging.shouldShowCover() -->
+        <br />
+        <div class="text-center" data-bind="with:CoverPicture">
+            <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                <img class="img-responsive" data-bind="attr:{src:Url,title:Description}" style="margin-left:auto;margin-right:auto" />
+            </a>
+        </div>
+        <!-- /ko -->
+        <br />
+        <!-- ko foreach:ContentModels -->
+        <!-- ko if:$root.paging.shouldShowContent($data) -->
+        <div class="panel panel-info" data-bind="attr:{id:Id}">
+            <div class="panel-heading hidden-xs">
+                <div class="heading pull-left">
+                    <h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;
+                    <p class="chapterName" data-bind="text:app.data.utils.string.truncate(Title,90)"></p>
+                </div>
+
+                <div class="btn-group pull-right hidden-sm">
+                    <a class="btn btn-default" data-bind="visible:ko.unwrap(DocLinkAndAttachmentCount) > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }">
+                        <span class="glyphicon glyphicon-paperclip"></span>&nbsp;
+                        <span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide Attachments' : 'Show Attachments'"></span>
+                        <span class="badge" data-bind="text:ko.unwrap(DocLinkAndAttachmentCount)"></span>
+                    </a>
+                </div>
+                <div class="btn-group pull-right visible-sm">
+                    <a class="btn btn-default" data-bind="visible:ko.unwrap(DocLinkAndAttachmentCount) > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(DocLinkAndAttachmentCount)"></span></a>
+                </div>
+                <span class="clearfix"></span>
+            </div>
+            <div class="panel-heading visible-xs">
+                <div class="heading text-center">
+                    <h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;
+                </div>
+                <span class="clearfix"></span>
+            </div>
+            <div class="panel-heading visible-xs">
+                <div class="heading">
+                    <span class="chapterName" data-bind="text:Title"></span>
+                </div>
+                <span class="clearfix"></span>
+            </div>
+            <div class="panel-heading visible-xs text-center">
+                <div class="btn-group">
+                    <a class="btn btn-default" data-bind="visible:ko.unwrap(Attachments).length, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(Attachments).length"></span></a>
+                </div>
+            </div>
+            <div class="collapse" style="position: relative" data-bind="attr:{ id:'attachments_'+ko.unwrap(Id) }, slideVisible:state.showAttachments">
+                <!-- ko if: ko.unwrap($data.DocLinks)?.length > 0-->
+                <div style="padding: 10px 10px">
+                    <strong style="margin-left: 15px">Links:</strong>
+                </div>
+
+                <div class="row col-md-12" style="padding-bottom: 10px" id="docLinks" data-bind="foreach:$data.DocLinks, attr: {id: 'chapter_' + $index() }">
+                    <div class="col-md-2">
+                        <a class="iframe" data-bind="attr: {href: Url}">
+                            <img class="img-responsive upload-thumbnail hover-zoom cursor" data-bind="attr:{title:Url}" src="@Url.Content("~/Content/images/file/WebFrame.png")" />
+                            <p class="text-center"> <span data-bind="text: Name"></span></p>
+                        </a>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- ko if: ko.unwrap($data.Attachments).length > 0-->
+                <div data-bind="foreach:Attachments" style="padding: 5px">
+                    <div class="pull-left text-center" style="margin-left: 15px;width: 115px; ">
+                        <div style="height: 100px;">
+                            <!-- ko if:ko.unwrap(Type).indexOf('Image') === 0 -->
+                            <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                                <img class="img-responsive attachment img-thumbnail hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                            </a>
+                            <!-- /ko -->
+                            <!-- ko if:ko.unwrap(Type).indexOf('Video') === 0 -->
+                            <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                                <img class="img-responsive attachment hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                <div class="content center-block">
+                                    <video controls height="320" width="600">
+                                        <source data-bind="attr:{ src:Url }" type="video/mp4" />
+                                        Your browser does not support the HTML 5 video tag.
+                                    </video>
+                                </div>
+                            </a>
+                            <!-- /ko -->
+                            <!-- ko if:ko.unwrap(Type).indexOf('Audio') === 0 -->
+                            <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                                <img class="img-responsive attachment hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                <div class="content center-block">
+                                    <audio controls style="width:100%">
+                                        <source data-bind="attr:{ src:Url }" type="audio/mp3" />
+                                        Your browser does not support the HTML 5 audio tag.
+                                    </audio>
+                                </div>
+                            </a>
+                            <!-- /ko -->
+                            <!-- ko ifnot:(ko.unwrap(Type).indexOf('Image') === 0 || ko.unwrap(Type).indexOf('Video') === 0 || ko.unwrap(Type).indexOf('Audio') === 0)-->
+                            <img class="img-responsive attachment hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description},click:$root.content.previewUpload.bind($data)" />
+                            <!-- /ko -->
+                        </div>
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                            <small data-bind="text:Description"></small>
+                        </div>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <div class="clearfix"></div>
+                <hr />
+            </div>
+
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-12 chapter-content">
+                        <!-- ko if:Content -->
+                        <div class="content-tools" data-bind="contentTools:{query:'',identifier:'name',value:Content},identifier:ko.unwrap(Id),html:Content" data-editable></div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+        <!-- /ko -->
+        @*@if (Thread.CurrentPrincipal.IsInStandardUserRole())
+        {*@
+
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <p> Action needed</p>
+
+                </div>
+                <div class="panel-body">
+                    <p data-bind="text:CallToActionMessage"></p>
+                </div>
+                <div class="panel-footer" data-bind="with: $root.callToAction">
+                    <button class="btn" data-bind="disable: hasResponse, click: submit.bind($data, true), css: { 'btn-default': response() === null, 'btn-success': response() === true }">Yes</button>
+                    <button class="btn" data-bind="disable: hasResponse, click: submit.bind($data, false), css: { 'btn-default': response() === null, 'btn-success': response() === false }">No</button>
+                    <button class="btn" data-bind="disable: hasResponse, click: later.bind($data, null), css: { 'btn-default': response() === null }">Later</button>
+                </div>
+            </div>
+
+        @*}*@
+
+    </div>
+
+        </div>
+<br>
+<br>
+<script>
+    $(function () {
+        $(".ct-app").hide();
+        $(".iframe").fancybox({
+            type: 'iframe'
+        });
+    });
+    var isGlobal = '@IsGlobalAccessed';
+    var vm = new app.data.previewController(@Html.ToJson(Model),@Html.ToJson(ViewBag.Links as IDictionary<string,string>),
+        {
+            startTime: '@ViewBag.StartTime',
+            trackingInterval: parseInt(@ViewBag.TrackingInterval)
+        });
+    vm.initialize();
+    vm.enums = {};
+    vm.enums.documentType = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)));
+    vm.callToAction = {};
+    //below code added by neeraj
+    vm.callToAction.later = function (response) {
+         $('#LoadingImageDiv').show();
+        $.ajax({
+            //beforeSend: function () {
+            //    console.log("data to submit to chnage response ", response)
+            //},
+            url: '@Url.Action("Later", "Policy", new {Area = ""})',
+            method: 'POST',
+            data: {
+                policyId: vm.data.Id(),
+                response: response,
+                isGlobal: '@IsGlobalAccessed'
+            }
+        }).done(function (data) {
+            // redirect to index
+            if (isGlobal === 'True' || isGlobal === 'true' || isGlobal === true) {
+                vm.redirect(vm.links.learnMore);
+            } else {
+                vm.redirect(vm.links.index);
+
+            }
+        }).fail(function(data) {
+            if (notif) {
+                notif({
+                    msg: 'Failed to submit call to action response, please try again',
+                    type: 'error'
+                });
+            }
+        }).always(function() {
+            $('#LoadingImageDiv').hide();
+        });
+    }
+    vm.callToAction.submit = function (response) {
+        console.log("resposne ", response)
+        
+        //if (response == true) response = true;
+        //else if (response == false) response = null;
+        //else  response = false;
+        $('#LoadingImageDiv').show();
+        $.ajax({
+            //beforeSend: function () {
+            //    console.log("data to submit to chnage response ", response)
+            //},
+            url: '@Url.Action("CaptureResponse", "Policy", new {Area = ""})',
+            method: 'POST',
+            data: {
+                policyId: vm.data.Id(),
+                response: response,
+                isGlobal: '@IsGlobalAccessed'
+            }
+        }).done(function (data) {
+            // redirect to index
+            if (isGlobal === 'True' || isGlobal === 'true' || isGlobal === true) {
+                vm.redirect(vm.links.learnMore);
+            } else {
+                vm.redirect(vm.links.index);
+
+            }
+        }).fail(function(data) {
+            if (notif) {
+                notif({
+                    msg: 'Failed to submit call to action response, please try again',
+                    type: 'error'
+                });
+            }
+        }).always(function() {
+            $('#LoadingImageDiv').hide();
+        });
+    };
+    vm.callToAction.submitAdmin = function (response) {
+        vm.redirect(vm.links.index);
+    };
+    vm.callToAction.response = ko.observable(@Html.ToJson((bool?) ViewBag.Response));
+    vm.callToAction.hasResponse = ko.computed(function() {
+        if (typeof (vm.callToAction.response()) === typeof (true))
+            return true;
+        return false;
+    });
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>
+

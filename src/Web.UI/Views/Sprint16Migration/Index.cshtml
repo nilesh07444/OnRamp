@@ -1,0 +1,57 @@
+﻿@model Web.UI.Controllers.Sprint16MigrationController.Sprint16MigrationModel
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .form-group .control-label {
+        text-align:left !important;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="well well-sm">
+            <h4>Sprint 16 migration for companies</h4>
+        </div>
+        <div class="col-sm-10 col-sm-offset-1">
+            <div class="form-horizontal well well-lg">
+                @foreach (var company in Model.Companies.OrderBy(x => x.Name).ToList())
+                {
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">@company.Name</label>
+                        <div class="col-sm-3">
+                            <button class="btn btn-default" onclick="RunMigration('@company.Id')">Migrate</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function RunMigration(companyId){
+        $.ajax({
+            method: 'post',
+            url: '@Url.Action("Migrate", "Sprint16Migration")',
+            timeout: 0,
+            headers: {
+                'content-type': 'application/json'
+            },
+            data: JSON.stringify({ CompanyId: companyId }),
+            success: function (data) {
+                notif({
+                    type: 'success',
+                    msg: 'Migrated Successfully<br/>' + data.Message,
+                    multiline: true
+                });
+            },
+            error: function (xhr, error) {
+                notif({
+                    type: 'error',
+                    msg: 'Migration failed'
+                });
+                console.debug(error);
+            }
+        });
+    }
+</script>

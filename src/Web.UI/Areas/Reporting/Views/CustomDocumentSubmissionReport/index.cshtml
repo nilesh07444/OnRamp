@@ -1,0 +1,909 @@
+﻿
+@using System.Threading
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Common.Enums
+@using Domain.Customer
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var checklistList = ViewBag.CheckLists;
+
+
+
+    ViewBag.Title = "index";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            <span>
+                Custom Document Submission Report
+            </span>
+        </h1>
+        <div class="well well-sm">
+            This report will allow you to view submissions of Custom Document as well as track progress made.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*</span></b>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Filtering Options
+            </div>
+
+            <div class="panel-body">
+
+                <div class="row">
+
+                    <div class="col-md-3">
+
+                        <div class="form-group">
+                            <label><span style="color:red">*</span> Custom Document</label><br />
+                            <select id="checklist-multiselect-demo">
+                                @foreach (var item in checklistList)
+                                {
+                                    <option value="@item.Id">@item.Value</option>
+                                }
+                            </select>
+                        </div>
+
+                        @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+                        {
+                            @*<div class="form-group">
+                                <label>Access</label> <br />
+                                <select id="status-multiselect-access">
+                                    @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(GlobalAccess)))
+                                    {
+                                        <option value="@item.Key">@item.Value</option>
+                                    }
+                                </select>
+                            </div>*@
+                        }
+
+                        <div class="form-group">
+                            <label>Status</label> <br />
+                            <select id="status-multiselect-demo">
+                                @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(ChecklistSubmissionStatus)))
+                                {
+                                    <option value="@item.Key">@item.Value</option>
+                                }
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <div class="input-group" id='FromDate' data-bind="datepicker: fromDate">
+                                <input type='text' id="inputFromDate" class="form-control" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>To Date</label>
+                            <div class="input-group" id='ToDate' data-bind="datepicker: toDate">
+                                <input type='text' id="inputToDate" class="form-control" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center" style="float:right;">
+                            <input class="btn btn-primary" value="Generate" type="button" data-bind=" enable: (ko.unwrap(selectedCheckLists)!=null && (ko.unwrap(selectedCheckLists).length>0 ) ) , click: submit" />
+                        </div>
+
+                    </div>
+
+                </div>
+
+                @*<div class="col-md-12">
+
+                        <div class="col-md-3 col-sm-offset-2">
+                            <div class="form-group">
+                                <label><span style="color:red">*</span> Custom Document</label><br />
+                                <select  id="checklist-multiselect-demo">
+
+                                    @foreach (var item in checklistList) {
+                                        <option value="@item.Id">@item.Value</option>
+                                    }
+                                </select>
+
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label> <br />
+                                <select id="status-multiselect-demo">
+                                    @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(ChecklistSubmissionStatus))) {
+                                        <option value="@item.Key">@item.Value</option>
+                                    }
+                                </select>
+
+
+                            </div>
+                            @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+                            {
+                            <div class="col-md-10">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        @Html.Label("Access")
+                                        <select id="status-multiselect-access">
+                                            @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(GlobalAccess))) {
+                                                <option value="@item.Key">@item.Value</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>From Date</label>
+                                <div class="input-group" id='FromDate' data-bind="datepicker: fromDate">
+                                    <input type='text' id="inputFromDate" class="form-control" style="max-width: none" autocomplete="off" />
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>To Date</label>
+                                <div class="input-group" id='ToDate' data-bind="datepicker: toDate">
+                                    <input type='text' id="inputToDate" class="form-control" style="max-width: none" autocomplete="off" />
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group text-center col-md-2">
+                            <br /><br /><br />
+                            <input class="btn btn-primary" value="Generate" type="button" data-bind=" enable: (ko.unwrap(selectedCheckLists)!=null && (ko.unwrap(selectedCheckLists).length>0 ) &&  ko.unwrap(fromDate) &&  ko.unwrap(toDate) ) , click: submit" />
+                        </div>
+                    </div>*@
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<!-- ko if:ko.unwrap($root.results).length -->
+<div class="col-lg-10">
+
+    <div class="panel panel-info" data-bind="foreach:results">
+        <div class="panel-heading">
+            <span data-bind="text:DocumentTitle"></span>
+            <div class="pull-right ">
+                @*<a style="cursor:pointer; color:white;" data-bind="attr:{ href: $root.viewAcrobatReport($data)}"><b><u>View Acrobat</u></b></a><span style="padding-left:10px; padding-right:10px;"> | </span>*@
+                <a class="" style="cursor:pointer; color:white;" data-bind="attr:{ name:DocumentTitle,role: Id},click:$root.excelSummary.bind($data)"><b><u>Export Summary</u></b></a><span style="padding-left:10px; padding-right:10px;"> | </span>
+                <a class="" style="cursor:pointer; color:white;" data-bind="attr:{ name:DocumentTitle,role: Id},click:$root.excelSubmissions.bind($data)"><b><u>Export Submissions</u></b></a>
+            </div>
+        </div>
+        <div class="panel-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                
+                        <th class="col-md-1 Number"> ID Number</th>
+                        <th class="col-md-1 Code"> Employee Code</th>
+                        <th class="col-md-1 Name">User Name</th>
+
+                        <th class="col-md-1 Viewed">Viewed</th>
+                        <th class="col-md-1 Assigned">Date Assigned</th>
+                        <th class="col-md-1 DateViewed">Date Viewed</th>
+
+                      
+                        <th class="col-md-1 Status">Status</th>
+                        <th class="col-md-1 Access">Access</th>
+                        <th class="col-md-1 Group">Group</th>
+
+                        <th class="col-md-1">View Submission</th>
+                        <th class="col-md-1">Download</th>
+                    </tr>
+                </thead>
+
+
+                <tbody data-bind="foreach:Checklist">
+                    <tr>
+
+
+
+                        <td class="Number" data-bind="text:IdNumber"></td>
+                        <td class="Code" data-bind="text:EmployeeCode"></td>
+                        <td class="Name" data-bind="text:UserName"></td>
+                        <!-- ko if: Viewed -->
+                        <td class="Viewed">Yes</td>
+                        <!-- /ko -->
+                        <!-- ko if: !Viewed -->
+                        <td class="Viewed">No</td>
+                        <!-- /ko -->
+                        <td class="Assigned" data-bind="text:moment(DateAssigned).format('ll') !='Jan 1, 0001' ?moment(DateAssigned).format('ll'): ' '"></td>
+                        <td class="DateViewed" data-bind="text: DateViewed !=null && Viewed? moment(DateViewed).format('ll'):''"></td>
+                        <!-- ko if: Status -->
+                        <td class="Status" data-bind="text:Status"></td>
+                        <!-- /ko -->
+                        <!-- ko if: !Status -->
+                        <td class="Status">Pending</td>
+                        <!-- /ko -->
+                        <td class="Access" data-bind="text:Access"></td>
+                        <td class="Group" data-bind="text:Group"></td>
+                        <td>
+                             @*<span data-bind="text:ko.toJSON($data)"></span>*@ 
+                            <a data-bind="attr:{href: $root.viewSubmissionUrl(Id,'',UserId)}">View</a>
+                        </td>
+                        <td>
+                            <a style="cursor:pointer" data-bind="click:$root.checklistResultUrl.bind($data)" target="_blank"><b>Download</b></a>
+                        </td>
+
+                    </tr>
+                </tbody>
+
+                @*Commented by Softude*@
+
+                @*<td class="TestSelectedAnswer" data-bind="text:TestSelectedAnswer"></td>*@
+                @*<th class="col-md-1 TestSelectedAnswer">Question</th>*@
+                @*<th class="col-md-1">View Submission</th>
+                    <th class="col-md-1">Download</th>*@
+                @*<td> <a data-bind="attr:{href: $root.viewSubmissionUrl(CustomDocumentID,TestQuestionID,StandarduserID)}" target="_blank">View</a></td>
+                    <td>
+                        <a style="cursor:pointer" data-bind="click:$root.checklistResultUrl.bind($data)" target="_blank"><b>Download</b></a>
+                    </td>*@
+                @*<tbody data-bind="if:  ko.unwrap($data.Checklist).length === 0">
+                        <tr>
+                            <td colspan="12" class="text-center">No data</td>
+                        </tr>
+                    </tbody>*@
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<div class="col-lg-2">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            Column toggle
+
+        </div>
+        <div class="panel-body">
+
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="ID Number" name="Number" class="CommonCss" id="chkResult" />
+                    <span class="slider round"></span>
+                </label>
+                <span>ID Number</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Employee Code" name="Code" class="CommonCss" id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Employee Code</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="User Name" name="Name" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>User Name</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Viewed" name="Viewed" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Viewed</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Date Assigned" name="Assigned" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Date Assigned</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Date Viewed" name="DateViewed" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Date Viewed</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Checks Completed" name="Completed" class="CommonCss" checked id="chkResult" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Checks Completed</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Date Submitted" name="Submitted" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Date Submitted</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Status" name="Status" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Status</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Access" name="Access" class="CommonCss" id="chkPoints" />@*removed ischecked*@ 
+                    <span class="slider round"></span>
+                </label>
+                <span>Access</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Group" name="Group" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Group</span>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+<div class="modal fade" id="progressModal1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Export Summary</h4>
+            </div>
+            <div class="modal-body">
+                <span>Please wait while we export summary...</span><br><br>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="progressModal2" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Export Submission</h4>
+            </div>
+            <div class="modal-body">
+                <span>Please wait while we export submissions...</span><br><br>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+
+
+<div class="modal fade" id="ViewMessageModal" role="dialog" aria-labelledby="ViewMessageLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                Messages
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+
+                <table id="ViewMessageData" class=" dataTable table-hover table-fixed">
+                    <thead>
+                        <tr>
+                            <th>Message</th>
+                              <th>Type</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    @*<div class="btn-group">
+                            <button type="button" data-dismiss="modal" id="btnFinishApprove" class="btn btn-primary">Submit</button>
+                            <button type="button" id="btnNotApprove" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                        </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+
+    $(function () {
+
+        $('#checklist-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#checklist-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: "80%",
+            enableFiltering: true,
+            maxHeight: 350
+        });
+
+        $('#status-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#status-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: "80%",
+            enableFiltering: false,
+            maxHeight: 350
+        });
+
+        $('#status-multiselect-access').attr("multiple", "multiple").val('');
+        $('#status-multiselect-access').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: "80%",
+            enableFiltering: false,
+            maxHeight: 350
+        });
+
+        $(document).on('click', '.CommonCss', function () {
+            var className = $(this).attr('name');
+
+            if ($(this).is(":checked")) {
+                $('.' + className).each(function () {
+                    $(this).show();
+                });
+
+            } else {
+                $('.' + className).each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+
+    });
+
+
+    var Controller = function (checkListId, checkLists) {
+
+        var self = this;
+
+        self.results = ko.observableArray();
+
+        self.checkLists = ko.observableArray(checkLists);
+
+        self.status = [{ Id: 0, Value: 'Incomplete' }, { Id: 1, Value: 'Completed' }];
+
+        self.selectedCheckLists = ko.observableArray();
+
+        self.selectedStatus = ko.observableArray();
+
+        self.selectedAccess = ko.observableArray();
+
+        self.showDates = false;
+
+        self.selectionChanged = function (event) {
+
+            for (var i = 0; i < ko.unwrap(self.selectedStatus).length; i++) {
+                if (ko.unwrap(self.selectedStatus)[i] == '1') {
+                    self.showDates = true;
+                    break;
+                } else {
+                    self.showDates = false;
+                }
+            }
+
+            if (self.showDates || ko.unwrap(self.selectedStatus).length==0) {
+                $("#inputFromDate").removeAttr("disabled");
+                $("#inputToDate").removeAttr("disabled");
+            } else {
+                $("#inputFromDate").attr("disabled","disabled");
+                $("#inputToDate").attr("disabled","disabled");
+            }
+        }
+
+        $('#checklist-multiselect-demo').change(function () {
+            var checklistId = $(this).val();
+            self.selectedCheckLists(checklistId);
+        });
+
+        $('#status-multiselect-demo').change(function () {
+            var statusIds = $(this).val();
+            self.selectedStatus(statusIds);
+        });
+
+        $('#status-multiselect-access').change(function () {
+            var accessIds = $(this).val();
+            self.selectedAccess(accessIds);
+        });
+
+        self.fromDate = ko.observable();
+
+        self.fromDate.subscribe(function (newValue) {
+            $('#ToDate').data('DateTimePicker').minDate(new Date(newValue));
+        });
+
+        self.toDate = ko.observable();
+
+        self.toDate.subscribe(function (newValue) {
+            $('#FromDate').data('DateTimePicker').maxDate(new Date(newValue));
+        });
+
+        self.viewSubmissionUrl = function (id, TestQuestionID, userid) {
+           
+            return '/CustomDocument/Preview/' + id + '?chapterID=' + TestQuestionID + '&checkUser=' + userid + '&IsReportView=' + true;
+        }
+
+        self.checklistResultUrl = function (data) {
+         
+          var id = ko.toJS(data.TestQuestionID);
+            var url = '@Url.Action("DownloadPrintExcel", "CustomDocumentSubmissionReport", new {Area = "Reporting"})/?TestQuestionID=' + id + '&UserId=' + ko.toJS(data.UserId) + '&CustomDocumentID=' + ko.toJS(data.Id);
+                   $("#progressModal").modal('show');
+
+                self.downloadReport(url);
+        }
+
+
+        self.OpenViewMessageModal = function (data) {
+
+            
+       $("#ViewMessageModal").modal('show');
+
+        //Build an array containing Customer records.
+        var arrViewMessage = new Array();
+        arrViewMessage.push(["Message","Type","Date"]);
+            
+        for (var i = 0; i < self.results().length; i++) {
+            if (self.results()[i].CustomDocumentID == data.CustomDocumentID) {
+                arrViewMessage.push(self.results()[i].Mesages);
+                //arrViewMessage.push(self.results()[i].CreatedOn);
+            }
+        }
+            
+
+        //Create a HTML Table element.
+
+        var table = document.createElement("TABLE");
+        table.border = "1";
+        table.width = "100%";
+            
+        //Get the count of columns.
+        var columnCount = arrViewMessage[0].length;
+            
+            var row = table.insertRow(-1);
+            
+        for (var i = 0; i < columnCount; i++) {
+            var headerCell = document.createElement("TH");
+            headerCell.innerHTML = arrViewMessage[0][i];
+            row.appendChild(headerCell);
+        }
+
+            
+        for (var i = 0; i < arrViewMessage[1].length; i++) {
+            row = table.insertRow(1);
+            for (var j = 0; j < columnCount; j++) {
+                row.insertCell(0).innerHTML = arrViewMessage[1][i].Messages;
+                
+                if (arrViewMessage[1][i].Status == "4") {
+                    row.insertCell(1).innerHTML = "Declined"
+                }
+                if (arrViewMessage[1][i].Status == "5") {
+                    row.insertCell(1).innerHTML = "Approved"
+                }
+                const value = moment(arrViewMessage[1][i].CreatedOn).format('MM/DD/YYYY h:mm a');
+                row.insertCell(2).innerHTML = value;
+                break;
+            }
+        }
+
+
+        var dvTable = document.getElementById("ViewMessageData");
+        dvTable.innerHTML = "";
+        dvTable.appendChild(table);
+
+        }
+
+
+
+
+        self.viewAcrobatReport = function (data) {
+
+            var id = ko.toJS(data.CustomDocumentID);
+                var url = '@Url.Action("Detail")' + '?'+ $.param({
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                    CustomDocumentId: id
+                }, true);
+            return url;
+        }
+
+        self.excelSummary = function (data) {
+            $('#progressModal1').modal('show');
+            var id = ko.toJS(data.Id);
+           // alert(id);
+            //var title = ko.toJS(data.DocumentTitle);
+            //var className = (title).replace(" ", "").split(" ")[0];
+            var filterArray = new Array();
+            $('.CommonCss').each(function () {
+                if ($(this).is(':checked')) {
+                    filterArray.push($(this).attr('role'));
+
+                }
+            });
+                var url = '@Url.Action("DownloadSummaryEXCEL")' + '?'+ $.param({
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                    CustomDocumentIds: id,  //ko.unwrap(vm.selectedCheckLists),
+                    Status: ko.unwrap(vm.selectedStatus),
+                    Access: ko.unwrap(vm.selectedAccess),
+                    CustomDocumentId: id,
+                    ToggleFilter: filterArray.join()
+                }, true);
+            $("#progressModal").modal('show');
+            setTimeout(function () { $('#progressModal1').modal('hide'); }, 1300);
+            self.downloadReport(url);
+
+            }
+
+        self.excelSubmissions = function (data) {
+            $('#progressModal2').modal('show');
+              var id = ko.toJS(data.Id);
+            var title = ko.toJS(data.DocumentTitle);
+                var url = '@Url.Action("DownloadSubmissionsZip")' + '?'+ $.param({
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                    CustomDocumentIds: id, //ko.unwrap(vm.selectedCheckLists),
+                    Status: ko.unwrap(vm.selectedStatus),
+                    Access: ko.unwrap(vm.selectedAccess),
+                    CustomDocumentId : id,
+                    ToggleFilter: title
+
+                }, true);
+                $("#progressModal").modal('show');
+            self.downloadReport(url);
+            setTimeout(function () { $('#progressModal2').modal('hide'); }, 1300);
+
+
+            }
+
+        self.download = {
+            excel: function () {
+
+                var url = '@Url.Action("ZipCheckList")' + '?'+ $.param({
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                        CustomDocumentIds: ko.unwrap(vm.selectedCheckLists),
+                    Status: ko.unwrap(vm.selectedStatus),
+                    Access: ko.unwrap(vm.selectedAccess)
+                }, true);
+                $("#progressModal").modal('show');
+                self.downloadReport(url);
+
+             }
+
+        };
+
+        self.downloadReport = function (url) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+
+            //request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //request.setRequestHeader("Content-length", url.length);
+
+            request.onload = function () {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                    $("#progressModal").modal('hide');
+                }
+            }
+            request.send();
+
+        };
+
+        self.submit = function () {
+            
+            $('#LoadingImageDiv').show();
+            var url = '@Url.Action("GetCustomDocumentDetails")';
+            
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                        CustomDocumentIds: ko.unwrap(vm.selectedCheckLists),
+                        Status: ko.unwrap(vm.selectedStatus),
+                        Access:ko.unwrap(vm.selectedAccess)
+                    }
+                })
+                .done(function (data) {
+                    self.results.removeAll();
+                    
+                    if (data && data.length) {
+                        
+                        for (var i = 0; i < data.length; i++) {
+                            try {
+                            self.results.push(data[i]);
+                            } catch (e) {
+                                console.log(e);
+                                console.log(ko.unwrap(self.results));
+
+                            }
+                        }
+
+                    }
+                    
+                    console.log(ko.unwrap(self.results));
+                    
+                    for (var i = 0; i < 2; i++) {
+                        $('input[name=Number]').click();
+                        $('input[name=Code]').click();
+                        /*This block is added by Softude -SS*/
+                        $('input[name=Access]').click();
+                    }
+
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+        }
+    };
+    
+    var vm = new Controller(@Html.ToJson((string)ViewBag.Id),@Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.MyCustumDocumentCheckList>)ViewBag.CheckLists));
+    
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+    
+
+
+
+</script>

@@ -1,0 +1,65 @@
+﻿@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    //var path = "url(../Content/images/" + "@aa" + ")";
+}
+@{
+    var path = Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id + "_bootstrap.css");
+}
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header"> Upload Customized CSS</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <br />
+
+            @Html.ValidationSummary(true)
+
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "navbar-form navbar-left", enctype = "multipart/form-data" }))
+            {
+                <div class="form-group">
+                    <input type="file" name="file" class="form-control" id="upload" />
+                    @*<input type="file" class="form-control" placeholder="">*@
+                </div>
+                @*<button type="submit" class="btn btn-default">Submit</button>*@
+                <input type="submit" value="Upload" class="btn btn-default" />
+
+                @*<input type="file" name="file" />
+                    <input type="submit" value="submit" />*@
+            }
+        </div>
+
+        <div class="col-md-6">
+            <br />
+            <br />
+            @if (File.Exists(Server.MapPath(path)))
+            {
+                <label>Download Current Theme : </label> <a href="@Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id+"_bootstrap.css")" download> Click here</a>
+            }
+            else
+            {
+                <label>Download Current Theme : </label> <a href="~/Content/bootstrap.css" download> Click here</a>
+
+            }
+        </div>
+    </div>
+    <br />
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $('#page-wrapper').css("min-height", "300px");
+
+    });
+</script>

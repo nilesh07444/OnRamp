@@ -1,0 +1,103 @@
+﻿@model Ramp.Contracts.ViewModel.OpenFileInNewBrowserViewModel
+@using Domain.Customer.Models
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = null;
+    var version = System.Reflection.Assembly.GetAssembly(typeof(Web.UI.App_Start.RampSecurityConfig)).GetName().Version.ToString();
+}
+
+<html>
+<head>
+    <title>@AppSettings.CompanyName Document Viewer</title>
+    @Styles.Render("~/bundles/css")
+    <link href="~/Content/admin.css?v=@version" rel="stylesheet" />
+    @Scripts.Render("~/bundles/js")
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation" style="background-color:#27B899">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#" style="color:white">@AppSettings.CompanyName Document Viewer</a>
+        </div>
+    </nav>
+    <div class="">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="">
+                <div class="panel panel-info">
+                    <input type="hidden" id="uploadId" value="@ViewBag.uploadId" />
+                    <h5 style="text-align: center">Having trouble viewing document ? Click <a href="javascript:void(0)" onclick="uploadDocument()">here</a> to download</h5>
+                    <div class="panel-body">
+                        @if (Model.Type.Equals(TrainingDocumentTypeEnum.Excel.ToString())
+                            || Model.Type.Equals(TrainingDocumentTypeEnum.PowerPoint.ToString())
+                            || Model.Type.Equals(TrainingDocumentTypeEnum.WordDocument.ToString()))
+                        {
+                            <iframe id="document" style="display:block;text-align:center;width:100%;height:80%;"></iframe>
+                        }
+                        else if (Model.Type.Equals(TrainingDocumentTypeEnum.Pdf.ToString()))
+                        {
+                            <iframe id="pdf" style="display:block;text-align:center;width:100%;height:100%;"></iframe>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div>
+            <div class="col-lg-10 col-lg-offset-1" style="display:block">
+                <div class="pull-left" style="display:inline">
+                    <a href="@Href("~/")">
+                        <img src="~/images/powered.PNG" style="max-height: 50px;" />
+                    </a>
+                </div>
+                <div class="pull-right" style="display:inline">
+                    <p style="color: #106B64;margin-top:5%">Powered by OnRamp &copy;@DateTime.Now.Year</p>
+                </div>
+            </div>
+        </div>
+        <br />
+    </footer>
+
+    <script type="text/javascript">
+        $(function () {
+            if ($('#document').length > 0) {
+                console.log('@Model.FilePath');
+                $('#document').attr('src', 'https://docs.google.com/viewer?url=' + encodeURIComponent('@Model.FilePath') + '&embedded=true');
+            } else if($('#pdf').length > 0){
+                $('#pdf').attr('src', '@Model.FilePath');
+            }
+        });
+
+        function uploadDocument() {
+            
+            var uploadId = $('#uploadId').val().toString();
+            var url = '@Url.Action("DownloadFile", "Upload")' + '?uploadId=' + uploadId;
+            download(url);
+        }
+        function download (url) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+
+            request.onload = function () {
+                
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                }
+            }
+            request.send();
+
+        };
+    </script>
+</body>
+</html>

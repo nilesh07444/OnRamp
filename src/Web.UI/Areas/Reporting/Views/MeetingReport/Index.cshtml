@@ -1,0 +1,394 @@
+﻿@using System.Threading
+@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.MeetingReportModel
+@{
+    ViewBag.Title = "Index";
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole()) {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    } else {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+    .requiredsTxt {
+        border: solid red !important;
+    }
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Virtual Meeting Attendance Report</h1>
+        <div class="well well-sm">
+            This report allows you to view meeting attendance for a Virtual Meeting Room.
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*<span></b>
+        <br>
+        <div class=" panel panel-info">
+
+            <div class="panel-heading">Filtering Options</div>
+            <div class="panel-body">
+
+                <div class="col-md-10">
+
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Meeting Room")<br>
+                       
+                            @Html.DropDownListFor(m => m.Id, Model.MeetingRoom, new { @class = "form-control", @id = "ddlMeetingRoom" })
+                      
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Attendance Status")<br>
+                        
+
+                                <select id="ddlAttendanceStatus" class="form-control">
+
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+
+                                </select>
+                                
+                            </div>
+
+                        </div>
+
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            @Html.Label("Start Date")
+                            <div class="input-group date" id='StartDate'>
+                                <input  data-date-format="mm/dd/yyyy" type='text' id="txtStartDate" class="form-control datepicker" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("End Date")
+                            <div class="input-group date" id='EndDate' >
+                                <input data-date-format="mm/dd/yyyy" type='text' id="txtEndDate" class="form-control datepicker" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="form-group col-md-2" style="height: 100%">
+                    <br /><br /><br />
+                    <input class="btn btn-primary" id="btnGenerate" type="button" value="Generate" />
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row MeetingroomCss">
+
+    <div class="col-lg-10">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Results
+                <div class="pull-right ">
+                    <a class="exportCss" style="cursor:pointer; color:white;"><b><u>Export </u></b></a>
+                </div>
+            </div>
+            <div id="divMeetingrooms">
+
+
+            </div>
+
+        </div>
+    </div>
+    <div class="col-lg-2 MeetingroomCss">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Column toggle
+
+            </div>
+            <div class="panel-body">
+
+                <div class="form-group">
+                    <label class="switch">
+                        <input type="checkbox" role="User Name" name="UserName" class="CommonCss" checked id="chkUserName" />
+                        <span class="slider round"></span>
+                    </label>
+                    <span>User Name</span>
+                </div>
+                <div class="form-group">
+                    <label class="switch">
+                        <input type="checkbox" role="Attendance" name="Attendance" class="CommonCss" checked id="chkAttendance" />
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Attendance</span>
+                </div>
+                <div class="form-group">
+                    <label class="switch">
+                        <input type="checkbox" role="Date Joined" name="DateJoined" class="CommonCss" checked id="chkDateJoined" />
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Date Joined</span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+<script>
+    //$('#liMeetingReport').addClass('active');
+    $('.MeetingroomCss').hide();
+
+          $('.date').datetimepicker();
+
+
+
+
+    $('#ddlMeetingRoom').attr("multiple", "multiple").val('');
+    $('#ddlMeetingRoom').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+         buttonWidth: 310,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    $('#ddlAttendanceStatus').attr("multiple", "multiple").val('');
+    $('#ddlAttendanceStatus').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+         buttonWidth: 310,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    function exportMeeting() {
+        var meetingIds = $('#ddlMeetingRoom').val();
+        var status = $('#ddlAttendanceStatus').val();
+        var startDate = $('#txtStartDate').val();
+        var endDate = $('#txtEndDate').val();
+        var filterArray = new Array();
+        $('.CommonCss').each(function () {
+            if ($(this).is(':checked')) {
+                filterArray.push($(this).attr('role'));
+
+            }
+        });
+
+         var url = '@Url.Action("ExportMeeting")' + '?'+ $.param({
+             MeetingIds: meetingIds.toString(),
+             Status: status,
+             StartDate: startDate,
+             EndDate: endDate,
+             ToggleFilter: filterArray.join()
+                }, true);
+                
+                downloadReport(url);
+    }
+
+ function downloadReport(url) {
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = 'blob';
+
+        //request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        //request.setRequestHeader("Content-length", url.length);
+
+        request.onload = function () {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                $("#progressModal").modal('hide');
+            }
+        }
+        request.send();
+
+    };
+
+    $(function () {
+
+        $(document).on('click', '.exportCss', function () {
+            exportMeeting();
+        });
+
+        $(document).on('click', '.CommonCss', function () {
+            var className = $(this).attr('name');
+
+            if ($(this).is(":checked")) {
+                $('.' + className).each(function () {
+                    $(this).show();
+                });
+
+            } else {
+                $('.' + className).each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+
+        $('#btnGenerate').click(function () {
+            var meetingIds = $('#ddlMeetingRoom').val().toString();
+            var status = $('#ddlAttendanceStatus').val();
+            var startDate = $('#txtStartDate').val();
+            var endDate = $('#txtEndDate').val();
+
+            if (status === null || status === "" || status === undefined) {
+                status = "";
+            }
+
+            if (meetingIds === null || meetingIds === "" || meetingIds===undefined) {
+                
+                notif({
+                    msg: "<b>Error :</b> Please select the meeting room first.",
+                    type: "error"
+                });
+            } else {
+                
+               var meeting = $.post("@Url.Action("GetMeeting", "MeetingReport", new { Area = "Reporting" })", {
+                   meetingIds: meetingIds, status: status.toString(), startDate: startDate, endDate: endDate
+
+                });
+
+                meeting.done(function (data) {
+                    if (data != null) {
+                        $('.MeetingroomCss').show();
+                        $('#divMeetingrooms').html(data);
+                    } else {
+                        $('.MeetingroomCss').hide();
+                    }
+                    
+                });
+                meeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            }
+
+        });
+
+    });
+</script>

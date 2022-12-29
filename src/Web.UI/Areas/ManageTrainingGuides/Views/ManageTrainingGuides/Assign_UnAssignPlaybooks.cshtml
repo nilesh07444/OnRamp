@@ -1,0 +1,198 @@
+﻿@model Ramp.Contracts.ViewModel.Assign_UnAssignPlaybooksAndTests
+
+@using System.Threading
+@using Web.UI.Code.Extensions
+@using Ramp.Security.Authorization
+@using Common.Web
+@using Web.UI.Code.AreaReferencesManagement
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+    @Scripts.Render(ManageTrainingGuidesScripts.Assign_UnAssignPlaybooksAndTestsScriptsVirtualPath)
+    @Styles.Render(ManageTrainingGuidesStyles.Assign_UnAssignPlaybooksAndTestsStylesVirtualPath)
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <!-- ko if:details.FunctionalMode() == 0 -->
+                Assign/Un-Assign Playbooks
+                <!-- /ko -->
+                <!-- ko if:details.FunctionalMode() == 1-->
+                Assign/Un-Assign Tests
+                <!-- /ko -->
+
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+
+                    <!-- ko if:details.FunctionalMode() == 0 -->
+                    <label class="heading w20">Please select the Playbook to assign:</label>
+                    <select class="heading dropdownList form-control" data-bind="options: details.TrainingGuideDropDown,
+                                       optionsText: 'Text',
+                                       optionsValue:'Value',
+                                       value:chosenPlaybook"></select>
+                    <!-- /ko -->
+
+                    <!-- ko if:details.FunctionalMode() == 1-->
+                    <label class="heading w20">Please select the Test to assign:</label>
+                    <select class="heading dropdownList form-control" data-bind="options: details.TrainingTestDropDown,
+                                       optionsText: 'Text',
+                                       optionsValue:'Value',
+                                       value:chosenTest"></select>
+                    <!-- /ko -->
+                </div>
+                <div class="form-group">
+                    <!-- ko if:details.FunctionalMode() == 0 -->
+                    <label class="heading w20">Assign Playbooks to:</label>
+                    <!-- /ko -->
+                    <!-- ko if:details.FunctionalMode() == 1 -->
+                    <label class="heading w20">Assign Tests to:</label>
+                    <!-- /ko -->
+                    <select class="heading dropdownList form-control" data-bind="options: details.AssignModeDropDown,
+                                           optionsText: 'Text',
+                                           optionsValue: 'Value',
+                                           value:details.AssignMode"></select>
+                </div>
+            </div>
+        </div>
+        <!-- ko if : details.ManageableUsers() || details.ManageableGroups() -->
+        <div class="panel panel-info">
+            <div class="panel-body">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <!-- ko if:details.AssignMode() == 0 -->
+                            <th>
+                                <div class="form-inline">
+                                    <span class="pull-left table-heading-lable">User</span>
+                                    <input type="text" class="form-control search pull-right" placeholder="Search Users" data-bind="textInput:searchUsers" />
+                                </div>
+                            </th>
+                            <!-- /ko -->
+                            <!-- ko if:details.AssignMode() == 1 -->
+                            <th>
+                                <div class="form-inline">
+                                    <span class="pull-left table-heading-lable">Group</span>
+                                    <input type="text" class="form-control search pull-right" placeholder="Search Groups" data-bind="textInput:searchGroups" />
+                                </div>
+                            </th>
+                            <!-- /ko -->
+                            <!-- ko if: details.FunctionalMode() == 0 -->
+                            <th>
+                                <div class="form-inline">
+                                    <span class="pull-left table-heading-lable" >Playbook</span>
+                                    <button class="btn btn-default pull-right" data-bind="toggle:$root.SelectAllPlaybooks">
+                                        <span data-bind="ifnot:$root.SelectAllPlaybooks">Select All</span>
+                                        <span data-bind="if:$root.SelectAllPlaybooks">Unselect All</span>
+                                    </button>
+                                </div>
+                            </th>
+                            <!-- /ko -->
+                            <!-- ko if: $root.TrainingGuideHasLinkedTest() -->
+                            <th>
+                                <div class="form-inline">
+                                    <span class="pull-left table-heading-lable">Latest Published Test</span>
+                                    <button class="btn btn-default pull-right" data-bind="toggle:$root.SelectAllTests">
+                                        <span data-bind="ifnot:$root.SelectAllTests">Select All</span>
+                                        <span data-bind="if:$root.SelectAllTests">Unselect All</span>
+                                    </button>
+                                </div>
+                            </th>
+                            <!-- /ko -->
+                        </tr>
+                    </thead>
+                    <!-- ko if:details.AssignMode() == 0 -->
+                    <tbody data-bind="foreach: filteredUsers()">
+                        <tr>
+                            <td>
+                                <span data-bind="text:User.Name"></span>
+                                <!-- ko if:PassedPreviousVersionOfTest-->
+                                <span style="cursor:pointer" class="badge pull-right">Passed Previous Version</span><br />
+                                <!-- /ko -->
+                            </td>
+                            <!-- ko if: $root.details.FunctionalMode() == 0 -->
+                            <td class="center"><input type="checkbox" data-bind="checked:AssignedTrainingGuide,click:$root.AssignPlaybookToUser.bind($data)" /></td>
+                            <!-- /ko -->
+                            <!-- ko if: $root.TrainingGuideHasLinkedTest() -->
+                            <!-- ko ifnot: $root.disabled($data) -->
+                            <td class="center"><input class="dt-center" type="checkbox" data-bind="checked:AssignedTrainingTest,click:$root.AssignTestToUser.bind($data)" /></td>
+                            <!-- /ko -->
+                            <!-- ko if: $root.disabled($data) -->
+                            <td class="center"><input class="dt-center" type="checkbox" disabled data-bind="checked:AssignedTrainingTest" /></td>
+                            <!-- /ko -->
+                            <!-- /ko -->
+                        </tr>
+                    </tbody>
+                    <!-- /ko -->
+                    <!-- ko if:details.AssignMode() == 1 -->
+                    <tbody data-bind="foreach : filteredGroups()">
+                        <tr>
+                            <td data-bind="text:Group.Name"></td>
+                            <!-- ko if: $root.details.FunctionalMode() == 0 -->
+                            <td class="center"><input type="checkbox" data-bind="checked:AllMemebersAssignedTrainingGuide,click:$root.AssignPlaybookToGroup.bind($data)" /></td>
+                            <!-- /ko -->
+                            <!-- ko if: $root.TrainingGuideHasLinkedTest() -->
+                            <td class="center"><input type="checkbox" data-bind="checked:AllMembersAssignedTest,click:$root.AssignTestToGroup.bind($data)" /></td>
+                            <!-- /ko -->
+                        </tr>
+                    </tbody>
+                    <!-- /ko -->
+                </table>
+            </div>
+        </div>
+        <!-- /ko -->
+        <div class="text-center footer" id="assign">
+            <form class="form-inline">
+                <div class="form-group">
+                    <div class="btn-group dropup">
+                        <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bind="css:{'btn-warning' : $root.showAssign}">
+                            Apply Changes &nbsp;<span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li class="context-heading">Are you Sure?</li>
+                            <li><a data-bind="click:$root.SubmitCommand.bind()"><span class="fa fa-tasks"></span> Yes</a></li>
+                            <li><a><span class="fa fa-tasks"></span> No</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var vm = new Controller(app, @Html.ToJson((object)Model),null,{
+        Assign_UnAssignPlaybooks : '@Url.Action("Assign_UnAssignPlaybooks","ManageTrainingGuides",new {Area = "ManageTrainingGuides"})',
+        Assign_UnAssignTests : '@Url.Action("Assign_UnAssignTests","ManageTrainingTests",new { Area = "ManageTrainingTests"})',
+        Assign_UnAssignPlaybookToUser : '@Url.Action("Assign_UnAssignPlaybookToUser", "ManageTrainingGuides", new { Area = "ManageTrainingGuides" })',
+        Assign_UnAssignTestToUser : '@Url.Action("Assign_UnAssignTestToUser", "ManageTrainingTest",new { Area = "ManageTrainingTest"})',
+        Assign_Unassign : '@Url.Action("Assign_Unassign", "ManageTrainingGuides",new { Area  = "ManageTrainingGuides" })'});
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    window.vm = vm;
+    $(function(){
+        if($(document).height() >$(window).height())
+            $('#assign').addClass('navbar-fixed-bottom');
+    });
+    $(window).on('scroll',function(){
+        var placement = $(document).height() -$(window).scrollTop();
+        if(placement < ($(window).height() + $('footer').height() +$('.navbar-fixed-top').height() + 153)){
+            $('#assign').removeClass('navbar-fixed-bottom');
+            $('#assign').addClass('navbar-bottom');
+        }
+        else{
+            $('#assign').addClass('navbar-fixed-bottom');
+            $('#assign').removeClass('navbar-bottom');
+        }
+        _adjustPageFooter();
+
+        
+    });
+</script>

@@ -1,0 +1,166 @@
+﻿@model Ramp.Contracts.Events.DocumentWorkflow.DocumentWorkflowEvent
+@using Web.UI.Helpers
+
+@{
+    Layout = null;
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath = Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var loginLink = AppSettings.Urls.ResolveUrl("~Account/LogOff", Model.CompanyViewModel);
+    var loginLinkDescription = AppSettings.Urls.ResolveUrl("~", Model.CompanyViewModel);
+
+    //var message = Model.IsAssigned ? string.Format("Please note that you have been assigned the following document{0}", Model.DocumentTitles.Count() > 1 ? "s" : String.Empty) : string.Format("Please note that you have been unassigned the following document{0}", Model.DocumentTitles.Count() > 1 ? "s" : String.Empty);
+
+    //var message = "oooooop, og";
+    var notificationheader = "#27b899";
+    var notificationfooter = "#27b899";
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany.CustomColours != null)
+    {
+        notificationheader = PortalContext.Current.UserCompany.CustomColours.HeaderColour;
+        notificationfooter = PortalContext.Current.UserCompany.CustomColours.FooterColour;
+    }
+
+}
+
+<!DOCTYPE html>
+
+
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+
+.button {
+	background-color: @notificationheader;
+	border: none;
+	color: white;
+	padding: 30px !important;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 30px;
+	margin: 4px 2px;
+	cursor: pointer;
+}
+
+th {
+   background-color: @notificationheader;
+   color:white;
+   text-align: left;
+   padding: 5px;
+   border: 1px solid #dddddd;
+ }
+
+td {
+	border: 1px solid #dddddd;
+	padding: 10px;
+	text-align: left;
+}
+
+.headerstyle {
+    background-color: @notificationheader;
+    height:40px;
+}
+
+.footerstyle {
+    background-color: @notificationfooter;
+    height: 40px;
+}
+
+.link {
+    padding: 8px 12px;
+    background-color: @notificationheader;
+    border-radius: 2px;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px; color: #ffffff;
+    text-decoration: none;
+    font-weight:bold;
+    display: inline-block;
+}
+
+    </style>
+
+</head>
+
+
+<body>
+    <div class="container">
+
+
+        <p>Dear @Model.UserViewModel.FirstName,</p>
+        <p>
+            @Model.Message
+        </p>
+        <table class="table">
+            <thead class="tableHeader">
+                <tr>
+                    <th style=""><span style="font-size:17px;font-weight:500;">Details</span></th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var title in Model.DocumentTitles)
+                {
+                    <tr>
+                        @{
+                            if (title.DocumentType == Domain.Customer.DocumentType.TrainingManual)
+                            {
+                                <td align="center"><img src="@Url.ActionWithAbsoluteUrl("~/Content/images/Docicons/TM.png")" width='50' height='50' alt='TrainingManual' /></td>
+                            }
+                            else if (title.DocumentType == Domain.Customer.DocumentType.Test)
+                            {
+                                <td><img src="@Url.ActionWithAbsoluteUrl("~/Content/images/Docicons/T.png")" width='50' height='50' alt='Test' /></td>
+                            }
+                            else if (title.DocumentType == Domain.Customer.DocumentType.Policy)
+                            {
+                                <td><img src="@Url.ActionWithAbsoluteUrl("~/Content/images/Docicons/P.png")" width='50' height='50' alt='Policy' /></td>
+                            }
+                            else if (title.DocumentType == Domain.Customer.DocumentType.Memo)
+                            {
+                                <td><img src="@Url.ActionWithAbsoluteUrl("~/Content/images/Docicons/M.png")" width='50' height='50' alt='Memo' /></td>
+                            }
+                            else if (title.DocumentType == Domain.Customer.DocumentType.Checklist)
+                            {
+                                <td><img src="@Url.ActionWithAbsoluteUrl("~/Content/images/Docicons/CL.png")" width='50' height='50' alt='Checklist' /></td>
+                            }
+                        }
+                        <td>
+                            <span style="font-size:16px;font-weight:500;">@title.DocumentTitle</span><br>
+                            <span style="font-size:12px"> Points: </span><span style="font-size:12px;">@title.Points</span><br>
+                            <span style="font-size:12px"> Author: </span><span style="font-size:12px;">@title.Author</span><br>
+                            @if (title.DocumentType == Domain.Customer.DocumentType.Checklist || title.DocumentType == Domain.Customer.DocumentType.Test)
+                            {
+                                <span style="font-size:12px"> Passmark: </span><span style="font-size:12px;">@title.Passmark</span><br>
+                            }
+                            @if ((title.DocumentType == Domain.Customer.DocumentType.Checklist || title.DocumentType == Domain.Customer.DocumentType.Test) && title.ExpiryDate != null)
+                            {
+                                <span style="font-size:12px"> ExpiryDate: </span><span style="font-size:12px;">@title.ExpiryDate</span>
+                            }
+                        </td>
+                   
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <br />   <br />
+
+
+        @if (!Model.CompanyViewModel.ActiveDirectoryEnabled)
+        {
+            <p style="text-align: center"><a href="@loginLink" class="btnLogin">Click here to login</a></p>
+        }
+        else
+        {
+            <p>Please log onto the Onramp portal via your web browser to access your content</p>
+        }
+        <br />
+        <br />
+
+    </div>
+</body>
+
+</html>

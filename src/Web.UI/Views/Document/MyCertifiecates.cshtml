@@ -1,0 +1,42 @@
+﻿@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+@model List<PointsStatementViewModel.DataItem>
+@{
+    ViewBag.Title = "MyCertifiecates";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+   var certificates= (List<TestResultModel>) ViewBag.Data;
+}
+<script>
+    $('#liCertificate').addClass('active');
+</script>
+<h2>My Achievements</h2>
+<div class="row" >
+    <div class="col-lg-12" id="divMyCertificate">
+        @Html.Partial("~/Views/Document/_MyCertificateList.cshtml", Model)
+    </div>
+</div> 
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"><strong>Certificates achieved</strong> : <span data-bind="text:Title">@ViewBag.TotalAchieved </span></div>
+            @foreach (var certificate in certificates) {
+                <div class="col-xs-6 col-md-3">
+                    <div class="thumbnail">
+                        @*<a data-bind="fancybox:{ autoSize:true }, attr:{ href:ThumbnailUrl, title:Description }" class="fancybox.image">
+                        <img data-bind="attr:{src:ThumbnailUrl, title: 'Click to preview ' + Description()}" />
+                    </a>*@
+                        <a href="@certificate.Certificate.Url" target="_blank">
+                            <img src="@certificate.Certificate.ThumbnailUrl" />
+                        </a>
+                    </div>
+                    <span>Test: </span> @certificate.Title <br />
+                    <span>Point Achieved: </span>@certificate.Points <br/>
+                    <span>Score:</span>@certificate.Score / @certificate.Points <br>
+                    <span> Date Completed: </span>@certificate.CreatedOn.ToShortDateString()
+                </div>
+            }
+
+        </div>
+        </div>
+        </div>
+

@@ -1,0 +1,46 @@
+﻿@using Domain.Models
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.UserCorrespondenceLogViewModel
+
+<style type="text/css">
+    .email {
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        border-bottom-left-radius: 4px;
+        border: 1px solid #dddddd;
+    }
+</style>
+@if (Model != null)
+{
+        <div class="row">
+            <div class="col-lg-3"><b>Recipient Name:</b></div>  <div class="col-lg-7">@Model.UserViewModel.FullName </div>
+        </div>
+        <div class="row">
+            @if (Model.CorrespondenceType == UserCorrespondenceEnum.Email)
+            {
+                <div class="col-lg-3"><b>Recipient Email:</b> </div>
+                <div class="col-lg-7">@Model.UserViewModel.EmailAddress</div>
+            }
+            else
+            {
+                <div class="col-lg-3"><b>Recipient Mobile Number:</b></div>
+                <div class="col-lg-7">@Model.UserViewModel.MobileNumber</div>
+            }
+        </div>
+        <div class="row">
+            <div class="col-lg-3"><b>Description:</b></div>  <div class="col-lg-7">@Model.Description</div>
+        </div>
+        <div class="row">
+            <div class="col-lg-7 col-centered"><b>Message Content:</b></div>
+        </div>
+        <div class="row" style="">
+            <div class="col-lg-10 col-lg-offset-1 col-centered email">@Html.Raw(Model.MessageContent)</div>
+        </div>
+
+}
+else
+{
+    <div>This Guid doesn't exist</div>
+}

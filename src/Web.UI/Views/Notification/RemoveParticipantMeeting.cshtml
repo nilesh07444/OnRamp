@@ -1,0 +1,50 @@
+﻿@model Ramp.Contracts.Events.VirtualClassroom.RemoveParticipantEvent
+@{
+    Layout = null;
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath = Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var notificationheader = "#27b899";
+    var notificationfooter = "#27b899";
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany.CustomColours != null) {
+        notificationheader = PortalContext.Current.UserCompany.CustomColours.HeaderColour;
+        notificationfooter = PortalContext.Current.UserCompany.CustomColours.FooterColour;
+    }
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <style>
+
+    .headerstyle {
+     background: @notificationheader;
+     height:40px;
+    }
+    .footerstyle {
+        background: @notificationfooter;
+        height: 40px;
+    }
+
+    </style>
+
+</head>
+<body>
+    <div class="headerstyle"></div>
+    <br />
+    <br />
+    <p>Dear @Model.UserViewModel.FirstName,</p>
+    <p>
+        <span>Please note that you have been removed from the folloing meeting:</span>
+        <br />
+        <br />
+        <span>Virtual Meeting Room:</span> <span>@Model.MeetingName</span><br />
+        <br />
+
+    </p>
+    <br />
+    <br />
+    <div class="footerstyle"></div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Web.UI.Code.Extensions
+@model BEECertificateModel
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">BEE Certificates</h3>
+    </div>
+</div>
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <span data-bind="text:mode"></span>
+    </div>
+    <div class="panel-body" data-bind="with:data">
+        <div class="row">
+            <div class="col-sm-4 col-sm-offset-4">
+                <div class="form-group text-center" name="Year" data-bind="validatewith:$root.errors">
+                    <label class="control-label">Year</label>
+                    <select class="form-control center-block" data-bind="options:vm.years.list(),value:Year"></select>
+                </div>
+                <div class="text-center" name="Upload" data-bind="validatewith:$root.errors">
+                    <label class="control-label">Certificate</label>
+                    <!-- ko with:Upload-->
+                    <a data-bind="click:$root.upload.click.bind()" href="javascript:void(0)">
+                        <img class="img-responsive center-block" data-bind="attr:{src: $root.links.defaultImageUrl}" title="Accepted filetypes: &#013; .PDF " />
+                    </a>
+                    <a data-bind="attr:{href:Url}" target="_blank">
+                        <span data-bind="text:Description"></span>
+                    </a>
+                    <!-- /ko -->
+                    <!-- ko ifnot:Upload-->
+                    <a data-bind="click:$root.upload.click.bind()" href="javascript:void(0)">
+                        <img class="img-responsive center-block" data-bind="attr:{src: $root.links.defaultImageUrl}" title="Accepted filetypes: &#013; .PDF " />
+                        <span> Click To Upload</span>
+                    </a>
+                    <br />
+                    <!-- /ko -->
+                    <div id="inputs" class="hindden"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="text-center">
+                    <br />
+                    <div class="btn-group">
+                        <button type="button" data-bind="click:$root.save.bind()" class="btn btn-primary center-block">Save</button>
+                        <button type="button" data-bind="click:$root.cancel.bind()" class="btn btn-default center-block">Cancel</button>
+                    </div>
+                    <br />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+@{
+
+    (ViewBag.Links as IDictionary<string, string>).Add("defaultImageUrl", Url.Content("~/Content/images/otherDoc.png"));
+    (ViewBag.Links as IDictionary<string, string>).Add("uploadLink", Url.Action("PostFileUpload", "Upload", new { Area = "" }));
+    (ViewBag.Links as IDictionary<string, string>)["index"] = Url.Action("Index", "BEECertificate", new { Area = "",ExternalTrainingProviderId = "{0}" });
+    (ViewBag.Links as IDictionary<string, string>).Add("externalTrainingProviderIndex", Url.Action("Index", "ExternalTrainingProvider", new { Area = "" }));
+    (ViewBag.Links as IDictionary<string, string>).Add("removeUploadFromCertificate", Url.Action("RemoveUploadFromCertificate", "BEECertificate", new { Area = "", Id = "{0}", UploadId = "{1}" }));
+
+}
+    var vm = app.data.crudController(@Html.ToJson(Model),@Html.ToJson((IDictionary<string,string>)ViewBag.Links),@Html.ToJson((string)ViewBag.Mode));
+    if (window.location.href.indexOf('ExternalTrainingProviderId=') < 0)
+        window.location.href = vm.links.externalTrainingProviderIndex;
+    _init();
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    $(function () {
+        var provider = window.location.href.substring(window.location.href.indexOf('ExternalTrainingProviderId'));
+        vm.links.index = vm.links.index.replace('ExternalTrainingProviderId=%7B0%7D', provider);
+        vm.data.ExternalTrainingProviderId(provider.substring(provider.indexOf('=') + 1));
+        
+    });
+    function _upload_click(data) {
+        if (ko.unwrap(vm.currentCertificate)) {
+            var u = ko.unwrap(vm.currentCertificate);
+            if (ko.unwrap(u.DeleteUrl)) {
+                bootbox.confirm('Are you sure you want to Replace the BEE Certificate with a new one?<br>Once a new file is uploaded the current file will be removed', function (result) {
+                    if (result) {
+                        vm.currentCertificate(null);
+                        _upload_addAndExecute(data);
+                    }
+                });
+
+            }
+        }else {
+            _upload_addAndExecute(data);
+        }
+    }
+    function _upload_addAndExecute(data) {
+        var input = $('<input data-bind="fileUpload:new ko.observable(),fileuploadOptions:vm.upload.options(),valueProperty:vm.currentCertificate" class="hidden" type="file" name="files[]"  accept=".pdf" />');
+        $(input).appendTo('#inputs');
+        ko.applyBindingsToNode(input[0], null, data);
+        $(input).trigger('click');
+        return true;
+    }
+    function _upload_options() {
+        return {
+            showProgress: false,
+            url: vm.links.uploadLink,
+            before: vm.upload.eventHandlers.before,
+            success: vm.upload.eventHandlers.success,
+            error: vm.upload.eventHandlers.error,
+            autoupload: true
+        }
+    };
+    function _upload_eventHandlers_before(element, fileName, valueProperty) {
+        if (fileName.toLowerCase().indexOf('.pdf') > -1) {
+            vm.upload.loading.show();
+            return true;
+        }
+        notif({
+            msg: 'Please Select A PDF To Upload',
+            type: 'error'
+        });
+        return false;
+    }
+    function _upload_eventHandlers_success(data, textStatus, xhr, valueProperty) {
+        var u = ko.unwrap(vm.data.Upload);
+        _upload_cleanup(u).then(function (response) {
+            vm.data.Upload(ko.mapping.fromJS(ko.mapping.toJS(valueProperty)));
+            vm.upload.loading.hide();
+        }).then(function () { _autoSave(u) });
+    }
+    function _autoSave(u) {
+        if (ko.unwrap(u) && ko.unwrap(vm.data.Id)) {
+            if (ko.unwrap(u.Id)) {
+                return $.ajax({
+                    method: 'POST',
+                    data: ko.mapping.toJS(vm.data),
+                    url: vm.links.save
+                }).fail(function () {
+                    notif({
+                        msg: 'Please try again.',
+                        type: 'error'
+                    });
+                    vm.upload.loading.hide();
+                });
+            }
+        } else {
+            return $.Deferred().resolve();
+
+        }
+    }
+    function _upload_cleanup(u) {
+        if (ko.unwrap(u) && ko.unwrap(vm.data.Id)) {
+            if (ko.unwrap(u.Id)) {
+                var url = vm.links.removeUploadFromCertificate.replace('%7B0%7D', ko.unwrap(vm.data.Id)).replace('%7B1%7D', ko.unwrap(u.Id));
+                return $.ajax({ method: 'post', url: url }).fail(
+                    function () {
+                        notif({
+                            msg: 'Please try again.',
+                            type: 'error'
+                        });
+                        vm.upload.loading.hide();
+                    });
+            }
+        } else {
+            return $.Deferred().resolve();
+        }
+    }
+    function _upload_eventHandlers_error() {
+        vm.upload.loading.hide();
+    }
+    function _upload_loading_show() {
+        $('#LoadingImageDiv').show();
+    }
+    function _upload_loading_hide() {
+        $('#LoadingImageDiv').hide();
+    }
+    function _upload() {
+        return {
+            click: _upload_click,
+            options: _upload_options,
+            eventHandlers: {
+                before: _upload_eventHandlers_before,
+                success: _upload_eventHandlers_success,
+                error: _upload_eventHandlers_error
+            },
+            loading: {
+                show: _upload_loading_show,
+                hide : _upload_loading_hide
+            }
+        };
+    }
+    function _years_list() {
+        var ys = [];
+        var y = new Date();
+        y = y.getUTCFullYear();
+        for (var i = y - 10; i <= y + 10; i++) {
+            ys.push(i);
+        }
+        return ys;
+    }
+    function _years() {
+        return {
+            list: _years_list
+        }
+    }
+    function _init() {
+        vm.upload = _upload();
+        vm.years = _years();
+        if (ko.unwrap(vm.data.Upload)) {
+            vm.orgiginalUpload = vm.data.Upload;
+            vm.currentCertificate = ko.observable(vm.data.Upload);
+            if (!ko.isObservable(vm.data.Upload))
+                vm.data.Upload = ko.observable(vm.data.Upload);
+        }
+        else
+            vm.currentCertificate = ko.observable(null);
+        vm.cancel = function () {
+            window.location.href = vm.links.index;
+        }
+    }
+</script>
+

@@ -1,0 +1,529 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Common.Collections
+
+@model IPaged<ExternalTrainingProviderListModel>
+
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+<style>
+    .required {
+        color: red;
+    }
+
+    .requiredTxt {
+        border: solid red;
+    }
+
+    .btn-default:focus, .btn-default.focus {
+    background-color: #0000 !important;
+    
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">External Training Provider Management</h3>
+    </div>
+</div>
+
+<br />
+<div class="row">
+    <div class="col-sm-12">
+
+        <div class="panel panel-info">
+            <div class="panel-heading clearfix" style="line-height: 32px;">
+                External Training Providers
+
+                <a data-bind="" id="btnAddExternalTrainingProvider" style="border-left: solid 1px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer "><i class="glyphicon glyphicon-plus"></i></a>
+                <div class="pull-right">
+                    <form class="form-inline" data-bind="event:{submit:function(data, event){return $root.paging.submit();}}">
+                        <div class="input-group">
+                            <select class="selectpicker" multiple data-bind="foreach:$root.enums,selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'},selectedOptions:$root.filter">
+                                <optgroup data-bind="attr:{label:title},foreach:options">
+                                    <option data-bind="text:Name"></option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="External Provider Search" data-bind="$root.SeartText" id="txtSearchText" />
+                            <span class="input-group-btn">
+                                <button id="btnSearch" class="btn btn-default" type="button"  data-bind="click:$root.Search()"><span class="glyphicon glyphicon-search"></span></button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="panel-body table-responsive">
+                <table id="dataTables-example" class="table table-hover table-fixed">
+                    <thead>
+                        <tr role="row">
+                            <th>Name</th>
+                            <th>Contact Number</th>
+                            <th>Contact Person</th>
+                            <th>Mobile Number</th>
+                            <th>BEE Status</th>
+                            <th style="width:300px;">Options</th>
+                        </tr>
+                    </thead>
+                    <!-- ko if:ko.unwrap(data.Items).length > 0 -->
+                    <tbody data-bind="foreach:data.Items">
+                        <tr>
+                            <td data-bind="text:CompanyName"></td>
+                            <td data-bind="text:ContactNumber"></td>
+                            <td data-bind="text:ContactPerson"></td>
+                            <td data-bind="text:MobileNumber"></td>
+                            <td data-bind="text:BEEStatusLevel"></td>
+                            <td class="btn-group-xs">
+                                <a href="javascript:void(0)" data-bind="click : $root.addUpdateExternalProvider.edit.bind()"
+                                   class="action" data-toggle="tooltip" data-placement="top" title="Edit">
+                                    <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 3px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-edit"></span> Edit</button>
+                                </a>
+                                <a href="javascript:void(0)" data-bind="confirm : {message : 'Are you sure you want to delete your external training provider?',delegate : $root.delete,model : $data}" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                    <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 3px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-trash"></span> Delete</button>
+                                </a>
+                                @*<a href="javascript:void(0)" data-bind="click : $root.manageCertificates.bind()" class="action" data-toggle="tooltip" data-placement="top" title="BEE Certificates" id="manage-bee-cetificates">
+            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 3px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-eye-open"></span> View Certificate</button>
+        </a>*@
+                                <!-- ko if: ko.unwrap(CertificateUploadId) != null -->
+                                <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url }" class="fancybox.image">
+                                    <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 3px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-eye-open"></span> View Certificate</button>
+                                </a>
+                                <!-- /ko -->
+                            </td>
+                        </tr>
+                    </tbody>
+                    <!-- /ko -->
+                    <!-- ko ifnot:ko.unwrap(data.Items).length > 0 -->
+                    <tbody>
+                        <tr>
+                            <th colspan="6" class="text-danger text-center">
+                                No Training Providers
+                            </th>
+
+                        </tr>
+                    </tbody>
+                    <!-- /ko -->
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4" style="padding-top: 4px">
+                Show <select data-bind="value: query.PageSize, options: paging.sizes"></select> entries
+            </div>
+            <div class="pull-right">
+                <ul class="pagination" style="margin: 0 15px 20px 0;">
+                    <li data-bind="css:{'disabled' : ko.unwrap($root.query.IsFirstPage)}"><a href="#" data-bind="click:$root.paging.previousPage.bind()">&larr; Previous</a></li>
+                    <!-- ko foreach: $root.paging.visiblePages-->
+                    <li data-bind="css:{'active': ko.unwrap($root.query.PageIndex) + 1 == $data}"><a href="#" data-bind="click:$root.paging.goToPage.bind($data - 1), text: $data"></a></li>
+                    <!-- /ko -->
+                    <li data-bind="css:{'disabled' : ko.unwrap($root.query.IsLastPage)}"><a href="#" data-bind="click:$root.paging.nextPage.bind()">Next &rarr;</a></li>
+                </ul>
+            </div>
+            <div class="pull-right" style="padding-top: 6px; margin-right: 2em;">Showing <span data-bind="text: query.PageIndex() * query.PageSize() + 1"></span> to <span data-bind="text: ko.unwrap(query.IsLastPage) ? query.TotalItems : (query.PageIndex() + 1) * query.PageSize()"></span> of <span data-bind="text: query.TotalItems"></span> entries</div>
+        </div>
+    </div>
+</div>
+
+<div id="externalTrainingProviderModal" class="modal fade" tabIndex="-1" role="dialog" style="overflow:auto">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" id="btnCloseExternalTrainingProvider">&times;</button>
+                <h4 class="modal-title">External Training Provider</h4>
+            </div>
+            <div class="modal-body">
+                <div data-bind="with:$root.addUpdateExternalProvider">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <span class="required">* </span><label class="control-label ">Company Name</label>
+                                <input type="text" id="companyName" name="CompanyName" class="form-control requiredClass" data-bind="textInput:companyName,validatewith:$root.errors" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Address</label>
+                                <input type="text" class="form-control" name="Address" data-bind="textInput:address,validatewith:$root.errors" />
+                            </div>
+                            <div class="form-group">
+                                <span class="required">* </span><label class="control-label">Contact Number</label>
+                                <input type="text" id="contactNo" onkeypress="return onlyNumbers(event);" class="form-control requiredClass" name="ContactNumber" data-bind="textInput:contactNumber,validatewith:$root.errors" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Contact Person</label>
+                                <input type="text" class="form-control" name="ContactPerson" data-bind="textInput:contactPerson,validatewith:$root.errors" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <span class="required">* </span><label class="control-label">Email Address</label>
+                                <input type="text" id="emailAddress" class="form-control requiredClass" name="EmailAddress" data-bind=" textInput:emailAddress,validatewith:$root.errors" />
+                                <span id="spnEmailAlreadyExist" style="color:red;">An external training provider with that email address has already been created. Please enter a unique email address.</span>
+                                <span id="spnInvalidEmail" style="color:red;">Invalid email</span>
+                                <input type="hidden" id="hdnId" data-bind="attr: { value: id }" />
+                            </div>
+                            <div class="form-group">
+                                <span class="required">* </span><label class="control-label">Mobile Number</label>
+                                <input type="text" id="mobileNo" class="form-control requiredClass" onkeypress="return onlyNumbers(event);" name="MobileNumber" data-bind="textInput:mobileNumber,validatewith:$root.errors" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label "> BEE Status Level</label>
+                                <select id="ddlBEEStatusLevel" class="form-control btn dropdown-toggle btn-default" data-bind="options: bEEStatusLevel, value: bEEStatusLevelSelected "></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label "> BEE Certificate</label>
+                                <input data-bind="event: {change: fileUpload}" type="file" accept="image/*" class="fileChooser" />
+                                <label data-bind="text:certificateUploadName"></label>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn btn-primary" data-bind="click:save.bind(),css:{'disabled':ko.unwrap($root.saving)}">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var name = '';
+    var type = '';
+    @{
+        (ViewBag.Links as IDictionary<string, string>).Add("manageCertificates", Url.Action("Index", "BEECertificate", new { Area = "", ExternalTrainingProviderId = "{0}" }));
+    }
+    vm = new app.data.listController(@Html.ToJson(Model),@Html.ToJson((IDictionary<string,string>)ViewBag.Links),@Html.ToJson((string)ViewBag.Mode));
+    vm.manageCertificates = function (listModel) {
+        window.location.href = vm.links.manageCertificates.replace('%7B0%7D', ko.unwrap(listModel.Id));
+    };
+    vm.paging.sizes = [10, 25, 50, 100];
+    vm.SeartText = ko.observable();
+    vm.enums = [{
+        title: 'Level',
+        options: [{ "Name": "Level 1" }, { "Name": "Level 2" }, { "Name": "Level 3" }, { "Name": "Level 4" }, { "Name": "Level 5" }, { "Name": "Level 6" }, { "Name": "Level 7" }, { "Name": "Level 8" } ,{"Name":"Non Compliant"}]
+    },
+    {
+        title: 'Certificate',
+        options: [{ "Name": 'Certificate uploaded' }, { "Name": 'Certificate not uploaded'}]
+        }];
+    vm.filter = ko.observableArray();
+    vm.check = ko.observable(true);
+    vm.Search = function () {
+        var search = $('#txtSearchText').val();
+        $.ajax({
+                    method: 'POST',
+
+                    url: '@Url.Action("GetSearchExternalTrainingProviders", "ExternalTrainingProvider", new {Area = ""})',
+                    data: {
+                        search: search
+                    }
+                }).done(function(data) {
+                    vm.data.Items(data);
+                });
+    };
+    vm.filter.subscribe(function (data) {
+        if (data !== []) {
+                $.ajax({
+                    method: 'POST',
+
+                    url: '@Url.Action("GetFilteredExternalTrainingProviders", "ExternalTrainingProvider", new {Area = ""})',
+                    data: {
+                        data: data
+                    }
+                }).done(function(data) {
+                    vm.data.Items(data);
+                });
+            }
+    });
+   
+
+    function checkValidation() {
+        var check = true;
+        if ($('#emailAddress').val() === "" || $('#emailAddress').val() === null) {
+            $('#spnEmailAlreadyExist').hide();
+        }
+
+        $('.requiredClass').each(function () {
+            var val = $(this).val();
+            if (val === '' || val === null || val === undefined) {
+                $(this).addClass('requiredTxt');
+                check = false;
+            } else {
+                $(this).removeClass('requiredTxt');
+            }
+
+        });
+
+        if (!isEmail($('#emailAddress').val())) {
+            $('#emailAddress').addClass('requiredTxt');
+            check = false;
+        }
+
+        return check;
+    }
+
+
+    function AddEditLogTraining(certificationUploadId) {
+            var url = '@Url.Action("AddUpdateExternalTrainingProvider")';
+        $.ajax({
+            method: 'POST',
+            url: url,
+            data: {
+                Id: ko.unwrap(vm.addUpdateExternalProvider.id),
+                CompanyName: ko.unwrap(vm.addUpdateExternalProvider.companyName),
+                ContactNumber: ko.unwrap(vm.addUpdateExternalProvider.contactNumber),
+                ContactPerson: ko.unwrap(vm.addUpdateExternalProvider.contactPerson),
+                MobileNumber: ko.unwrap(vm.addUpdateExternalProvider.mobileNumber),
+                BEEStatusLevel: ko.unwrap(vm.addUpdateExternalProvider.bEEStatusLevelSelected),
+                EmailAddress: ko.unwrap(vm.addUpdateExternalProvider.emailAddress),
+                Address: ko.unwrap(vm.addUpdateExternalProvider.address),
+                CertificateUploadId: certificationUploadId
+            }
+        })
+            .done(function (data) {
+                window.location.reload();
+
+            })
+            .always(function () {
+                $('#LoadingImageDiv').hide();
+            });
+    }
+    vm.addUpdateExternalProvider = {
+        id: ko.observable(),
+       
+        companyName: ko.observable(),
+        address: ko.observable(),
+        contactNumber: ko.observable(),
+        contactPerson: ko.observable(),
+        emailAddress: ko.observable(),
+        mobileNumber: ko.observable(),
+        photoUrl: ko.observable(),
+        CertificateUploadId: ko.observable(),
+        bEEStatusLevel: ko.observable([ "Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Level 6", "Level 7", "Level 8","Non Complaint"]),
+        bEEStatusLevelSelected: ko.observable(),
+        certificateUploadName: ko.observable(),
+
+        fileUpload: function (data, e) {
+
+            var file = e.target.files[0];
+            var reader = new FileReader();
+            name = e.target.files[0].name;
+            type = e.target.files[0].type;
+            reader.onloadend = function (onloadend_e) {
+                var result = reader.result; // Here is your base 64 encoded file. Do with it what you want.
+                vm.addUpdateExternalProvider.photoUrl(result);
+            };
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        },
+       
+
+        save: function () {
+            var t = checkValidation();
+            if (t && !checkEmailAlreadyPresent(vm.addUpdateExternalProvider.emailAddress)) {
+                $('#LoadingImageDiv').show();
+            var formdata = new FormData();
+                if (ko.unwrap(vm.addUpdateExternalProvider.photoUrl) && ko.unwrap(vm.addUpdateExternalProvider.photoUrl) != null && typeof ko.unwrap(vm.addUpdateExternalProvider.photoUrl) != "undefined") {
+
+                    formdata.append("base64image", ko.unwrap(vm.addUpdateExternalProvider.photoUrl));
+                    formdata.append("name", name);
+                    formdata.append("type", type);
+                    $.ajax({
+                url: "@Url.Action("SaveImage")",
+                type: "POST",
+                data: formdata,
+                processData: false,
+                contentType: false
+            }).done(function (certificationUploadId) {
+                AddEditLogTraining(certificationUploadId);
+                if (ko.unwrap(vm.check) == true ) {
+                    notif({ msg: "<b>Success :</b> Training has been successfully Created", type: "success", multiline: true });
+                } else {
+                    notif({ msg: "<b>Success :</b> Training has been successfully Updated", type: "success", multiline: true });
+                }
+});
+                } else {
+                    AddEditLogTraining(vm.addUpdateExternalProvider.CertificateUploadId);
+                    if (ko.unwrap(vm.check) == true) {
+                        notif({ msg: "<b>Success :</b> Training has been successfully Created", type: "success", multiline: true });
+                    } else {
+                        notif({ msg: "<b>Success :</b> Training has been successfully Updated", type: "success", multiline: true });
+                    }
+                }
+            } else {
+                notif({
+                    msg: 'Please ensure all required fields are filled in',
+                    type: 'error',
+                    multiline: true,
+                });
+                return false;
+            }
+        }
+        ,edit: function (listModel) {
+            var url = '@Url.Action("GetExternalTrainingProvider")';
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    Id: ko.unwrap(listModel.Id)
+                },
+                success: function (res) {
+                    vm.check(false);
+                    vm.addUpdateExternalProvider.id(res.Id);
+                    vm.addUpdateExternalProvider.companyName(res.CompanyName);
+                    vm.addUpdateExternalProvider.address(res.Address);
+                    vm.addUpdateExternalProvider.contactNumber(res.ContactNumber);
+                    vm.addUpdateExternalProvider.contactPerson(res.ContactPerson);
+                    vm.addUpdateExternalProvider.emailAddress(res.EmailAddress);
+                    vm.addUpdateExternalProvider.mobileNumber(res.MobileNumber);
+                    vm.addUpdateExternalProvider.bEEStatusLevelSelected(res.BEEStatusLevel);
+                    vm.addUpdateExternalProvider.CertificateUploadId(res.CertificateUploadId);
+                    if (res.CertificateUploadId!=null) {
+                          $.ajax({
+                        url: '@Url.Action("GetUploadedCertificate")',
+                        method: 'POST',
+                        data: {
+                            Id: ko.unwrap(res.CertificateUploadId)
+                        }
+                        }).
+                            done(function(result) {
+                                vm.addUpdateExternalProvider.certificateUploadName(result.Name)
+                            });
+                    }
+
+                     $('#externalTrainingProviderModal').modal('show');
+                 }
+                });
+        }
+    }
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+
+
+   
+
+    //Except only numbers for textbox
+    function onlyNumbers(event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    function isEmail(email) {
+        var regex = /^([a-zA-Z0-9_.+-])+\@@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+        if (regex.test(email)) {
+            return true;
+        } else {
+            if (email) {
+                $('#spnInvalidEmail').show();
+            }
+            return false;
+        }
+    }
+
+    function checkEmailAlreadyPresent(email) {
+        var checkEmailAlready = false;
+        var id = $('#hdnId').val();
+
+        var promise = $.post("@Url.Action("DoesEmailAlreadyPresent", "ExternalTrainingProvider", new { area= "" })", {
+            EmailAddress: email,
+            Id: id
+                });
+
+                promise.done(function (data) {
+
+                    if (data == false) {
+                        $('#spnEmailAlreadyExist').show();
+                        checkEmailAlready = true;
+                    } else {
+                        $('#spnEmailAlreadyExist').hide();
+                        checkEmailAlready = false;
+                    }
+                });
+                promise.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+                promise.always(function () {
+
+        });
+        return checkEmailAlready
+    }
+    $(function () {
+
+        $('#spnEmailAlreadyExist').hide();
+        $('#spnMobileNo').hide();
+        $('#spnContactNo').hide();
+        $('#spnInvalidEmail').hide();
+
+        $('.requiredClass').blur(function () {
+            if ($('#emailAddress').val() === "" || $('#emailAddress').val() === null) {
+                $('#spnEmailAlreadyExist').hide();
+            }
+
+            var val = $(this).val();
+            if (val === '' || val === null || val === undefined) {
+                $(this).addClass('requiredTxt');
+                $('#spnEmailAlreadyExist').hide();
+                check = false;
+            } else {
+                $(this).removeClass('requiredTxt');
+            }
+        });
+
+        $('#emailAddress').blur(function () {
+            var email = $(this).val();
+            var id = $(this).attr('id');
+            if (email != null && isEmail(email)) {
+                $('#spnInvalidEmail').hide();
+
+                if (checkEmailAlreadyPresent(email)) {
+                    $('#spnEmailAlreadyExist').hide();
+                } else {
+                    $('#spnEmailAlreadyExist').show();
+                }
+            } else if(email != null && !isEmail(email)){
+                $('#emailAddress').addClass('requiredTxt');
+            }
+        });
+
+
+        //$('#dataTables-example').DataTable();
+        $('#btnAddExternalTrainingProvider').click(function () {
+            vm.addUpdateExternalProvider.id('');
+            vm.addUpdateExternalProvider.companyName('');
+            vm.addUpdateExternalProvider.address('');
+            vm.addUpdateExternalProvider.contactNumber('');
+            vm.addUpdateExternalProvider.contactPerson('');
+            vm.addUpdateExternalProvider.emailAddress('');
+            vm.addUpdateExternalProvider.mobileNumber('');
+            vm.addUpdateExternalProvider.bEEStatusLevelSelected('Level 1');
+            vm.addUpdateExternalProvider.CertificateUploadId('');
+            vm.addUpdateExternalProvider.certificateUploadName('');
+            $('#externalTrainingProviderModal').modal('show');
+        });
+        $('#btnCloseExternalTrainingProvider').click(function () {
+            $('#externalTrainingProviderModal').modal('hide');
+        })
+    });
+    tour.steps = [
+        {
+            target: 'manage-bee-cetificates',
+            title: 'BEE certificate',
+            content: 'Click here to view all uploaded BEE Certificates.',
+            placement: 'top',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: 220
+        }];
+</script>

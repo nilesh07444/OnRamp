@@ -1,0 +1,320 @@
+﻿
+@model Ramp.Contracts.ViewModel.AuditReportModel
+
+@if (Model.TrainigManualList.Any())
+{
+
+
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Training Manual's
+
+            </div>
+            @{
+                var trainings = Model.TrainigManualList.GroupBy(c => c.DocumentId).ToList();
+
+            }
+            <div class="panel-body">
+                @foreach (var item in trainings)
+                {
+                    <br>
+
+             
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                @item.FirstOrDefault().DocumentName
+                            </div>
+
+
+                            <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th class="UserName">Date</th>
+                                        <th class="">Event</th>
+                                        <th class="Attendance">Administrator</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var training in item.ToList())
+                                    {
+                                        <tr>
+
+                                            <td class="UserName">
+                                                @training.LastEditDate.ToString()
+                                            </td>
+                                            <td>
+                                                @training.DocumentStatus
+                                            </td>
+                                            <td class="Attendance">
+                                                @training.UserName
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                  
+
+                }
+            </div>
+
+        </div>
+    </div>
+}
+
+@if (Model.MemoList.Any())
+{
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Memo's
+
+            </div>
+            @{
+                var memos = Model.MemoList.GroupBy(c => c.DocumentId).ToList();
+
+            }
+            <div class="panel-body">
+                @foreach (var item in memos)
+                {
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            @item.FirstOrDefault().DocumentName
+                        </div>
+                        <div>
+
+                            <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th class="UserName">Date</th>
+                                        <th class="">Event</th>
+                                        <th class=" Attendance">Administrator</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var memo in item.ToList())
+                                    {
+                                        <tr>
+
+                                            <td class="UserName">
+                                                @memo.LastEditDate.ToString()
+                                            </td>
+                                            <td>
+                                                @memo.DocumentStatus
+                                            </td>
+                                            <td class="Attendance">
+                                                @memo.UserName
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.PolicyList.Any())
+{
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Policy's
+
+            </div>
+            @{
+                var policies = Model.PolicyList.GroupBy(c => c.DocumentId).ToList();
+
+            }
+            <div class="panel-body">
+
+                @foreach (var item in policies)
+                {
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            @item.FirstOrDefault().DocumentName
+                        </div>
+                        <div>
+
+                            <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th class="UserName">Date</th>
+                                        <th class="">Event</th>
+                                        <th class=" Attendance">Administrator</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var policy in item.ToList())
+                                    {
+                                        <tr>
+
+                                            <td class="UserName">
+                                                @policy.LastEditDate.ToString()
+                                            </td>
+                                            <td>
+                                                @policy.DocumentStatus
+                                            </td>
+                                            <td class="Attendance">
+                                                @policy.UserName
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.CheckList.Any())
+{
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                CheckList's
+
+            </div>
+            @{
+                var checklists = Model.CheckList.GroupBy(c => c.DocumentId).ToList();
+
+            }
+
+            <div class="panel-body">
+
+                @foreach (var item in checklists)
+                {
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            @item.FirstOrDefault().DocumentName
+                        </div>
+                        <div>
+
+                            <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th class="UserName">Date</th>
+                                        <th class="">Event</th>
+                                        <th class="Attendance">Administrator</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var checklist in item.ToList())
+                                    {
+                                        <tr>
+
+                                            <td class="UserName">
+                                                @checklist.LastEditDate.ToString()
+                                            </td>
+                                            <td>
+                                                @checklist.DocumentStatus
+                                            </td>
+                                            <td class="Attendance">
+                                                @checklist.UserName
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.TestList.Any())
+{
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Test's
+
+            </div>
+            @{
+                var tests = Model.TestList.GroupBy(c => c.DocumentId).ToList();
+
+            }
+            <div class="panel-body">
+
+                @foreach (var item in tests)
+                {
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            @item.FirstOrDefault().DocumentName
+                        </div>
+                        <div>
+
+                            <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th class="UserName">Date</th>
+                                        <th class="">Event</th>
+                                        <th class="Attendance">Administrator</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var test in item.ToList())
+                                    {
+                                        <tr>
+
+                                            <td class="UserName">
+                                                @test.LastEditDate.ToString()
+                                            </td>
+                                            <td>
+                                                @test.DocumentStatus
+                                            </td>
+                                            <td class="Attendance">
+                                                @test.UserName
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+   @if (Model.CheckList.Any() || Model.TestList.Any() || Model.PolicyList.Any() || Model.MemoList.Any() || Model.TrainigManualList.Any()) {
+       @: $('#divDocumentAudit').show();
+   } else {
+        @: $('#divDocumentAudit').hide();
+   }
+</script>

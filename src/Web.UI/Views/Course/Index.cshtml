@@ -1,0 +1,2104 @@
+﻿@model Ramp.Contracts.ViewModel.CourseListModel
+@using Common.Enums
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<style>
+     #jstree-marker {
+
+        z-index: 1100;
+
+    }
+    #manageCategoriesModal {
+        overflow-x: auto;
+    }
+    #manageCategoriesModal .modal-dialog {
+        display: table;
+    }
+    .policy-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+
+    .memo-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .test-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .training-manual-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .checklist-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .form-inline .twitter-typeahead {
+        width: auto;
+        float: none;
+        vertical-align: middle;
+    }
+
+    .document-panelbody {
+        max-height: 468px;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+        .document-panelbody > table {
+            margin: 0;
+        }
+
+    .spacer {
+        margin-top: 6em;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+
+
+    .hover-zoom:hover {
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        transition: transform .15s ease-in-out;
+        transform: scale(1.1)
+    }
+
+    .not-selected, .not-selected > img {
+        zoom: 1;
+        filter: alpha(opacity=50);
+        -ms-opacity: 0.5;
+        opacity: 0.5;
+    }
+
+        .not-selected:hover, .not-selected > img:hover {
+            filter: alpha(opacity=100);
+            -ms-opacity: 1;
+            opacity: 1;
+            -ms-transition: all .15s ease-in-out;
+            -o-transition: all .15s ease-in-out;
+            -webkit-transition: all .15s ease-in-out;
+            transition: all .15s ease-in-out;
+            -ms-transform: scale(1.1);
+            -webkit-transform: scale(1.1);
+            transform: scale(1.1)
+        }
+
+    .no-underline:hover, .no-underline:focus {
+        text-decoration: none;
+    }
+
+    .panel-container > div.panel:last-child {
+        margin-bottom: 0;
+    }
+
+    .selected {
+        background-color: #666;
+        color: #fff;
+    }
+
+    .title {
+        width: 80%;
+        float: left;
+        font-weight: bold;
+        padding: 8px;
+        border: 1px solid #ddd;
+        margin: 0px 0px 0px 0px
+    }
+
+    .noOfUsers {
+        width: 20%;
+        float: right;
+        font-weight: bold;
+        padding: 8px;
+        border: 1px solid #ddd;
+        margin: 0px 0px 0px 0px
+    }
+
+    .title-value {
+        width: 80%;
+        float: left;
+        border: 1px solid #ddd;
+        padding: 1px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+     .untitle-value {
+        width: 80%;
+        float: left;
+        border: 1px solid #ddd;
+        padding: 8px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+
+    .noOfUsers-value {
+        width: 20%;
+        float: right;
+        border: 1px solid #ddd;
+        padding: 8px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+
+    table th {
+    position:sticky;
+    top:0;
+    z-index:1;
+    background: #ededed;
+   }
+
+
+    .form-inline .bootstrap-select, .form-horizontal .bootstrap-select, .form-group .bootstrap-select {
+        margin-bottom: 0;
+        width: 150px !important;
+    }
+    hr {
+        border: 0;
+        height: 1px;
+        background-image: -webkit-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+        background-image: -moz-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+        background-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+        background-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+    }
+
+
+</style>
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+
+<body>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel-heading clearfix" style="line-height: 32px;">
+                <span style="color: #555555; font-size:18px; font-weight:600;">COURSE LIBRARY</span>
+                <span style="border-left: solid 2px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer; color: #555555;">
+                </span>
+                <button class="btn btn-default btn-primary" style="padding: 5px;" type="button" id="showCourseAddModal"><span class="glyphicon glyphicon-plus"></span></button>
+                <div class="pull-right">
+
+                    <form class="form-inline">
+                        <div class="input-group">
+                            <select id="ddlFilter" class="selectpicker" multiple data-bind="foreach:$root.enums.filterGroup,selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'}">
+                                <optgroup data-bind="attr:{label:title},foreach:options">
+                                    <option data-bind="text:Name,attr:{value:Name}"></option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="txtSearch" placeholder="Course Search" />
+                            <span class="input-group-btn">
+                                <button onclick="fnGetFilterCourse()" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    
+    <div id="divFilter">
+        @Html.Partial("_Courses", Model)
+    </div>
+
+
+    @*<div class="modal-body" id="divViewParticipants"> </div>*@
+
+    <div class="modal fade" id="viewParticipantsModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Admins</h4>
+                </div>
+                <div class="modal-body" id="divViewParticipants">
+
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+         ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+    </script>
+</body>
+
+@*for add functionality*@
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<style>
+
+      .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+     #jstree-marker {
+     #jstree-marker {
+        z-index: 1100;
+    }
+    }
+    #manageCategoriesModal {
+        overflow-x: auto;
+    }
+    #manageCategoriesModal .modal-dialog {
+        display: table;
+    }
+    .policy-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+
+    .memo-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .test-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .training-manual-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .checklist-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .form-inline .twitter-typeahead {
+        width: auto;
+        float: none;
+        vertical-align: middle;
+    }
+
+    .document-panelbody {
+        max-height: 468px;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+        .document-panelbody > table {
+            margin: 0;
+        }
+
+    .spacer {
+        margin-top: 6em;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .not-selected, .not-selected > img {
+        zoom: 1;
+        filter: alpha(opacity=50);
+        -ms-opacity: 0.5;
+        opacity: 0.5;
+    }
+
+        .not-selected:hover, .not-selected > img:hover {
+            filter: alpha(opacity=100);
+            -ms-opacity: 1;
+            opacity: 1;
+            -ms-transition: all .15s ease-in-out;
+            -o-transition: all .15s ease-in-out;
+            -webkit-transition: all .15s ease-in-out;
+            transition: all .15s ease-in-out;
+            -ms-transform: scale(1.1);
+            -webkit-transform: scale(1.1);
+            transform: scale(1.1)
+        }
+
+    .no-underline:hover, .no-underline:focus {
+        text-decoration: none;
+    }
+
+    .panel-container > div.panel:last-child {
+        margin-bottom: 0;
+    }
+
+    .selected {
+        background-color: #666;
+        color: #fff;
+    }
+
+    .title {
+        width: 80%;
+        float: left;
+        font-weight: bold;
+        padding: 8px;
+        border: 1px solid #ddd;
+        margin: 0px 0px 0px 0px
+    }
+
+    .noOfUsers {
+        width: 20%;
+        float: right;
+        font-weight: bold;
+        padding: 8px;
+        border: 1px solid #ddd;
+        margin: 0px 0px 0px 0px
+    }
+
+    .title-value {
+        width: 80%;
+        float: left;
+        border: 1px solid #ddd;
+        padding: 1px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+     .untitle-value {
+        width: 80%;
+        float: left;
+        border: 1px solid #ddd;
+        padding: 8px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+
+    .noOfUsers-value {
+        width: 20%;
+        float: right;
+        border: 1px solid #ddd;
+        padding: 8px;
+        line-height: 1.42857143;
+        background-color: #f9f9f9
+    }
+
+    table th {
+    position:sticky;
+    top:0;
+    z-index:1;
+    background: #ededed;
+   }
+
+
+
+</style>
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<div id="editContainer">
+    <div class="modal fade" id="loginmodal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="" data-bind="click: $root.close('#loginmodal1')">
+                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title">Course Details</h4>
+                </div>
+                <div class="modal-body">
+                    @*@using (Html.BeginForm("Index", "Course"))
+                        {*@
+                    <div class="row" data-bind="with:data">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label class="control-label">Title</label>
+                                <input type="text" class="form-control" data-bind="textInput:Title" name="Title" id="Title" />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">Description</label>
+                                <input type="text" class="form-control" data-bind="textInput:Description" name="Title" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Points</label>
+                                <input type="number" min="0" value="0" class="form-control" data-bind="value:Points,validatewith:$root.errors" name="Points" />
+                            </div>
+                            <div class="form-group">
+                                <label>Allocated Admins</label><br />
+
+                                <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vmEdit.availableAdmins , selectedOptions: vmEdit.selectedAdmins,optionsValue: 'Id', optionsText: 'Value',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+
+                            </div>
+
+                            <div class="form-group">
+                                <label>Categories</label><br />
+
+                                <select class="form-control" id="categories-multiselect-demo" title="Document Types" data-bind="options: vmEdit.allCategories , selectedOptions: vmEdit.selectedCategories,optionsValue: 'Value', optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                                @*<select id="categories-multiselect-demo">
+                                        @foreach (var item in ViewBag.Categories)
+                                        {
+                                            <option value="@item.Value">@item.Text.Trim()</option>
+                                        }
+                                    </select>*@
+                            </div>
+
+
+                            <div class="form-group" data-bind="with:$root.modals.certificate">
+                                <button id="openCertModal" class="btn btn-default">Select Achievement</button>
+                                <button data-bind="visible: vmEdit.certificates().length > 0" id="delCert" class="btn btn-default"><span class="fa fa-trash"></span></button>
+                            </div>
+                            @*neeraj*@
+                            <div data-bind="if: vmEdit.certificates().length > 0">
+
+                                <div class="form-group" data-bind="with: vmEdit.certificates()[0]">
+                                    <label id="certificate" class="control-label">Certificate : </label>
+                                    @*<pre data-bind="text: ko.toJSON($data, null, 2)"></pre>*@
+
+                                    <div class="thumbnail" style="overflow: hidden; width: 120px">
+                                        <img data-bind="attr: { src: ko.unwrap(ThumbnailUrl) ? ko.unwrap(ThumbnailUrl) : ko.unwrap(Url), alt: Description }" />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            @*<div class="form-group" data-bind="ifnot: Certificate">
+                                    <label class="control-label">Certificate : None Selected</label>
+                                </div>*@
+                            @*<div class="form-group">
+                                    <label class="control-label">Cover Picture</label>
+                                    <div data-bind="with:CoverPicture">
+                                        <img class="img-responsive coverPicture" data-bind="attr:{src:$data.Url()},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                    </div><br />
+                                    <button id="coverPicture" class="btn btn-default" data-bind="click:function(){ $('.coverPictureUpload').trigger('click');}">Set / Change Cover Picture</button>
+                                    <button class="btn btn-default" data-bind="visible:CoverPicture,click:function(){$root.data.CoverPicture(null);}"><span class="fa fa-trash"></span></button>
+                                    <input data-bind="fileUpload:CoverPictureUpload,fileuploadOptions:$root.upload.options.coverPicture,valueProperty:CoverPicture" type="file" name="files[]" accept="image/*" class="hidden coverPictureUpload">
+                                </div>
+                                <div class="form-group has-error errorsSpan" data-bind="visible:$root.UploadCoverPictureError">
+                                    <span>Error uploading CoverPicture</span>
+                                </div>*@
+
+
+                            <div class="form-group">
+                                <label><span style="color:red"><b>*</b></span> From Date</label>
+                                <input class='required' data-bind='datepicker: StartDate' />
+
+
+
+                            </div>
+                            <div class="form-group">
+                                <label><span style="color:red"><b>*</b></span> To Date</label>
+
+                                <input class='required' data-bind='datepicker: EndDate' />
+
+                            </div>
+
+                            @*paste commented code here*@
+
+                            <div class="form-group">
+                                <label class="switch">
+                                    <input type="checkbox" name="IsGlobalEnabled" data-bind="checked: IsGlobalEnabled" />
+                                    @*@Html.CheckBox("IsGlobalAccessed")*@
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Enable global access</span>
+                            </div>
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked: WorkflowEnabled" name="EnableTimer" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Enable Workflow</span>
+                            </div>
+
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked: IsCourseExpiryEnabled" name="EnableTimer" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Enable Expiry</span>
+                            </div>
+
+                            <div class="form-group" data-bind="visible:IsCourseExpiryEnabled">
+                                <label class="control-label">No of days from expiry</label>
+                                <input type="text" class="form-control" data-bind="textInput:ExpiryInDays" name="ExpiryInDays" />
+                            </div>
+
+
+                            @*<div class="form-group">
+                                    <label class="control-label">Cover Picture</label>
+                                    <div data-bind="with:CoverPicture">
+                                        <img class="img-responsive coverPicture" data-bind="attr:{src:$data.Url()},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                    </div></br>
+                                    <button id="coverPicture" class="btn btn-default" data-bind="click:function(){ $('.coverPictureUpload').trigger('click');}">Set / Change Cover Picture</button>
+                                    <button class="btn btn-default" data-bind="visible:CoverPicture,click:function(){$root.data.CoverPicture(null);}"><span class="fa fa-trash"></span></button>
+                                    <input data-bind="fileUpload:CoverPictureUpload,fileuploadOptions:$root.upload.options.coverPicture,valueProperty:CoverPicture" type="file" name="files[]" accept="image/*" class="hidden coverPictureUpload">
+                                </div>
+                                <div class="form-group has-error errorsSpan" data-bind="visible:$root.UploadCoverPictureError">
+                                    <span>Error uploading CoverPicture</span>
+                                </div>*@
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-7">
+                            <button data-bind="enable: validation()" id="save" class="btn btn-primary">Next</button>
+                        </div>
+                    </div>
+                    @*}*@
+
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="certificateModal" tabindex="-1" role="dialog" aria-labelledby="certificateModals" aria-hidden="true" data-bind="with:vmEdit.modals.certificate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Certificates</h4>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <!-- ko foreach:vmEdit.modals.certificate.data -->
+                            <div class="col-sm-3">
+                                <a data-bind="click:$parent.set.bind()">
+                                    <img class="img-responsive center-block" data-bind="attr:{src:ThumbnailUrl},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                    <div class="text-center" data-bind="text:(ko.unwrap(Description) || '').substring(0,20)" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"></div>
+                                </a>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="assignModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-bind="click: $root.close('#assignModal')">
+                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title">Select the document for your course</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Please select the documents you would like to add to course.</p>
+                    <br>
+                    <div class="tree" id="tree"></div>
+                    @*<!-- ko ifnot: isDocumentGet -->
+                         <div>
+                            Please wait while we fetch your documents
+                          </div>
+                        <!-- /ko -->*@
+                </div>
+                <div class="modal-footer">
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="courseNext" data-bind="enable:DocumentsInJSTree().length>
+                                0">
+                                Next
+                            </button>
+                            <button class="btn btn-default" data-bind="click: $root.back.bind($data,'#assignModal')">Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="courseSummary" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-bind="click:$root.close('#courseSummary')">
+                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title">Course summary</h4>
+                </div>
+                <div class="modal-body">
+
+                    <div style="border: 1px solid gray;
+    box-shadow: 2px 3px #888888;
+    text-align: center;
+    margin-bottom: 3rem;">
+                        <p>Course Information</p>
+                        <h1 bind="text: Description"></h1>
+
+                        <div style="display: flex;justify-content: space-around;">
+                            <div>document logo here</div>
+                            <div>
+                                document info here
+                                <span data-bind="text: data.Title"></span>
+                                <span data-bind="text: data.Description"></span>
+                            </div>
+                        </div>
+
+                        <p style="text-align: center;">
+                            <span>Expires In: <span data-bind="text: data.ExpiryInDays"></span></span>
+                            <span>GlobalAccess: <span data-bind="text: data.IsGlobalEnabled"></span></span>
+                        </p>
+                    </div>
+
+                    <div style="display: flex;justify-content: space-around;">
+                        <div style="border: 1px solid gray;
+    box-shadow: 2px 3px #888888;
+    text-align: center;
+    margin-bottom: 3rem;
+    width:45%">
+                            <p> Document Assigned</p>
+                            <table>
+                                <thead>
+                                    <tr><th>Type</th><th>Title</th></tr>
+                                </thead>
+                                <tbody data-bind="foreach: DocumentsInJSTree">
+                                    <tr>
+                                        <td data-bind="text: type"></td>
+                                        <td data-bind="text: text"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="border: 1px solid gray;
+    box-shadow: 2px 3px #888888;
+    text-align: center;
+    margin-bottom: 3rem;
+    width:45%">
+                            <p>Achievements</p>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" data-bind="click: save.bind($data, 0)">Save and Exit</button>
+                            <button class="btn btn-primary" data-bind="click: save.bind($data, 1)">Save and Publish</button>
+                            <button class="btn btn-default" data-bind="click: $root.back.bind($data, '#courseSummary')">Back</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="assignDocumentToUserModal" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static" data-toggle="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="" data-bind="click: $root.close('#assignDocumentToUserModal')"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">User & Group selection</h4>
+                </div>
+                <div class="modal-body">
+                    @*data-bind="visible: selectedDocuments().length > 0"*@
+                    <div>
+                        <div>
+                            <p>Please select the Groups or Users you would like to perform the action on:</p>
+                            <br>
+                            @*data-bind="visible: selectedDocuments().length > 0"*@
+                            <div>
+                                <div>
+                                    <select class="multiselectGp" id="boot-multiselect-demo" multiple="multiple">
+                                        @foreach (var item in ViewBag.Groups)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div><br />
+                            </div>
+                            <div data-bind="foreach: vmEdit.allusers">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <input type="text" placeholder="Search Users" class="form-control" data-bind="textInput: $root.userFilter('')" />
+                                            </th>
+                                            <th style="width: 130px">
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" data-bind="checked: $root.allUsersSelected($element)" /> Assign All
+                                                    </label>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: users" style="display: table-caption;height: 200px;caption-side: bottom;overflow: auto;">
+                                        <tr>
+                                            <td style="width:437px;">
+                                                <span data-bind="text: Name"></span>
+                                                <span class="fa fa-info-circle" style="color:orange" data-bind="visible: AssignedDocumentUsers.length > 0, bootstrapPopover: ko.unwrap(AssignedDocumentUsers)"></span>
+                                                <br>
+                                            </td>
+                                            <td class="text-center" style="width:113px;">
+                                                <input class="sauassign" type="checkbox" data-bind="checked: $root.selectedUsersPerDocument, value: Id + ';' + GroupId " />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tbody>
+                                        @*<tr>
+                                                <td colspan="2" class="text-center">No matching users found</td>
+                                            </tr>*@
+                                    </tbody>
+                                </table>
+                            </div>
+                            @*<p class="text-center">
+                                    <span>
+                                        Please wait while we fetch your users
+                                    </span>
+                                </p>*@
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-center">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="userSelected" data-bind="enable: selectedUsersPerDocument().length >0">Next</button>
+                            <button data-bind="click: $root.back.bind($data, '#assignDocumentToUserModal')" class="btn btn-default" data-dismiss="modal">Back</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $("#showCourseAddModal").click(() => {
+        $("#loginmodal1").modal('show');
+    })
+    //$(document).ready(function () {
+    //    $("#loginmodal1").modal('show');
+    //});
+
+    $(document).ready(function () {
+        $('.multiselectGp').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 250,
+            enableFiltering: true,
+            maxHeight: 350
+        });
+    });
+
+    $("#submit").click((data) => {
+        console.log("data ", data);
+    })
+
+    $("#save").click((ele) => {
+        $("#loginmodal1").modal("hide");
+        $("#assignModal").modal("show");
+    })
+
+    $("#courseNext").click(ele => {
+        $("#assignModal").modal("hide");
+        $("#assignDocumentToUserModal").modal("show");
+
+    })
+
+</script>
+
+<script>
+    //setVmEdit(null);
+    //function setVmEdit(data) {
+    var vmEdit = {
+        data: {
+            Id: ko.observable(null),
+                Title: ko.observable(),
+                Description: ko.observable(),
+                Points: ko.observable(0),
+               CoverPicture: null,
+                IsGlobalEnabled: ko.observable(),
+                IsCourseExpiryEnabled: ko.observable(),
+                ExpiryInDays: ko.observable(),
+                AchievementType: ko.observable(),
+                WorkflowEnabled: ko.observable(),
+                AllocatedAdmins: ko.observableArray(),
+                CategoryId: ko.observable(),
+                StartDate: ko.observable(),
+                EndDate: ko.observable(),
+                AssignedUsers: ko.observableArray(),
+                Documents: ko.observableArray(),
+                Certificate: ko.observable(),
+            }
+        }
+
+    vmEdit.availableAdmins = @Html.Raw(Json.Encode(@ViewBag.Admins))
+     vmEdit.allCategories  =@Html.Raw(Json.Encode(@ViewBag.Categories))
+
+    vmEdit.selectedAdmins = ko.observableArray([]);
+    vmEdit.selectedCategories = ko.observableArray([]);
+
+    console.log("viewbag amins ", @Html.Raw(Json.Encode(@ViewBag.Admins)));
+
+        var selectedDocumentsInJSTree = [];
+        var selectedUserGroupIds = [];
+        var selectedDocumentId = [];
+        var selectedDocuments = [];
+        //var selectedUsers = [];
+        var allUserList = [];
+        var assignedUsers = [];
+
+        //cehck neeraj
+        vmEdit.check = () => { console.log("asdsadas") }
+        //cehck
+        var selfEdit = vmEdit;
+        selfEdit.isDocumentGet = ko.observable(false);
+        selfEdit.isDocumentGet.subscribe(function (changes) {
+        });
+        selfEdit.selectedAction = ko.observable(null);
+        selfEdit.selectedAction.subscribe(function (newValue) {
+            loadUsers();
+            self.selectedUsersPerDocument([]);
+        });
+
+        selfEdit.modals = {
+            certificate: {
+                open: function () {
+                    $('#certificateModal').modal('show');
+                },
+                close: function () {
+                    $('#certificateModal').modal('hide');
+                },
+                data: new ko.observableArray(),
+                initialize: function () {
+                    console.log("l:::::::::::")
+                    $.get('/Achievement/List', function (certificates) {
+                        app.data.utils.array.sync(certificates, selfEdit.modals.certificate.data);
+                     //   selfEdit.modals.certificate.data.push(certificates)
+                    });
+                },
+                set: function (cert) {
+                    console.log("aaaaaaaaaa ", cert)
+                    selfEdit.certificates([]);
+                    selfEdit.certificates.push(cert);
+                    selfEdit.modals.certificate.close();
+                }
+            }
+        };
+
+        selfEdit.modals.certificate.initialize();
+
+        function isUnique(node) {
+            var tree = $('.tree').jstree(true);
+            var collection = tree.get_node('#').children_d;
+            $(".tree").jstree(true).load_node('#');
+            collection = $.map(collection,
+                function (id) {
+                    return tree.get_node(id);
+                });
+            for (var i = 0; i < collection.length; i++) {
+                if (node.id === collection[i].id || collection[i].type !== 'default') continue;
+                var current = collection[i].text;
+                current = current.toLowerCase().replace(' ', '').trim();
+                if (current.indexOf('\n') > 0) {
+                    current = current.substring(0, current.indexOf('\n'));
+                }
+                if (node.text.toLowerCase().replace(' ', '').trim() === current) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function containsDocument(collection) {
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].type !== 'default') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //var Controller = function(documents, groups) {
+
+        var tree = $('.tree');
+        var to = false;
+        selfEdit.certificates = ko.observableArray([]);
+        selfEdit.hasData = ko.observable(false);
+        selfEdit.isUserGet = ko.observable(false);
+        selfEdit.isUserGet.subscribe(function (changes) {
+        });
+        selfEdit.selectedUsersPerDocument = ko.observableArray();
+        selfEdit.selectedAction = ko.observable(null);
+        selfEdit.selectedAction.subscribe(function (newValue) {
+            loadUsers();
+            seselfEditlf.selectedUsersPerDocument([]);
+        });
+        selfEdit.assignedusers = ko.observableArray([]);
+        selfEdit.assignedusers.subscribe(function (changes) {
+        });
+        selfEdit.selectedUsers = ko.observableArray();
+        if (!ko.isObservable(selfEdit.data.CoverPicture)) {
+            selfEdit.data.CoverPicture = ko.observable(selfEdit.data.CoverPicture);
+        }
+
+        selfEdit.data.fromDate = ko.observable();
+        selfEdit.data.fromDate.subscribe(function (newValue) {
+            $('#toDate').data('DateTimePicker').minDate(new Date(newValue));
+            selfEdit.hasData(false);
+        });
+
+        selfEdit.data.toDate = ko.observable();
+        selfEdit.data.toDate.subscribe(function (newValue) {
+            $('#fromDate').data('DateTimePicker').maxDate(new Date(newValue));
+            selfEdit.hasData(false);
+        });
+
+        $('#categorySearch').keyup(function () {
+            if (to) {
+                clearTimeout(to);
+            }
+            to = setTimeout(function () {
+                var value = $('#categorySearch').val();
+                tree.jstree(true).search(value);
+            },
+                250);
+        });
+        $('#categorySearchClear').click(function (e) {
+            $('#categorySearch').val('')
+                .trigger('keyup').focus();
+        });
+
+        $('#users-multiselect-demo').change(function () {
+            var userIds = $(this).val();
+
+            if (userIds == null || typeof (userIds) == 'undefined') {
+                selfEdit.data.AllocatedAdmins();
+            } else {
+                selfEdit.data.AllocatedAdmins(userIds);
+            }
+
+        })
+
+        $("#userSelected").click(function () {
+
+            console.log("model ", @Html.Raw(Json.Encode(Model)))
+
+            $('#assignDocumentToUserModal').modal('hide');
+            $('#courseSummary').modal('show');
+
+        })
+
+        vmEdit.validation = ko.observable(false);
+
+        vmEdit.save = function (data1, check) {
+
+            let docs = [];
+
+            vmEdit.DocumentsInJSTree().forEach(d => {
+                let x = {
+                    Title: d.text,
+                    Id: d.id,
+                    Type: d.type,
+                    OrderNo: 0
+                }
+                docs.push(x);
+            })
+
+            let data = {}
+            try {
+                data = {
+                    //&& (vmEdit.data.Id() == undefined || vmEdit.data.Id() == null || vmEdit.data.Id() == '')
+                    Id: (!vmEdit.data.hasOwnProperty('Id')) ? null : vmEdit.data.Id(),
+                    Title: vmEdit.data.Title(),
+                    Description: vmEdit.data.Description(),
+                    CoverPicture: null,
+                    IsGlobalEnabled: vmEdit.data.IsGlobalEnabled(),
+                    IsCourseExpiryEnabled: vmEdit.data.IsCourseExpiryEnabled(),
+                    ExpiryInDays: parseInt(vmEdit.data.ExpiryInDays()),
+                    AchievementType: vmEdit.certificates().length > 0 ? vmEdit.certificates()[0].Id : null,
+                    WorkflowEnabled: vmEdit.data.WorkflowEnabled(),
+                    AllocatedAdmins: vmEdit.selectedAdmins().toString(),
+                    CategoryId: vmEdit.data.CategoryId(),
+                    StartDate: vmEdit.data.StartDate(),
+                    EndDate: vmEdit.data.EndDate(),
+                    AssignedUsers: vmEdit.selectedUsersPerDocument(),
+                    Documents: docs,
+                    Certificate: vmEdit.certificates(),
+                    Points: parseInt(vmEdit.data.Points())
+                }
+            } catch
+            {
+                data = {
+                  
+                    Id: (!vmEdit.data.hasOwnProperty('Id')) ? null : vmEdit.data.Id,
+                    Title: vmEdit.data.Title,
+                    Description: vmEdit.data.Description,
+                    CoverPicture: null,
+                    IsGlobalEnabled: vmEdit.data.IsGlobalEnabled,
+                    IsCourseExpiryEnabled: vmEdit.data.IsCourseExpiryEnabled,
+                    ExpiryInDays: parseInt(vmEdit.data.ExpiryInDays),
+                    AchievementType: vmEdit.certificates.length > 0 ? vmEdit.certificates[0].Id : null,
+                    WorkflowEnabled: vmEdit.data.WorkflowEnabled,
+                    AllocatedAdmins: vmEdit.selectedAdmins().toString(),
+                    CategoryId: vmEdit.data.CategoryId,
+                    StartDate: vmEdit.data.StartDate,
+                    EndDate: vmEdit.data.EndDate,
+                    AssignedUsers: vmEdit.selectedUsersPerDocument,
+                    Documents: docs,
+                    Certificate: vmEdit.certificates,
+                    Points: parseInt(vmEdit.data.Points)
+                }
+
+            }
+            console.log("data 1", data);
+            console.log("data ", check);
+
+            if (data1 == 0) {
+                //save and exit
+                data.Status = 1
+            }
+            else if (data1 == 1) {
+                //save and publish
+                data.Status = 2;
+            }
+
+            $('#LoadingImageDiv').show();
+            var url = '@Url.Action("CourseWorkFlowMessageSave")';
+            $.ajax({
+                method: 'POST',
+                url: url,
+                data: data
+            })
+                .done(function (data) {
+                    notif({
+                        msg: 'Your progress has been saved.',
+                        multiline: true,
+                        type: 'success'
+                    });
+
+                    $('#courseSummary').modal('hide')
+                    window.location.reload();
+                })
+                .always(function () {
+                    $('#LoadingImageDiv').hide();
+                });
+        }
+
+        $("#Title").change((val) => {
+            //console.log("value ", val);
+            checkValidation();
+        })
+
+        function checkValidation() {
+            let title = $('#Title').val()
+            let category = $('#categories-multiselect-demo').val()
+
+            if (title != null && category != null)
+                vmEdit.validation(true);
+        }
+
+
+        //new code start
+        selfEdit.userFilter = function (documentId) {
+            //console.log(" documentId new ", documentId)
+            return ko.computed({
+                read: function () {
+                    //console.log(" read ", documentId)
+                    if (selfEdit.query().hasOwnProperty(documentId)) {
+
+                        return selfEdit.query()[documentId];
+                    } else {
+
+                        var query = selfEdit.query();
+                        query[documentId] = '';
+                        selfEdit.query(query);
+                        return '';
+                    }
+                },
+                write: function (value) {
+
+                    //console.log(" write ", value);
+                    var usersSelectedForDocument = selfEdit.allusers();
+                    var actionType = selfEdit.selectedAction() === 'Assign' ? "Assign" : "Reassign";
+                    var url = '@Url.Action("FilterUsers", "Send", new {Area = ""})';
+                    $.ajax({
+                        method: 'POST',
+                        url: url,
+                        data: {
+                            documentId: "",
+                            documentType: 0,
+                            groupIds: selectedUserGroupIds,
+                            searchText: value,
+                            allDocumentId: selectedDocumentId,
+                            actionType: actionType
+                        }
+                    }).done(function (data) {
+
+
+                        var userList = {
+                            users: data
+                        }
+                        if (value != "") {
+
+
+                            selfEdit.allusers.removeAll(usersSelectedForDocument);
+                            selfEdit.allusers.push(userList);
+                            //console.log("users", ko.unwrap(self.allusers()));
+                        } else {
+                            ;
+                            selfEdit.allusers.removeAll(usersSelectedForDocument);
+                            selfEdit.allusers.push(userList);
+                            //console.log("users", ko.unwrap(self.allusers()));
+                        }
+                    });
+                },
+                owner: this
+            });
+        };
+
+
+
+        //old code start
+        selfEdit.filteredUsers = function (documentId) {
+            console.log("documentid..", documentId);
+            return ko.computed(function () {
+                var filter = selfEdit.query()[documentId].toLowerCase();
+                var usersPerDocument = ko.utils.arrayFirst(selfEdit.usersPerDocument(),
+                    function (item) {
+                        return ko.unwrap(item.document.Id) === documentId;
+                    });
+                if (!usersPerDocument) return [];
+
+                if (filter === '') {
+                    return usersPerDocument.users;
+                } else {
+                    return ko.utils.arrayFilter(usersPerDocument.users,
+                        function (item) {
+                            return item.Name.toLowerCase().indexOf(filter) !== -1;
+                        });
+                }
+            });
+
+        }
+        //old code end
+
+        //new code start
+        selfEdit.modalDocuments = ko.pureComputed(function () {
+            var selections = $.map(selfEdit.selectedUsersPerDocument(),
+                function (item) {
+                    //;
+                    return selectedDocumentSelection(item);
+                });
+            selectedDocuments = selections;
+            console.log("selecteduser", selections);
+            var url = '@Url.Action("GetDocumentType", "Send", new {Area = ""})';
+            var promises = [];
+            var ids = [];
+
+            promises.push($.ajax({
+                method: 'POST',
+                url: url,
+                data: {
+                    documentId: ko.unwrap(document.id)
+                }
+            }).done(function (data) {
+                if (data.length > 0) {
+                    $.each(documentId, function (i, item) {
+                        if (item.id == data[0].Id) {
+                            item.type = data[0].Type;
+                        }
+                    });
+                    newf();
+                }
+            }));
+
+            function newf() {
+                var selectedDocument = [];
+                var documentId = selfEdit.DocumentsInJSTree();
+                console.log("documentId vvvvvvvvvvv ", documentId)
+                //;
+                $.each(documentId, function (i, item) {
+                    //;
+                    $.each(selections, function (j, item1) {
+                        //;
+                        var all = {
+                            documentId: item.id,
+                            documentType: item.type,
+                            userId: item1.userId,
+                            groupId: item1.groupId
+                        }
+                        selectedDocument.push(all);
+                        //selectedUsers = selectedDocument;
+                    });
+                });
+                console.log("selectedDocument bbbbb", selectedDocument);
+                var childDocuments = [];
+                $.each(selectedDocument, function (i, item) {
+                    //;
+                    if (item.documentType != 0) {
+                        childDocuments.push(item);
+                    }
+                });
+                console.log("childDocuments", childDocuments);
+                selectedUsers = childDocuments;
+                var groupedById = childDocuments.groupBy('documentId');
+                var a = selfEdit.usersPerDocument();
+                return $.map(groupedById,
+                    function (item) {
+                        var title = ko.unwrap(selfEdit.usersPerDocument().where(function (doc) {
+                            return ko.unwrap(doc.document.Id) === item.key;
+                        }));
+                        if (title.length > 0) {
+                            title = ko.unwrap(title[0].document.Title);
+                        }
+                        var id = ko.unwrap(self.usersPerDocument().where(function (doc) {
+                            return ko.unwrap(doc.document.Id) === item.key;
+                        }));
+                        if (id.length > 0) {
+                            id = ko.unwrap(id[0].document.Id);
+                        }
+                        var type = ko.unwrap(self.usersPerDocument().where(function (doc) {
+                            return ko.unwrap(doc.document.Id) === item.key;
+                        }));
+                        if (type.length > 0) {
+                            type = ko.unwrap(type[0].document.DocumentType);
+                        }
+                        return {
+                            title: title,
+                            userCount: item.values.length,
+                            additionalMsg: '',
+                            id: id,
+                            type: type
+                        }
+                    });
+            }
+        });
+
+        //new code start
+        selfEdit.allUsersSelected = function (element) {
+            return ko.computed({
+                read: function () {
+                    var usersForDocument = selfEdit.allusers();
+                    var usersSelectedForDocument =
+                        $.grep($.map(selfEdit.selectedUsersPerDocument(),
+                            function (item) {
+                                return parseDocumentSelection(item);
+                            }),
+                            function (item) {
+                                return item
+                            });
+
+                    return usersSelectedForDocument.length === usersForDocument[0].users.length;
+                },
+                write: function (checked) {
+                    if (checked) {
+
+
+                        var temp = document.getElementsByClassName("sauassign");
+                        setTimeout(() => {
+                            for (let i = 0; i < temp.length; i++) {
+                                //console.log("i ", temp[i]);
+                                temp[i].checked = true;
+                            }
+                        }, 100)
+
+                        ///////////////////////
+
+                        var usersForDocument = selfEdit.allusers();
+                        var toAdd = [];
+                        $.each(usersForDocument[0].users,
+                            function (i, user) {
+                                var fields = [
+                                    user.Id,
+                                    user.GroupId
+                                ];
+                                var item = fields.join(';');
+                                if (selfEdit.selectedUsersPerDocument.indexOf(item) < 0)
+                                    toAdd.push(item);
+                            });
+                        self.selectedUsersPerDocument.valueWillMutate();
+                        selfEdit.selectedUsersPerDocument.push.apply(selfEdit.selectedUsersPerDocument, toAdd);
+                        self.selectedUsersPerDocument.valueHasMutated();
+                    } else {
+                        deselectAllUsers();
+                    }
+                },
+                disposeWhenNodeIsRemoved: element
+            });
+        }
+
+        $('.multiselectGp').change(function () {
+            //alert(1)
+            var currentRequest = null;
+            selfEdit.isUserGet(true);
+            var url = selfEdit.selectedAction() === 'Assign'
+                ? '@Url.Action("UsersNotAssignedCourse", "Course", new {Area = ""})'
+                : '@Url.Action("UsersAssignedCourse", "Course", new {Area = ""})';
+
+            //if (self.selectedAction() === 'Reassign') {
+            //  url = '@Url.Action("UsersAssignedCourse", "Course", new {Area = ""})';
+            //}
+            var groupIds = $(this).val();
+            if (groupIds == null) {
+                groupIds = [];
+            }
+            var docId = selfEdit.DocumentsInJSTree();
+            var documentId = [];
+            $.each(docId, function (i, item) {
+                documentId.push(item.id);
+            });
+            selectedDocumentId = documentId;
+
+            selectedUserGroupIds = groupIds;
+            if (groupIds.length > 0 && typeof groupIds != 'undefined' && groupIds != null) {
+                //console.log('sending post ajax request')
+                var promises = [];
+
+
+                selfEdit.currentRequest = $.ajax({
+                    beforeSend: function () {
+                        if (selfEdit.currentRequest) {
+                            selfEdit.currentRequest.abort();
+                        }
+                        selfEdit.allusers.removeAll();
+
+                        var x = selfEdit.allusers();
+                        selfEdit.selectedUsersPerDocument.removeAll(x);
+                    },
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        groupIds: groupIds,
+                        allDocumentId: documentId
+                    }
+                }).done(function (data) {
+
+                    allUserList = data;
+                    var assignedUser = [];
+                    $.each(data,
+                        function (index, userdata) {
+                            if (userdata.AssignedDocumentUsers.length > 0) {
+                                assignedUser.push(userdata);
+                            }
+                        });
+
+                    assignedusers = assignedUser;
+                    var a = {
+                        assigneduser: assignedUser
+                    }
+                    selfEdit.assignedusers.push(a);
+                    selfEdit.isUserGet(false);
+                    var usersSelectedForDocument = selfEdit.allusers();
+                    selfEdit.allusers.removeAll(usersSelectedForDocument);
+
+                    var userList = {
+                        users: data
+                    }
+                    selfEdit.allusers.push(userList);
+
+
+                    $.each(selfEdit.selectedDocuments(),
+                        function (index, document) {
+                            var newDocEntry = {
+                                document: document,
+                                users: data
+                            };
+                            var oldDocEntry = ko.utils.arrayFirst(selfEdit.usersPerDocument(),
+                                function (item) {
+                                    return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                                });
+                            if (!oldDocEntry) {
+                                selfEdit.usersPerDocument.push(newDocEntry);
+                            } else {
+                                selfEdit.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                            }
+                        });
+                });
+                $.when.apply($, promises).then(function () {
+                    $('#LoadingImageDiv').hide();
+                });
+                //}
+            }
+            else {
+                //console.log('else inside');
+                if (selfEdit.currentRequest) {
+                    selfEdit.currentRequest.abort();
+                }
+                selfEdit.usersPerDocument([]);
+                selfEdit.allusers([]);
+                $('#LoadingImageDiv').hide();
+                selfEdit.isUserGet(false);
+            }
+        });
+        //new code end
+
+        selfEdit.allusers = ko.observableArray([]);
+        selfEdit.allusers.subscribe(function (changes) {
+            //console.log("userchanges", changes);
+        });
+
+        selfEdit.selectedGroups = ko.observableArray([]);
+        selfEdit.selectedGroups.subscribe(function (changes) {
+            $.each(changes,
+                function (index, change) {
+                    if (change.status === 'deleted') {
+                        deselectAllUsersForGroup(change.value.Id());
+                    }
+                });
+            loadUsers();
+        },
+            null,
+            'arrayChange');
+
+        selfEdit.selectedCategories = ko.observableArray();
+        selfEdit.selectedCategories.subscribe(function (changes) {
+            selfEdit.hasData(false);
+        }, null, 'arrayChange');
+
+        $('#categories-multiselect-demo').change(function () {
+            console.log("dsadsada ", $(this).val())
+            selfEdit.data.CategoryId($(this).val());
+            checkValidation();
+        })
+        tree.jstree({
+            core: {
+                data: {
+                    url: '@Url.Action("GetJSTreeDocuments", "Send", new { Area = "" })'
+                },
+                check_callback: function (operation, node, node_parent, node_position, more) {
+                    if (operation === 'move_node') {
+                        if (node.text === 'Default') {
+                            return false;
+                        }
+                        if (node.type !== 'default' && node_parent.type === 'default') {
+                            if (node_parent.text === 'Category') {
+                                return false;
+                            }
+                            return true;
+                        }
+                        if (node.type === 'default' && node_parent.type === 'default') {
+                            return true;
+                        }
+                        return false;
+                    } else if (operation === 'delete_node') {
+                        var descendants = $.map(node.children_d,
+                            function (id) {
+                                return $('.tree').jstree(true).get_node(id);
+                            });
+                        if (containsDocument(descendants)) {
+                            notif({
+                                msg: 'Categories that contain documents cannot be deleted.',
+                                type: 'error'
+                            });
+                            return false;
+                        }
+                        return true;
+                    }
+                }
+            },
+            contextmenu: {
+
+            },
+            sort: function (a, b) {
+                var n1 = this.get_node(a);
+                var n2 = this.get_node(b);
+
+                if (n1.type === 'default' && n1.type === n2.type) { // folders
+                    return (n1.text > n2.text) ? 1 : -1;
+                } else if (n1.type === 'default' || n2.type === 'default') {
+                    return (n1.type !== 'default') ? 1 : -1; // folder first
+                } else {
+                    return (n1.text > n2.text) ? 1 : -1;
+                }
+            },
+            types: {
+                Memo: {
+                    icon: 'memo-icon'
+                },
+                Policy: {
+                    icon: 'policy-icon'
+                },
+                Test: {
+                    icon: 'test-icon'
+                },
+                TrainingManual: {
+                    icon: 'training-manual-icon'
+                },
+                Checklist: {
+                    icon: 'checklist-icon'
+                },
+                default: {
+                    icon: 'glyphicon glyphicon-plus-sign category-icon'
+                },
+            },
+            checkbox: {
+                "keep_selected_style": false,
+            },
+            //multiple: false, // disables multiple selection if false
+            plugins: ['sort', 'contextmenu', 'types', 'checkbox']
+        });
+
+        $(".tree").bind("changed.jstree",
+            function (e, data) {
+                if (data.selected.length > 0) {
+                    console.log("data...", data);
+                    if (data.action == "deselect_node") {
+                        if (!(data.node.original.isParentNode)) {
+                            var index = selectedDocumentsInJSTree.findIndex(el => el.id === data.node.id);
+                            if (index != -1) {
+                                selectedDocumentsInJSTree.splice(index, 1);
+                                selfEdit.DocumentsInJSTree.removeAll();
+                                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+
+                                    selfEdit.DocumentsInJSTree.push(item);
+                                });
+                            }
+                        } else {
+                            var childNodesInArr = data.node.children_d;
+                            for (var i = 0; i < childNodesInArr.length; i++) {
+                                var childId = childNodesInArr[i];
+                                for (var j = 0; j < selectedDocumentsInJSTree.length; j++) {
+                                    if (selectedDocumentsInJSTree[j].id == childId) {
+                                        selectedDocumentsInJSTree.splice(j, 1);
+                                    }
+                                }
+                            }
+                            selfEdit.DocumentsInJSTree.removeAll();
+                            ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                selfEdit.DocumentsInJSTree.push(item);
+                            });
+                        }
+                    } else {
+                        if (!(data.node.original.isParentNode)) {
+                            var obj = {
+                                id: data.node.id,
+                                text: data.node.text,
+                                type: data.node.type
+                            }
+                            selectedDocumentsInJSTree.push(obj);
+                            ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                if (obj.id == item.id) {
+                                    selfEdit.DocumentsInJSTree.push(item);
+                                }
+                            });
+                            console.log("self.DocumentsInJSTree..", ko.unwrap(selfEdit.DocumentsInJSTree));
+                        } else {
+                            var child_nodes = data.node.children_d;
+                            var child_node_arr = [];
+                            for (var i = 0; i < child_nodes.length; i++) {
+                                var node = {
+                                    id: data.node.children_d[i],
+                                    text: '',
+                                    type: 0
+                                }
+                                selectedDocumentsInJSTree.push(node);
+                                child_node_arr.push(node)
+                            }
+                            ko.utils.arrayForEach(child_node_arr, function (item) {
+                                selfEdit.DocumentsInJSTree.push(item);
+                            });
+                            console.log("self.DocumentsInJSTree..", ko.unwrap(self.DocumentsInJSTree));
+                        }
+                    }
+                } else {
+                    selectedDocumentsInJSTree = [];
+                    selfEdit.DocumentsInJSTree.removeAll();
+                }
+            });
+        tree
+            .on('open_node.jstree',
+                function (event, data) {
+                    if (_adjustPageFooter) _adjustPageFooter();
+                });
+
+        selfEdit.docAssignDate = ko.observable();
+
+        selfEdit.documentTypes = ko.observableArray([
+            { value: 1, title: 'Training Manual' },
+            { value: 2, title: 'Test' },
+            { value: 3, title: 'Policy' },
+            { value: 4, title: 'Memo' },
+            { value: 6, title: 'CheckList' }
+        ]);
+        selfEdit.selectedTypes = ko.observableArray([]);
+        selfEdit.selectedTypes.subscribe(function (changes) {
+            $.each(changes,
+                function (index, change) {
+                    if (change.status === 'deleted') {
+                        removeDocumentSelectionByType(change.value);
+                    }
+                });
+        },
+            null,
+            'arrayChange');
+
+        selfEdit.DocumentsInJSTree = ko.observableArray([]);
+
+        selfEdit.users = ko.observableArray([]);
+        //self.groups = ko.mapping.fromJS(groups);
+        //self.documents = ko.mapping.fromJS(documents);
+
+        selfEdit.usersPerDocument = ko.observableArray();
+
+        selfEdit.query = ko.observable({});
+
+
+        selfEdit._collapseObservable = ko.observable();
+        selfEdit.toggleCollapse = function (panelBodyId) {
+            $(panelBodyId).collapse('toggle');
+            selfEdit._collapseObservable.notifySubscribers();
+        };
+        selfEdit.panelCollapse = function (panelBodyId) {
+            return ko.computed(function () {
+                selfEdit._collapseObservable();
+                return $(panelBodyId).attr('aria-expanded') !== "false" ? 'glyphicon-triangle-bottom' : 'glyphicon-triangle-top';
+            });
+        };
+
+        selfEdit.selectedDocuments = ko.observableArray([]);
+
+
+        selfEdit.document = {
+            getType: function (type) {
+                switch (type) {
+                    case 1:
+                        return 'Training Manual';
+                    case 2:
+                        return 'Test';
+                    case 3:
+                        return 'Policy';
+                    case 4:
+                        return 'Memo';
+                    case 6:
+                        return 'CheckList';
+                    default:
+                        return '';
+                }
+            },
+            getImage: function (type) {
+                switch (type) {
+                    case 1:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)';
+                    case 2:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)';
+                    case 3:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)';
+                    case 4:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)';
+                    case 6:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)';
+                    default:
+                        return '';
+                }
+            }
+        }
+
+        function deselectAllUsers() {
+            var usersSelectedForDocument = selfEdit.selectedUsersPerDocument();
+            selfEdit.selectedUsersPerDocument.removeAll(usersSelectedForDocument);
+        }
+
+
+        function loadUsers() {
+            if (self.selectedGroups().length === 0 || selfEdit.selectedDocuments().length === 0) {
+                selfEdit.usersPerDocument([]);
+                selfEdit.allusers([]);
+                $('#LoadingImageDiv').hide();
+                return;
+            }
+
+            var groupIds = $.map(selfEdit.selectedGroups(),
+                function (group) {
+                    return ko.unwrap(group.Id);
+                });
+
+            var url = selfEdit.selectedAction() === 'Assign'
+                ? '@Url.Action("UsersNotAssignedDocument", "Send", new {Area = ""})'
+                : '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+
+            if (selfEdit.selectedAction() === 'Reassign') {
+                url = '@Url.Action("UsersAssignedDocument", "Send", new {Area = ""})';
+            }
+
+            var promises = [];
+            var gIds = [];
+            $('#LoadingImageDiv').show();
+            $.each(self.selectedDocuments(),
+                function (index, document) {
+                    ids.push(document.id)
+                });
+
+            $.ajax({
+                method: 'POST',
+                url: url,
+                data: {
+                    documentId: ko.unwrap(document.Id),
+                    documentType: ko.unwrap(document.DocumentType),
+                    groupIds: ko.unwrap(gIds)
+                }
+            }).done(function (data) {
+                var newDocEntry = {
+                    document: document,
+                    users: data
+                };
+                var oldDocEntry = ko.utils.arrayFirst(selfEdit.usersPerDocument(),
+                    function (item) {
+                        return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                    });
+                if (!oldDocEntry) {
+                    selfEdit.usersPerDocument.push(newDocEntry);
+                } else {
+                    selfEdit.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                }
+            });
+
+            $.when.apply($, promises).then(function () {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+
+        function removeDocumentSelectionByType(type) {
+            var docsToRemove = [];
+
+            $.each(selfEdit.selectedDocuments(),
+                function (index, document) {
+                    if (document.type === type) {
+                        docsToRemove.push(document);
+                    }
+                });
+
+            selfEdit.selectedDocuments.removeAll(docsToRemove);
+        }
+
+
+        function deselectAllUsersForGroup(groupId) {
+            var usersSelectedForGroup = $.grep(selfEdit.selectedUsersPerDocument(),
+                function (item) {
+                    return parseDocumentSelection(item).groupId === groupId;
+                });
+
+            selfEdit.selectedUsersPerDocument.removeAll(usersSelectedForGroup);
+        }
+
+
+        // old code start
+        function parseDocumentSelection(item) {
+            var split = item.split(';');
+            return {
+                documentId: split[0],
+                documentType: parseInt(split[1]),
+                userId: split[2],
+                groupId: split[3]
+            };
+        }
+        //old code end
+
+        //new code start
+        function selectedDocumentSelection(item) {
+            var split = item.split(';');
+            return {
+                documentId: "",
+                documentType: 0,
+                userId: split[0],
+                groupId: split[1]
+            };
+        }
+        //new code end
+
+        //};
+
+    @*var vm = new Controller(@Html.ToJson(Model), @Html.ToJson((IEnumerable<dynamic>) ViewBag.Groups));*@
+
+
+
+        vmEdit.back = function (v, data) {
+            console.log("vv ", v);
+            $(v).modal('hide');
+            console.log("modal ", data);
+
+            if (v == '#assignModal') {
+                console.log("1");
+                $('#loginmodal1').modal('show');
+            }
+            else if (v == '#courseSummary') {
+                console.log("2");
+                $('#assignDocumentToUserModal').modal('show');
+            }
+            else if (v = '#assignDocumentToUserModal') {
+                console.log("3");
+                $('#assignModal').modal('show');
+            }
+        }
+        vmEdit.close = (data) => {
+            $(data).modal('hide');
+
+            console.log("modal ", data);
+
+            //if (data == '#assignModal') {
+            //    console.log("1");
+            //     $('#loginmodal1').modal('show');
+            //}
+            //else if (data == '#courseSummary') {
+            //    console.log("2");
+            //     $('#assignDocumentToUserModal').modal('show');
+            //}
+            //else if (data = '#assignDocumentToUserModal') {
+            //    console.log("3");
+            //     $('#assignModal').modal('show');
+            // }
+    }
+
+    /******************Used to filter the Meeting based on selected filters *************************/
+    $("#ddlFilter").change(function () {
+
+        fnGetFilterCourse();
+
+    });
+
+     function fnGetFilterCourse() {
+        var filters = $("#ddlFilter").val();
+        if (filters === "" || filters === null || filters === undefined) {
+            filters = "";
+         }
+         $('#LoadingImageDiv').show();
+         var meeting = $.ajax({
+             method: 'POST',
+             url: "@Url.Action("FilterCourse", "Course", new { Area = "" })",
+             data: {
+                 Status: filters.toString(),
+                 searchText: $('#txtSearch').val()
+             }
+         });
+
+         meeting.done(function (resp) {
+            vm.data(resp);
+            //  vm = new app.data.documentController(resp, @Html.ToJson((IEnumerable<dynamic>)ViewBag.Groups));
+             $('#LoadingImageDiv').hide();
+         });
+         meeting.fail(function (jqXHR, textStatus, errorThrown) {
+             $('#LoadingImageDiv').hide();
+             console.error(errorThrown);
+         });
+
+    }
+
+        $("#openCertModal").click(() => {
+            $("#certificateModal").modal('show');
+        })
+
+
+        vmEdit.modals = {
+            certificate: {
+                open: function () {
+                    $('#certificateModal').modal('show');
+                },
+                close: function () {
+                    $('#certificateModal').modal('hide');
+                },
+                data: new ko.observableArray(),
+                initialize: function () {
+                    console.log("l")
+                    $.get('/Achievement/List', function (certificates) {
+                        app.data.utils.array.sync(certificates, vmEdit.modals.certificate.data);
+                    });
+                },
+                set: function (cert) {
+                    console.log("aaaaaaaaaa ", cert)
+                    vmEdit.certificates([]);
+                    vmEdit.certificates.push(cert);
+                    vmEdit.modals.certificate.close();
+                }
+            }
+        };
+
+        vmEdit.modals.certificate.initialize();
+
+        ko.applyBindings(vmEdit, document.getElementById('editContainer'));
+        //ko.applyBindingsToNode(document.getElementById('loginmodal1'), vmEdit);
+
+
+        function saveCourse() {
+            var url = '';
+
+            $.ajax({
+                method: 'POST',
+                url: url,
+                data: {
+                    documentId: ko.unwrap(document.Id),
+                    documentType: ko.unwrap(document.DocumentType),
+                    groupIds: ko.unwrap(gIds)
+                }
+            }).done(function (data) {
+                var newDocEntry = {
+                    document: document,
+                    users: data
+                };
+                var oldDocEntry = ko.utils.arrayFirst(self.usersPerDocument(),
+                    function (item) {
+                        return ko.unwrap(document.Id) === ko.unwrap(item.document.Id);
+                    });
+                if (!oldDocEntry) {
+                    self.usersPerDocument.push(newDocEntry);
+                } else {
+                    self.usersPerDocument.replace(oldDocEntry, newDocEntry);
+                }
+            });
+
+            $.when.apply($, promises).then(function () {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+
+        $("#delCert").click(() => {
+            vmEdit.certificates([]);
+        });
+        $(function () {
+            $('#users-multiselect-demo').attr("multiple", "multiple").val('');
+            $('#users-multiselect-demo').multiselect({
+                includeSelectAllOption: true,
+                buttonWidth: 350,
+                enableFiltering: true,
+                maxHeight: 350,
+                enableCaseInsensitiveFiltering: true
+
+            });
+
+            // $('#categories-multiselect-demo').attr("multiple", "false").val('');
+            //$('#categories-multiselect-demo').multiselect({
+            //    includeSelectAllOption: true,
+            //    nonSelectedText: 'None selected',
+            //    buttonWidth: 280,
+            //    enableFiltering: true,
+            //    maxHeight: 350,
+            //    enableCaseInsensitiveFiltering: true
+            //});
+        })
+   // }
+</script>
+
+

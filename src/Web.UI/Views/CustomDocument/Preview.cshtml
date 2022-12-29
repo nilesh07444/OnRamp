@@ -1,0 +1,737 @@
+﻿@model Ramp.Contracts.ViewModel.CustomDocumentModel
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer
+@using Common.Enums
+
+@using System.Threading
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Custom Platform";
+    var numberNorm = 1;
+
+    var isGlobalAccessed = ViewBag.IsGlobalAccessed;
+    var isGlobal = Request["isGlobal"];
+    var show = ViewBag.Show;
+}
+<script src="~/Scripts/app/app.components.js"></script>
+
+<link href="~/Content/Areas/Document/Preview.css" rel="stylesheet" />
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<style>
+
+    #jstree-marker {
+        z-index: 1100;
+    }
+
+    #divContent .form-control {
+        max-width: unset;
+    }
+
+    a.list-group-item {
+        z-index: 99;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+
+    .asterisk_input::after {
+        content: "*";
+        color: red;
+    }
+</style>
+
+<div class="row">
+
+    <div class="col-sm-3">
+
+        <div class="panel panel-info" data-bind="with:data">
+            <div class="panel-heading">
+                <h4>CONTENTS</h4>
+            </div>
+            <div class="panel-footer panel-primary">
+                <table>
+                    <tbody data-bind="foreach: ContenTableDataList">
+                        <tr>
+                            <td><span style="display:none;" data-bind="text:ko.unwrap(CustomDocumentOrder) + @numberNorm"></span><span style="display:none;">-</span>&nbsp;<span class="anchor" data-bind="click:$root.content.set.bind(),text:app.data.utils.string.truncate(Title,30),css:{'active-chapter' : $root.content.isSelected($data)}"></span>&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ko if:$root.data.IsMannualReview()-->
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4>MESSAGE CENTER</h4>
+            </div>
+            <div class="panel-footer panel-primary text-center" data-bind="with:$root.data.DeclineMessages" style="height:250px;overflow:scroll">
+                <ul data-bind="foreach: $root.data.DeclineMessages">
+                    <li>
+                        <h6 style="text-align:left" data-bind="text:messages"></h6><p data-bind="text:CreatedOn" style=" font-size: 12px; text-align: left;"></p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- /ko -->
+       
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4>Resource Centre</h4>
+            </div>
+            <div class="panel-body">
+                <div class="tree" id="DocumentUploadtrees"></div>
+                <div id="kt_docs_jstree_contextual"></div>
+            </div>
+        </div>
+
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4>FEEDBACK</h4>
+            </div>
+            <div class="panel-footer panel-primary text-center" data-bind="with:$root.feedback">
+                <select class="form-control" data-bind="options:contentTypes,
+                                                            optionsValue:'Id',
+                                                            optionsText:'Name',
+                                                            optionsCaption : 'What type of feedback ?',
+                                                            value:ContentType"></select>
+                <p></p>
+                <textarea class="form-control" data-bind="textInput:Content" rows="7"></textarea>
+                <p></p>
+                <button class="btn btn-success btn-sm" type="button" data-bind="click:save.bind()">Send</button>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="col-sm-9" data-bind="with:data">
+
+        <h1 class="lead" data-bind="text:ko.unwrap(Title).toUpperCase()"></h1>
+
+        <h4><strong><span class="pageHeading_ref" data-bind="text:$root.enums.documentType[ko.unwrap(DocumentType)].toUpperCase() + ' REF: '"></span><span data-bind="text:ReferenceId"></span></strong></h4>
+
+        <div class="well">
+            <p data-bind="text:Description"></p>
+        </div>
+
+        
+    <!-- ko if: $root.content.previewMode.isStorybookMode() -->
+        <div class="pull-right" data-bind="with:$root.paging">
+            <button class="btn btn-default" data-bind="click:previous.bind(),disable:isCover() || (!hasCover() && isFirst())">Prev</button>
+            <button class="btn btn-primary" data-bind="click:next.bind(),disable:isLast()">Next</button>
+        </div>        
+    <!--/ko -->
+        
+    <!-- ko if:$root.paging.shouldShowCover() -->        
+        <br />
+        <div class="text-center" data-bind="with:CoverPicture">
+
+            <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                <img class="img-responsive" data-bind="attr:{src:Url,title:Description}" style="margin-left:auto;margin-right:auto" />
+            </a>
+
+        </div>      
+    <!-- /ko -->
+        
+        <br />
+
+        @*Memo*@
+        @Html.Partial("partialPreview/_Memo")
+
+        @*AcrobatField*@
+        @Html.Partial("partialPreview/_AcrobatFields")
+
+        @*Training Mannual*@
+        @Html.Partial("partialPreview/_TrainingManual")
+
+        @*Activity Book*@
+        @Html.Partial("partialPreview/_ActivityBook")
+
+        @*Policy Book*@
+        @Html.Partial("partialPreview/_Policy")
+
+        @*Test*@
+        @Html.Partial("partialPreview/_Test")
+
+        @*Form*@
+        @Html.Partial("partialPreview/_Form")
+
+
+        <div data-bind="foreach: $root.components">
+            <div data-bind="component:{name:comName,params:params}"></div>
+        </div>
+
+
+        @if (show || Thread.CurrentPrincipal.IsInStandardUserRole())
+        {
+            <!-- ko if:$root.IsRedirectFromSubmissionReport()!=null && $root.data.IsMannualReview()-->
+            <input class="btn btn-primary" value="Approve" id="btnIdApprove" type="button" data-bind="click: ApproveFN.bind($data)" />
+            <input class="btn btn-primary" value="Decline" id="btnIdDecline" type="button" data-bind="click: DeclineFN.bind($data)" />
+
+            <!-- /ko -->
+            <!-- ko ifnot:$root.IsRedirectFromSubmissionReport()!=null && $root.data.IsMannualReview()-->
+            <input class="btn btn-primary" value="Finish Later" type="button" id="btnPreviewFinishLater" data-bind="click: finishlaterCheckList.bind($data)" />
+            /*added by softude (changed the condition)*/ <input class="btn btn-primary" id="btnComplete" value="Complete" type="button" data-bind="click: submitCheckList.bind($data),value: ($root.data.IsMannualReview()?'Submit For Review':'Complete')" />
+
+            <!-- /ko -->
+
+        }
+
+        <br><br><br>
+        <br><br><br>
+    </div>
+
+</div>
+
+<div class="modal fade" id="finishLaterModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                Are you sure you want to complete your Custom Document? @*done change by softude*@
+            </div>
+            <div class="modal-body">
+                <span>By clicking "Finish Later" you will be navigated back to your documents and your progress will be saved. </span><br><br>
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" data-dismiss="modal" id="btnFinishLater" class="btn btn-primary">Finish Later</button>
+                        <button type="button" id="btnNotAccept" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="DeclineModal" role="dialog" aria-labelledby="DeclineLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                Are you sure you want to Decline ?
+            </div>
+            <div class="modal-body">
+                <span>Decline message </span><br><br>
+                <div class="form-group">
+                    <textarea id="txtDecline" class="form-control" row="5" style="max-width: 567px; height: 115px;" placeholder="Enter Decline message "></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" data-dismiss="modal" id="btnFinishDecline" class="btn btn-primary">Submit</button>
+                        <button type="button" id="btnNotDecline" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ApproveModal" role="dialog" aria-labelledby="ApproveLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                Are you sure you want to Approve ?
+            </div>
+            <div class="modal-body">
+                <span>Approve message</span><br><br>
+                <div class="form-group">
+                    <textarea id="txtApprove" class="form-control" rows="5" style="max-width: 567px; height: 115px;" placeholder="Enter Approve message"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" data-dismiss="modal" id="btnFinishApprove" class="btn btn-primary">Submit</button>
+                        <button type="button" id="btnNotApprove" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="CheckListCompleteModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                Are you sure you want to submit your Custom Document? @*done changes by softude*@
+            </div>
+            <div class="modal-body">
+                <span>By clicking "Submit" your custom document will be submitted to your administrator.</span><br><br>
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" data-dismiss="modal" id="btnCompleteCheckList" class="btn btn-primary">Submit</button>
+                        <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function () {
+        debugger;
+        console.log(vm.data);
+        console.log("Assigned ID: " + vm.data.AssignedId);
+        var IsAdminPreview = localStorage.getItem("IsAdminPreview");
+
+        if (!IsAdminPreview) {
+
+            vm.data.TestContentModels().forEach(element => {
+                if ((element.SelectedAnswer() != null) && (element.SelectedAnswer() != "")) {
+                    vm.content.LoadTestData(element.SelectedAnswer, element);
+                }
+            });
+
+            callSelectedData();
+        }
+        else {
+            $('#description').prop('disabled', true);
+        }
+
+
+        if (vm.data.Status() == 5) {
+            $('#btnIdApprove').prop('disabled', true);
+            $('#btnIdDecline').prop('disabled', true);
+        }
+
+        var webUrl = window.location.href;
+        var resultUrl = new URL(webUrl);
+        vm.data.IsReportView = resultUrl.searchParams.get("IsReportView");
+        console.log("IsReportView=" + vm.data.IsReportView);
+
+        var tree = $("#DocumentUploadtrees");
+        var dataModels =@Html.ToJson(Model);
+        var treeparams = { Id: dataModels.Id }
+         tree.jstree({
+             core: {
+                 themes: {
+                     "responsive": true
+                 },
+                 data: {
+                     type: "POST",
+                     url: '@Url.Action("ResourceCenter", "CustomDocument")',
+                     contentType: "application/json; charset=utf-8",
+                     data: JSON.stringify(treeparams) ,
+                     success: function (data) {
+                         return data;
+                     }
+                 },
+
+
+             }, types: {
+                 default: {
+                     icon: 'glyphicon glyphicon-plus-sign category-icon'
+                 }
+             },
+             plugins: [  'types']
+         });
+
+
+        tree.bind("select_node.jstree", function (e, data) {
+            var href = data.node.original.url;
+            if (href == null)
+                return '';
+            href = window.location.protocol + "//" + window.location.host + href;
+            window.open(href);
+        })
+        tree.bind("loaded.jstree", function (event, data) {
+                $(this).jstree("open_all");
+            });
+    }
+
+    self.submitCheckList = function (data) {
+
+        var isShowCheckListCompleteModal = true;
+
+        data.TMContentModels().forEach(element => {
+            console.log('element', element)
+            if ((element.AttachmentRequired() == true) && (element.StandardUserAttachments().length == 0)) {
+                alert("Please attach Training Manual documents")
+                isShowCheckListCompleteModal = false;
+                return false;
+            }
+        });
+
+        data.TestContentModels().forEach(element => {
+            debugger;
+            console.log('element', element)
+            console.log('Selected element', element.SelectedAnswer())
+            if ((element.SelectedAnswer() == null)) {
+                alert("Please select any answer ")
+                isShowCheckListCompleteModal = false;
+                return false;
+            }
+        });
+
+        data.CLContentModels().forEach(element => {
+            console.log('element', element)
+            if ((element.AttachmentRequired() == true) && (element.StandardUserAttachments().length == 0)) {
+                alert("Please attach Checkbox documents")
+                isShowCheckListCompleteModal = false;
+                return false;
+            }
+            if ((element.IsChecked() == false) && (element.CheckRequired() == true)) {
+                alert("Please check the Checkbox section")
+                isShowCheckListCompleteModal = false;
+                return false;
+            }
+        });
+
+        data.PolicyContentModels().forEach(element => {
+            console.log('element', element)
+            if ((element.AttachmentRequired() == true) && (element.StandardUserAttachments().length == 0)) {
+                alert("Please attach Call To Action documents")
+                isShowCheckListCompleteModal = false;
+                return false;
+            }
+            //if ((element.CheckRequired() == true)) {
+            //    alert("Please submit the Policy section")
+            //    isShowCheckListCompleteModal = false;
+            //    return false;
+            //}
+        });
+
+        data.FormContentModels().forEach(element => {
+            debugger;
+            console.log('element', element)
+            console.log('FormFieldValue element', element.FormFields())
+            var length = element.FormFields().length;
+            var i;
+            for (i = 0; i < length; i++) {
+                debugger;
+                if (element.FormFields()[i].FormFieldDescription() == null && element.CheckRequired() == true) {
+                    alert("Please Fill All The Form Fields")
+                    isShowCheckListCompleteModal = false;
+                    return false;
+                }
+            }
+        });
+
+        if (isShowCheckListCompleteModal == true) {
+            $("#CheckListCompleteModal").modal('show');
+        }
+    }
+
+
+    $("#btnCompleteCheckList").click(function () {
+        $('#LoadingImageDiv').show();
+        var url = '@Url.Action("CompleteChaptersUserResult")';
+
+        fillSignUploadID().then((res) => {
+            vm.updatePreviewData();
+        });
+
+        if (vm.data.IsMannualReview()) {
+            vm.data.Status(3)
+        }
+        else {
+            vm.data.Status(5)
+        }
+
+    });
+
+    $("#btnFinishApprove").click(function () {
+
+        $('#LoadingImageDiv').show();
+        var url = '@Url.Action("CompleteChaptersUserResult")';
+        vm.data.DeclineMessage($('#txtApprove').val());
+        vm.data.Status(5)
+        vm.updatePreviewData();
+
+    });
+
+    self.DeclineFN = function (data) {
+        $("#DeclineModal").modal('show');
+
+    }
+
+    self.ApproveFN = function (data) {
+
+        $("#ApproveModal").modal('show');
+
+    }
+
+    self.finishlaterCheckList = function (data) {
+
+        console.log("data 111", data)
+
+        var model = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model));
+
+        console.log("model 111", model);
+        loadAcrofield();
+        self.finishData = data;
+        $("#finishLaterModal").modal('show');
+
+
+    }
+
+    $("#btnFinishDecline").click(function () {
+        debugger;
+        $('#LoadingImageDiv').show();
+        var url = '@Url.Action("CompleteChaptersUserResult")';
+        vm.data.DeclineMessage($('#txtDecline').val());
+        vm.data.Status(4);
+        debugger;
+        vm.updatePreviewData();
+        debugger;
+        if (IsReportView == "true") {
+            vm.data.IsReportView = true;
+            console.log("IsReportView=" + vm.data.IsReportView);
+        }
+
+    });
+
+    $("#btnFinishLater").click(function () {
+
+         $('#LoadingImageDiv').show();
+        var url = '@Url.Action("CompleteChaptersUserResult")';
+
+        vm.data.Status(2)
+
+        fillSignUploadID().then((res) => {
+          vm.updatePreviewData();
+        });
+
+    });
+
+    const fillSignUploadID = function () {
+        return new Promise((resolve, reject) => {
+            try {
+                $('.sig-uploadID').each(function () {
+                    if ($(this).data('documenttype') === "Training") {
+                        vm.data.TMContentModels()[parseInt($(this).attr('datasectionid'))].SignatureUploadId($(this).val());
+                        vm.data.TMContentModels()[parseInt($(this).attr('datasectionid'))].IsSignOff(true);
+                    }
+                    if ($(this).data('documenttype') === "Test") {
+                        vm.data.TestContentModels()[parseInt($(this).attr('datasectionid'))].SignatureUploadId($(this).val());
+                        vm.data.TestContentModels()[parseInt($(this).attr('datasectionid'))].IsSignOff(true);
+                    }
+                    if ($(this).data('documenttype') === "CheckList") {
+                        vm.data.CLContentModels()[parseInt($(this).attr('datasectionid'))].SignatureUploadId($(this).val());
+                        vm.data.CLContentModels()[parseInt($(this).attr('datasectionid'))].IsSignOff(true);
+                    }
+                    if ($(this).data('documenttype') === "Acrobat") {
+                        vm.data.AcrobatFieldContentModels()[parseInt($(this).attr('datasectionid'))].SignatureUploadId($(this).val());
+                        vm.data.AcrobatFieldContentModels()[parseInt($(this).attr('datasectionid'))].IsSignOff(true);
+                    }
+                    if ($(this).data('documenttype') === "Policy") {
+                        vm.data.PolicyContentModels()[parseInt($(this).attr('datasectionid'))].SignatureUploadId($(this).val());
+                        vm.data.PolicyContentModels()[parseInt($(this).attr('datasectionid'))].IsSignOff(true);
+                    }
+                    if ($(this).data('documenttype') === "Memo") {
+                        vm.data.MemoContentModels()[parseInt($(this).attr('datasectionid'))].SignatureUploadId($(this).val());
+                        vm.data.MemoContentModels()[parseInt($(this).attr('datasectionid'))].IsSignOff(true);
+                    }
+                });
+                setTimeout(() => {
+                    resolve("resolved");
+                }, 5000);
+            } catch (e) {
+                reject(e);
+            }
+
+        });
+    };
+
+    $(function () {
+        $(".ct-app").hide();
+        $(".iframe").fancybox({
+            type: 'iframe'
+        });
+    });
+
+    var vm = new app.data.previewController(@Html.ToJson(Model),@Html.ToJson(ViewBag.Links as IDictionary<string,string>),
+        {
+            startTime: '@ViewBag.StartTime',
+            trackingInterval: parseInt(@ViewBag.TrackingInterval)
+        },null,[
+            "image:png", "image:jpeg", "image:jpg", "image:gif", "image:bmp", "video:mp4", "document:ppsx", "document:pps", "document:docx", "document:xls", "document:xlsx", "document:ppt", "document:pptx", "document:pdf", "document:csv",
+            "audio:mp3"
+    ],
+
+    @Html.ToJson(new Ramp.Contracts.ViewModel.FileUploadResultViewModel()),null, null);
+
+
+    vm.components = ko.observableArray([]);
+
+    vm.TestAnswerComponents = ko.observableArray([]);
+
+    vm.content.Loadcomponents();
+
+    vm.IsRedirectFromSubmissionReport = ko.observable(false);
+
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
+
+    let queryValue = params.chapterID;
+
+    vm.IsRedirectFromSubmissionReport(queryValue);
+
+    function callSelectedData() {
+
+        if (vm.data.TestContentModels().length > 0) {
+            setTimeout(() => {
+                vm.data.TestContentModels().forEach(element => {
+                    $('.list-group-item').each(function (index) {
+                        if ($(this).data('option') == element.SelectedAnswer()) {
+                            $(this).focus();
+                            $(this).click();
+                        }
+                    });
+                });
+
+            }, 1000);
+
+        }
+    }
+
+    for (var i = 1; i <= 7; i++) {
+        vm.initialize(i);
+    }
+
+    vm.dynamicControl = function (controlType) {
+        console.log('controlType', controlType());
+        var controlId = controlType().replace(' ', '_');
+        var controlData = controlType().replace("Text Box", "").replace("Check Box", "");
+        if (controlType().includes("Text Box") || controlType().includes("Text") || controlType().includes("Name")) {
+            return "<input type='textbox' id='" + controlId + "' data-Field='" + controlData+"' class='acrofield form-controls' /> ";
+        }
+        if (controlType().includes("Check Box") || controlType().includes("Check Box")) {
+            return "<input type='checkbox' id='" + controlId + "'  data-Field='" + controlData +"'  class='acrofield form-controls' /> ";
+        }
+
+        return '';
+    }
+
+    vm.enums = {};
+
+    vm.enums.documentType = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)));
+
+    vm.paging.showFinishTest = ko.observable();
+
+    vm.paging.goTo = function (content) {
+        var entry = vm.content.find(content);
+        vm.paging.showFinishTest(false);
+        vm.content.selected(ko.unwrap(vm.data.ContentModels)[entry]);
+    };
+
+    vm.paging.next = function () {
+        if (!vm.paging.isLast()) {
+            var entry = vm.content.find(vm.content.selected);
+            vm.content.selected(ko.unwrap(vm.data.ContentModels)[entry + 1]);
+        } else {
+            vm.paging.showFinishTest(true);
+            vm.content.selected(null);
+        }
+    };
+
+    vm.paging.previous = function () {
+        if (!vm.paging.isFirst() && !ko.unwrap(vm.paging.showFinishTest)) {
+            var entry = vm.content.find(vm.content.selected);
+            vm.content.selected(ko.unwrap(vm.data.ContentModels)[entry - 1]);
+        } else if (ko.unwrap(vm.paging.showFinishTest)) {
+            vm.paging.showFinishTest(false);
+            vm.content.selected(ko.unwrap(vm.data.ContentModels)[ko.unwrap(vm.data.ContentModels).length - 1]);
+        } else {
+            vm.content.selected(null);
+        }
+    };
+
+    self.deleteAttachment = function (data, selecteditem) {
+
+        console.log(" 222 ", data);
+        console.log(" 1111 ", selecteditem);
+
+        var standaredAttachement = (ko.unwrap(data)).StandardUserAttachments;
+        standaredAttachement.remove(selecteditem);
+
+        let url = '@Url.Action("DeleteAttachment")'
+        $.ajax({
+            method: 'post',
+            url: url,
+            data: {
+                CheckListChapterId: data.Id(),
+                UploadId: selecteditem.Id()
+            }
+        })
+            .done(function (data) {
+                if (data == "done") {
+                    notif({
+                        msg: 'attachment deleted',
+                        multiline: true,
+                        type: 'success'
+                    });
+                }
+            })
+            .always(function () {
+                $('#loadingimagediv').hide();
+            });
+
+        //code by neeraj ends
+    }
+
+    function loadAcrofield() {
+
+        if (vm.data.AcrobatFieldContentModels().length > 0) {
+            var objAcro = ''
+            $(".acrofield").each(function () {
+
+                objAcro += $(this).attr('data-Field') ;
+                objAcro += ':';
+                objAcro +=   $(this).val() ;
+                objAcro += ', ';
+
+            });
+
+            vm.data.AcrobatFieldContentModels()[0].AcrofieldValue(objAcro);
+        }
+    }
+
+    $(function () {
+      setTimeout(() => {
+      $(".sig-canvas").each(function () {
+        InitializeCanvas($(this).attr("id"));
+       });
+      }, 2000);
+    });
+
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+
+</script>
+

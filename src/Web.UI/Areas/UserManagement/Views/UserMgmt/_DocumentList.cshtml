@@ -1,0 +1,193 @@
+﻿@using Web.UI.Code.Extensions
+@model IEnumerable<Ramp.Contracts.ViewModel.AssignedDocumentListModel>
+
+<style>
+    .document-icon {
+        max-width: 60px;
+    }
+
+    .toggleButton {
+        background: transparent;
+        border: none;
+    }
+
+    .align {
+        align-content: center;
+    }
+
+    .status {
+        width: 100%;
+        font-weight: 600;
+        font-size: 14px;
+        font-family: Arial;
+        padding: 5px;
+    }
+
+    .pending {
+        background-color: #ffa500;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .viewed {
+        background-color: #0276FD;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .failed {
+        background-color: #c40000;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .passed {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .complete {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .incomplete {
+        background-color: #ffa500;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .btn-option {
+        margin-bottom: 5px;
+    }
+
+
+    .fancybox-inner {
+        overflow: hidden !important;
+    }
+
+    .company-logo {
+        max-width: 100%;
+    }
+
+ 
+    .menu-tile:hover {
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        transition: transform .15s ease-in-out;
+        transform: scale(1.1)
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+
+
+        <div class="col-sm-12">
+            <div class=" panel panel-info " data-bind="with:$root.category.menu" style="overflow-x:auto;">
+                <div class="panel-heading clearfix" style="line-height: 34px;">
+                  Documents
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive">
+                        <table id="tblDocPeak" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Title</th>
+                                    <th>Date Assigned</th>
+                                    <th>Date Last Read</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+
+                                            @{
+                                                switch ((int)(item.DocumentType))
+                                                {
+                                                    case 1:
+                                                        <img alt="Training Manual" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)">
+                                                        break;
+                                                    case 2:
+                                                        <img alt="Test" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)">
+                                                        break;
+                                                    case 3:
+                                                        <img alt="Policy" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)">
+                                                        break;
+                                                    case 4:
+                                                        <img alt="Memo" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)">
+                                                        break;
+                                                    case 6:
+                                                        <img alt="CheckList" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)">
+                                                        break;
+                                                }
+
+                                            }
+
+                                        </td>
+                                        <td>
+                                            @item.Title
+                                        </td>
+                                        <td>
+
+                                            @if (item.ExpiryDate == null)
+                                            {
+                                                <span>@item.AssignedDate</span>
+                                            }
+                                            else
+                                            {
+                                                <span>@item.AssignedDate</span> <br />
+                                                <strong style="font-size: 0.9em;">Expires: @item.ExpiryDate.Value</strong>
+                                            }
+
+                                        </td>
+                                        <td>
+                                            @if (item.LastViewedDate.HasValue)
+                                            {
+                                                <span>@item.LastViewedDate.Value</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Pending</span>
+                                            }
+                                        </td>
+                                        <td>
+
+                                            <div class="text-center status align padding @item.Status.ToString().ToLower()">@item.Status.ToString().ToUpper()</div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+           
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    $(function () {
+
+        $('#tblDocPeak').dataTable({
+            bDeferRender: false,
+            bDestroy: true,
+            bFilter: false,
+            bPaginate: true,
+            lengthChange: false
+
+        });
+    });
+</script>

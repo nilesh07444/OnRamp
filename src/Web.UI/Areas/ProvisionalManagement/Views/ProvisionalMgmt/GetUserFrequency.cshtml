@@ -1,0 +1,284 @@
+﻿@using Domain.Customer.Models
+@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+
+@model Ramp.Contracts.ViewModel.CompanyViewModel
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">User Login Stats Report</h1>
+        <div class="form-group input-group">
+            <p>
+                This Report provides insight as to how many times each of your users have logged into the system within a given time period.
+                The graph can be used to compare usage levels, and provides a calculated frequency for how often your users login to OnRamp
+                in a week (Frequency/Week).
+            </p>
+        </div>
+    </div>
+</div>
+<br />
+
+<div class="row">
+    <div class="col-lg-12">
+        <br />
+        <div class="panel panel-info">
+            <div class="panel-heading">User Login Frequency Statistics </div>
+            <br />
+            <br />
+            <div class="panel-body">
+
+                @if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+                {
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            <label>Select Customer Companies</label>
+                            @Html.DropDownListFor(m => m.SelectedCompany, Model.Companies.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select Customer", new { @class = "form-control" })
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <input type="hidden" id="SelectedCompany" value="@Model.Companies.FirstOrDefault().Value" />
+                }
+
+                <div class="form-group col-lg-3">
+
+                    <div class="input-group date" id='FromDate'>
+                        @Html.Label("From Date")
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type='text' id="inputFromDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-lg-3">
+                    <div class="input-group date" id='ToDate'>
+                        @Html.Label("To Date")
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type='text' id="inputToDate" class="form-control" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-lg-3">
+                    <div class="input-group date">
+                        <label></label>
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="View Report" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="ChartDiv">
+                <div class="panel-heading">
+                    User frequency stats
+                </div>
+                <div class="panel-body" id="TableData">
+                    <div class="col-lg-12" style="display: none; text-align: center;" id="divNoData">
+                        <label id="lblNoData">No Data Found</label>
+                    </div>
+                    <div id="morris-bar-chart" style="border: 1px solid #ddd;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('#ToDate').datetimepicker({
+
+        });
+        $('#FromDate').datetimepicker({
+
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+
+    $("#btnView").click(function () {
+
+        $('#LoadingImageDiv').show();
+        if ($('#inputFromDate').val() != "" && $('#inputToDate').val() != "" && $('#SelectedCompany').val() != "") {
+            var frmDateInstance = new Date($('#inputFromDate').val());
+            var toDateInstance = new Date($('#inputToDate').val());
+            if (frmDateInstance > toDateInstance) {
+                $('#LoadingImageDiv').hide();
+                notif({
+                    msg: "<b>Error :</b> From date cannot be greater than To Date ",
+                    type: "error",
+                });
+            } else {
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("LoadBarChartToGetUserFrequency", "ProvisionalMgmt", "ProvisionalManagement"))",
+                    data: {
+                        companyId: $('#SelectedCompany').val(),
+                        fromDate: $('#inputFromDate').val(),
+                        toDate: $('#inputToDate').val(),
+                    },
+                    success: function (data) {
+                        if (data.UserFrequencyList.length == 0) {
+                            $('#LoadingImageDiv').hide();
+                            $('#ChartDiv').hide();
+                            ('#TableData').hide();
+                            // $('#divNoData').show();
+                        }
+                        else {
+                            $('#LoadingImageDiv').hide();
+                            $('#ChartDiv').hide();
+                            $('#divNoData').hide();
+                            $('#morris-bar-chart').empty();
+                            var frequencyList = data.UserFrequencyList;
+                            if (frequencyList.length == 0) {
+                                $('#ChartDiv').fadeIn();
+                                $('#divNoData').show();
+                            } else {
+                                ShowTable(frequencyList);
+                                $('#ChartDiv').fadeIn();
+                                Morris.Bar({
+                                    element: 'morris-bar-chart',
+                                    data: frequencyList,
+                                    xkey: 'UserName',
+                                    ykeys: ['UserLoginCount', 'LoginFrequency'],
+                                    labels: ['Total Logins', 'Frequency/Week'],
+                                    hideHover: 'auto',
+                                    resize: true,
+                                    ymin: 0,
+                                    barShape: 'soft'
+                                });
+                            }
+                        }
+                        if (_adjustPageFooter)
+                            _adjustPageFooter();
+                    },
+                    error: function (data) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            }
+        } else {
+            $('#LoadingImageDiv').hide();
+            if ($('#inputFromDate').val() == "" && $('#inputToDate').val() == "" && $('#SelectedCompany').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select Company, From Date & To Date",
+                    type: "error",
+                });
+            } else if ($('#inputToDate').val() == "" && $('#inputToDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select From Date & To Date",
+                    type: "error",
+                });
+            } else if ($('#inputFromDate').val() == "" && $('#SelectedCompany').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select From Date and Company",
+                    type: "error",
+                });
+            } else if ($('#inputToDate').val() == "" && $('#SelectedCompany').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select Company and To Date",
+                    type: "error",
+                });
+            } else if ($('#inputFromDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select From Date",
+                    type: "error",
+                });
+            } else if ($('#inputToDate').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select To Date",
+                    type: "error",
+                });
+            } else if ($('#SelectedCompany').val() == "") {
+                notif({
+                    msg: "<b>Error :</b> Please select Company",
+                    type: "error",
+                });
+            }
+        }
+    });
+
+    function ShowTable(data) {
+        var parentTableDiv = $('<div class="table-responsive">');
+        var parentTable = $('<table class="table table-hover">');
+        var thead = $('<thead>');
+        var headTr = $('<tr>');
+        var headFirstNameTh = $('<th>');
+        var headTotalLoginsTh = $('<th>');
+        var headFrequencyTh = $('<th>');
+
+        //Add heading to table
+        headFirstNameTh.append("User");
+        headTotalLoginsTh.append("Total Logins");
+        headFrequencyTh.append("Frequency/Week");
+
+        //Append headings to <tr> tag
+        headTr.append(headFirstNameTh);
+        headTr.append(headTotalLoginsTh);
+        headTr.append(headFrequencyTh);
+
+        //Append headTr to <thead> tag
+        thead.append(headTr);
+
+        //Append thead to <table> tag
+        parentTable.append(thead);
+
+        //Append parentTable to table <div> tag
+        parentTableDiv.append(parentTable);
+
+        var tableBody = $('<tbody>');
+
+        for (var i = 0; i < data.length; i++) {
+            var innerTr = $('<tr>');
+            var innerUserNameTd = $('<td>');
+            innerUserNameTd.append(data[i].UserName);
+
+            var innerTotalLoginsTd = $('<td>');
+            innerTotalLoginsTd.append(data[i].UserLoginCount);
+
+            var innerFrequencyTd = $('<td>');
+            innerFrequencyTd.append(data[i].LoginFrequency);
+
+            innerTr.append(innerUserNameTd);
+            innerTr.append(innerTotalLoginsTd);
+            innerTr.append(innerFrequencyTd);
+
+            tableBody.append(innerTr);
+        }
+        parentTable.append(tableBody);
+
+        $('#TableData').empty();
+        $('#TableData').append(parentTableDiv);
+
+        var label = $('<div class="alert alert-success">');
+        label.append("Bar Chart");
+
+        $('#TableData').append(parentTableDiv);
+        $('#TableData').append(label);
+        var div = $(' <div id="morris-bar-chart">');
+        $('#TableData').append(div);
+
+    }
+</script>

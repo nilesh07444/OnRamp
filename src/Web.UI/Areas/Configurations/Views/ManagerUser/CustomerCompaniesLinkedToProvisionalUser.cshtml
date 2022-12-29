@@ -1,0 +1,54 @@
+﻿@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.CompanyViewModel
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "../../../../Views/Shared/_Layout.cshtml";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">View Linked Customer Companies</h1>
+        <br />
+        <div class="form-group">
+            @Html.Label("Select Provisional Company")
+            @Html.DropDownListFor(m => m.SelectedCompany, Model.Companies.ToSelectList(a => a.Value, a => a.Text, a => a.Selected),"Select Company", new { @class = "form-control", @style = "max-width: 380px !important;" })
+        </div>
+        <div id="CustomerCompanyDiv">
+        </div>
+    </div>
+</div>
+<script type="text/javascript" language="javascript">
+    $(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+    });
+
+    $('#SelectedCompany').change(function () {
+        $('#LoadingImageDiv').show();
+        var id = $(this).val();
+        if (id && id != "00000000-0000-0000-0000-000000000000") {  
+        var actionUrl = "CustomerCompanyLinkedToProvisionalUserPartial?companyId=" + id;
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: {},
+            success: function (data) {
+                if (data.length > 0) {
+                    $('#CustomerCompanyDiv').empty();
+                    $('#CustomerCompanyDiv').html(data);
+                }
+                $('#LoadingImageDiv').hide();
+            },
+            error: function (data) {
+                $('#LoadingImageDiv').hide();
+            }
+        });
+    } else {
+            $('#CustomerCompanyDiv').empty();
+            $('#LoadingImageDiv').hide();
+    }
+    });
+</script>

@@ -1,0 +1,674 @@
+﻿
+@using System.Threading
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Common.Enums
+@using Domain.Customer
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var checklistList = ViewBag.CheckLists;
+
+
+
+    ViewBag.Title = "index";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            <span>
+                Activity Book Submission Report
+            </span>
+        </h1>
+        <div class="well well-sm">
+            This report will allow you to view submissions of Activity Books as well as track progress made.
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*</span></b>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Filtering Options
+            </div>
+
+            <div class="panel-body">
+
+
+                    <div class="col-md-3 col-sm-offset-2">
+                        <div class="form-group">
+                            <label><span style="color:red">*</span> Activity Book</label><br />
+                            <select  id="checklist-multiselect-demo">
+                               
+                                @foreach (var item in checklistList) {
+                                    <option value="@item.Id">@item.Value</option>
+                                }
+                            </select>
+
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label> <br />
+                            <select id="status-multiselect-demo">
+                                @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(ChecklistSubmissionStatus))) {
+                                    <option value="@item.Key">@item.Value</option>
+                                }
+                            </select>
+
+
+                        </div>
+                        @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+                        {
+                    
+                           
+                                <div class="form-group">
+                                    @Html.Label("Access")<br />
+                                    <select id="status-multiselect-access">
+                                        @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(GlobalAccess))) {
+                                            <option value="@item.Key">@item.Value</option>
+                                        }
+                                    </select>
+                                </div>
+                           
+                 
+                        }
+
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <div class="input-group" id='FromDate' data-bind="datepicker: fromDate">
+                                <input type='text' id="inputFromDate" class="form-control" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>To Date</label>
+                            <div class="input-group" id='ToDate' data-bind="datepicker: toDate">
+                                <input type='text' id="inputToDate" class="form-control" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group text-center col-md-2">
+                        <br /><br /><br />
+                        <input class="btn btn-primary" value="Generate" type="button" data-bind=" enable: (ko.unwrap(selectedCheckLists)!=null && (ko.unwrap(selectedCheckLists).length>0 ) &&  ko.unwrap(selectedStatus) ) , click: submit" />
+                    </div>
+                
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ko if:ko.unwrap($root.results).length -->
+<div class="col-lg-10">
+    <div class="panel panel-info" data-bind="foreach:results">
+        <div class="panel-heading">
+
+            <span data-bind="text:DocumentTitle"></span>
+            <div class="pull-right ">
+                <a class="" style="cursor:pointer; color:white;" data-bind="attr:{ name:DocumentTitle,role: Id},click:$root.excelSummary.bind($data)"><b><u>Export Summary</u></b></a><span style="padding-left:10px; padding-right:10px;"> | </span>
+                <a class="" style="cursor:pointer; color:white;" data-bind="attr:{ name:DocumentTitle,role: Id},click:$root.excelSubmissions.bind($data)"><b><u>Export Submissions</u></b></a>
+            </div>
+        </div>
+        <div class="panel-body">
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="col-md-1 Number"> ID Number</th>
+                        <th class="col-md-1 Code"> Employee Code</th>
+                        <th class="col-md-1 Name">User Name</th>
+
+                        <th class="col-md-1 Viewed">Viewed</th>
+                        <th class="col-md-1 Assigned">Date Assigned</th>
+                        <th class="col-md-1 DateViewed">Date Viewed</th>
+
+                        <th class="col-md-1 Completed">Checks Completed</th>
+                        <th class="col-md-1 Submitted">Date Submitted</th>
+                        <th class="col-md-1 Status">Status</th> 
+                        <th class="col-md-1 Access">Access</th>
+                        <th class="col-md-1 Group">Group</th>
+
+                        <th class="col-md-1">View Submission</th>
+                        <th class="col-md-1">Download</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach:Checklist">
+                    <tr>
+                        <td class="Number" data-bind="text:IdNumber"></td>
+                        <td class="Code" data-bind="text:EmployeeCode"></td>
+                        <td class="Name" data-bind="text:UserName"></td>
+                        <!-- ko if: Viewed -->
+                        <td class="Viewed">Yes</td>
+                        <!-- /ko -->
+                        <!-- ko if: !Viewed -->
+                        <td class="Viewed">No</td>
+                        <!-- /ko -->
+                        <td class="Assigned" data-bind="text:moment(DateAssigned).format('ll') !='Jan 1, 0001' ?moment(DateAssigned).format('ll'): ' '"></td>
+                        <td class="DateViewed" data-bind="text: DateViewed !=null && Viewed? moment(DateViewed).format('ll'):''"></td>
+                        <td class="Completed" data-bind="text:ChecksCompleted"></td>
+                        <td class="Submitted" data-bind="text:Completed == 'Completed' ? moment(DateSubmitted).format('ll') !='Jan 1, 0001' ?moment(DateSubmitted).format('ll'): '': ''"></td>
+                        <td class="Status" data-bind="text:!Viewed? 'Pending': Completed"></td>
+                        <td class="Access" data-bind="text:Access"></td>
+                        <td class="Group" data-bind="text:Group"></td>
+                        <td> <a data-bind="attr:{href: $root.viewSubmissionUrl(Id,UserId)} " target="_blank">View</a></td>
+                        <td>
+                            <a style="cursor:pointer" data-bind="click:$root.checklistResultUrl.bind($data)" target="_blank"><b>Download</b></a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody data-bind="if:  ko.unwrap($data.Checklist).length === 0">
+                    <tr>
+                        <td colspan="12" class="text-center">No data</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<div class="col-lg-2">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            Column toggle
+
+        </div>
+        <div class="panel-body">
+
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="ID Number" name="Number" class="CommonCss" id="chkResult" />
+                    <span class="slider round"></span>
+                </label>
+                <span>ID Number</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Employee Code" name="Code" class="CommonCss" id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Employee Code</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="User Name" name="Name" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>User Name</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Viewed" name="Viewed" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Viewed</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Date Assigned" name="Assigned" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Date Assigned</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Date Viewed" name="DateViewed" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Date Viewed</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Checks Completed" name="Completed" class="CommonCss" checked id="chkResult" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Checks Completed</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Date Submitted" name="Submitted" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Date Submitted</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Status" name="Status" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Status</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Access" name="Access" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Access</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" role="Group" name="Group" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Group</span>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+<div class="modal fade" id="progressModal1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Export Summary</h4>
+            </div>
+            <div class="modal-body">
+                <span>Please wait while we export summary...</span><br><br>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="progressModal2" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Export Submission</h4>
+            </div>
+            <div class="modal-body">
+                <span>Please wait while we export submissions...</span><br><br>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+
+<script type="text/javascript">
+    $(function () {
+
+        $('#checklist-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#checklist-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 280,
+            enableFiltering: true,
+            maxHeight: 350
+        });
+        $('#status-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#status-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 280,
+            enableFiltering: false,
+            maxHeight: 350
+        });
+        $('#status-multiselect-access').attr("multiple", "multiple").val('');
+        $('#status-multiselect-access').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 280,
+            enableFiltering: false,
+            maxHeight: 350
+        });
+        $(document).on('click', '.CommonCss', function () {
+            var className = $(this).attr('name');
+
+            if ($(this).is(":checked")) {
+                $('.' + className).each(function () {
+                    $(this).show();
+                });
+
+            } else {
+                $('.' + className).each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+
+    });
+    var Controller = function (checkListId, checkLists) {
+        var self = this;
+        self.results = ko.observableArray();
+        self.checkLists = ko.observableArray(checkLists);
+        self.status = [{ Id: 0, Value: 'Incomplete' }, { Id: 1, Value: 'Completed' }];
+        self.selectedCheckLists = ko.observableArray();
+        self.selectedStatus = ko.observableArray();
+        self.selectedAccess = ko.observableArray();
+
+        self.showDates = false;
+
+        self.selectionChanged = function (event) {
+
+            for (var i = 0; i < ko.unwrap(self.selectedStatus).length; i++) {
+                if (ko.unwrap(self.selectedStatus)[i] == '1') {
+                    self.showDates = true;
+                    break;
+                } else {
+                    self.showDates = false;
+                }
+            }
+
+            if (self.showDates || ko.unwrap(self.selectedStatus).length==0) {
+                $("#inputFromDate").removeAttr("disabled");
+                $("#inputToDate").removeAttr("disabled");
+            } else {
+                $("#inputFromDate").attr("disabled","disabled");
+                $("#inputToDate").attr("disabled","disabled");
+            }
+        }
+
+        $('#checklist-multiselect-demo').change(function () {
+            var checklistId = $(this).val();
+            self.selectedCheckLists(checklistId);
+        });
+
+        $('#status-multiselect-demo').change(function () {
+            var statusIds = $(this).val();
+            self.selectedStatus(statusIds);
+        });
+        $('#status-multiselect-access').change(function () {
+            var accessIds = $(this).val();
+            self.selectedAccess(accessIds);
+        });
+
+        self.fromDate = ko.observable();
+        self.fromDate.subscribe(function (newValue) {
+            $('#ToDate').data('DateTimePicker').minDate(new Date(newValue));
+        });
+        self.toDate = ko.observable();
+        self.toDate.subscribe(function (newValue) {
+            $('#FromDate').data('DateTimePicker').maxDate(new Date(newValue));
+        });
+
+        //self.addColumnClass = function(title,name) {
+        //    return ((title).replace(" ", "").split(" ")[0]+"_"+name);
+        //}
+        //self.addExportClass = function (title) {
+        //    return ((title).replace(" ", "").split(" ")[0]) + " " +"CommonCss";
+        //}
+
+        self.viewSubmissionUrl = function (id, UserId) {
+
+            return '@Url.Action("ActivitybookPreview", "ActivitybookSubmissionReport", new {Area = "Reporting" })/' + id + "?checkUser=" + UserId;
+
+        }
+
+      self.checklistResultUrl = function (data) {
+            var id = ko.toJS(data.Id);
+                   var url = '@Url.Action("DownloadPrintExcel", "ActivitybookSubmissionReport", new {Area = "Reporting"})/?ResultId=' + id + '&UserId=' + data.UserId;
+                   $("#progressModal").modal('show');
+
+                self.downloadReport(url);
+        }
+        self.excelSummary = function (data) {
+            $('#progressModal1').modal('show');
+            var id = ko.toJS(data.Id);
+           // alert(id);
+            //var title = ko.toJS(data.DocumentTitle);
+            //var className = (title).replace(" ", "").split(" ")[0];
+            var filterArray = new Array();
+            $('.CommonCss').each(function () {
+                if ($(this).is(':checked')) {
+                    filterArray.push($(this).attr('role'));
+
+                }
+            });
+                var url = '@Url.Action("DownloadSummaryEXCEL")' + '?'+ $.param({
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                    CheckListIds: id,  //ko.unwrap(vm.selectedCheckLists),
+                    Status: ko.unwrap(vm.selectedStatus),
+                    Access: ko.unwrap(vm.selectedAccess),
+                    CheckListId: id,
+                    ToggleFilter: filterArray.join()
+                }, true);
+            $("#progressModal").modal('show');
+            setTimeout(function () { $('#progressModal1').modal('hide'); }, 1300);
+            self.downloadReport(url);
+
+            }
+
+        self.excelSubmissions = function (data) {
+            $('#progressModal2').modal('show');
+              var id = ko.toJS(data.Id);
+            var title = ko.toJS(data.DocumentTitle);
+                var url = '@Url.Action("DownloadSubmissionsZip")' + '?'+ $.param({
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                    CheckListIds: id, //ko.unwrap(vm.selectedCheckLists),
+                    Status: ko.unwrap(vm.selectedStatus),
+                    Access: ko.unwrap(vm.selectedAccess),
+                    CheckListId: id,
+                    ToggleFilter: title
+
+                }, true);
+                $("#progressModal").modal('show');
+            self.downloadReport(url);
+            setTimeout(function () { $('#progressModal2').modal('hide'); }, 1300);
+
+
+            }
+
+         self.download = {
+            excel: function () {
+
+                var url = '@Url.Action("ZipCheckList")' + '?'+ $.param({
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                        CheckListIds: ko.unwrap(vm.selectedCheckLists),
+                    Status: ko.unwrap(vm.selectedStatus),
+                    Access: ko.unwrap(vm.selectedAccess)
+                }, true);
+                $("#progressModal").modal('show');
+                self.downloadReport(url);
+
+             }
+
+        };
+
+        self.downloadReport = function (url) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+
+            //request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //request.setRequestHeader("Content-length", url.length);
+
+            request.onload = function () {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                    $("#progressModal").modal('hide');
+                }
+            }
+            request.send();
+
+        };
+        self.submit = function () {
+
+            $('#LoadingImageDiv').show();
+            var url = '@Url.Action("GetActivitybookDetails")';
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                        CheckListIds: ko.unwrap(vm.selectedCheckLists),
+                        Status: ko.unwrap(vm.selectedStatus),
+                        Access:ko.unwrap(vm.selectedAccess)
+                    }
+                })
+                .done(function (data) {
+                    self.results.removeAll();
+
+                    if (data && data.length) {
+                        for (var i = 0; i < data.length; i++)
+                            self.results.push(data[i]);
+
+                    }
+                    console.log(ko.unwrap(self.results));
+                    for (var i = 0; i < 2; i++) {
+                        $('input[name=Number]').click();
+                        $('input[name=Code]').click();
+                    }
+                    
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+        }
+
+    };
+    var vm = new Controller(@Html.ToJson((string)ViewBag.Id),@Html.ToJson((IEnumerable<Web.UI.Areas.Reporting.Controllers.MyCheckList>)ViewBag.CheckLists));
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+
+</script>

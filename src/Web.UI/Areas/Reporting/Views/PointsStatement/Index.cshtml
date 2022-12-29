@@ -1,0 +1,283 @@
+﻿
+@using Web.UI.Code.Extensions
+@using System.Threading
+
+
+@model Ramp.Contracts.ViewModel.PointsStatementViewModel
+
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<style>
+    .requiredTxt {
+        border: solid red;
+    }
+
+    input, select {
+        max-width: 100%;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Points Statement Report</h1>
+        <div class="well well-sm">
+            This statement allows you to view and export a report on the points allocated to individual users or groups of users for particular categories or document types in a given date range.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">Filtering Options</div>
+            <div class="panel-body">
+                @using (Ajax.BeginForm("Index", "PointsStatement", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "dvPointStatement" }, new { @id = "test" }))
+                {
+
+                    @Html.Hidden("ToggleFilter")
+
+              
+
+                <div class="col-md-3 col-sm-offset-1">
+                    @if (Model.Users != null)
+                    {
+                        <div class="form-group">
+                            <span style="color:red">*</span>    @Html.Label("User")<br />
+                            @Html.DropDownList("UserIds", Model.Users.ToSelectList(c => c.Id.ToString(), c => c.FullName), new { @class = "form-control", @id = "users-multiselect" })
+
+                        </div>
+                    }
+                    @if (Model.Groups != null)
+                    {
+
+                        <div class="form-group">
+                            @Html.Label("Group")<br />
+
+
+                            @*@Html.ListBoxFor("GroupId", Model.Groups.ToSelectList(c => c.GroupId.ToString(), c => c.Title), "Select Group", new { @class = "form-control" })*@
+
+                            <select name="GroupId" id="groups-multiselect-demo" style="width:100%">
+                                @foreach (var item in ViewBag.Groups)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+
+                        </div>
+                    }
+                    <!--<div class="form-group">
+        @Html.Label("Department")<br />-->
+                    @*@Html.ListBoxFor("GroupId", Model.Groups.ToSelectList(c => c.GroupId.ToString(), c => c.Title), "Select Group", new { @class = "form-control" })*@
+
+                    <!--<select name="GroupId" id="department-multiselect-demo" style="width:100%">
+            @foreach (var item in ViewBag.Departments)
+            {
+                <option value="@item">@item</option>
+            }
+        </select>
+
+    </div>-->
+                    @if (Model.Categories != null)
+                    {
+                        <div class="form-group">
+                            @Html.Label("Category")<br />
+                            @Html.DropDownList("CategoryId", Model.Categories.ToSelectList(c => c.Id.ToString(), c => c.Title), "Select Category", new { @class = "form-control" })
+                        </div>
+                    }
+
+                </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        @Html.Label("Tags")<br />
+
+                        @Html.DropDownList("TrainingLabels", new SelectList(Model.TrainingLabelDict, "Key", "Value", Model.SelectedTrainingLabels), new { @id = "trainingLables-multiselect" })
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Document Type")<br />
+
+                        @Html.DropDownList("DocumentTypes", new SelectList(Model.DocumentTypesDict, "Key", "Value", Model.SelectedDocumentTypes), new { @id = "typesofdocuments-multiselect-demo" })
+                        @*@Html.ListBox("DocumentTypes", new MultiSelectList(Model.DocumentTypesDict, "Key", "Value", Model.SelectedDocumentTypes), new { multiple = "", title = "Select Document Type" })*@
+                    </div>
+
+
+                    @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+                    {
+
+                        <div class="form-group">
+                            @Html.Label("Global Access")<br />
+                            @Html.DropDownList("GlobalAccess", new SelectList(Model.GlobalAccessDict, "Key", "Value", Model.SelectedGlobalAccess), new { @id = "globalaccess-multiselect-demo" })
+                        </div>
+
+
+
+                    }
+
+
+
+
+                </div>
+
+                        <div class="col-sm-push-1 col-md-2">
+                     
+                            <div class="form-group">
+                                @Html.Label("From Date")
+                                <div class="input-group date">
+                                    <input type='text' name="FromDate" id="inputFromDate" class="form-control" value="@Request.Params["FromDate"]" />
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.Label("To Date")
+                                <div class="input-group date">
+                                    <input type='text' name="ToDate" id="inputFromDate" class="form-control" value="@Request.Params["ToDate"]" />
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    
+                    @Html.Hidden("UserId")
+                    <div class="col-md-2 col-sm-offset-2">
+                        <br /><br /><br /><br /><br />
+                        <input type="button" disabled  id="btnSubmit" value="Generate" class="btn btn-primary" />
+
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="dvPointStatement">
+    
+
+</div>
+
+<script>
+
+
+    $(document).ready(function () {
+        $('#typesofdocuments-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#typesofdocuments-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 310,
+            enableFiltering: false,
+            maxHeight: 350
+        });
+
+        $('#groups-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#groups-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            nonSelectedText: 'None selected',
+            buttonWidth: 280,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering: true
+        });
+
+
+        $('#department-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#department-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            nonSelectedText: 'None selected',
+            buttonWidth: 280,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering: true
+        });
+
+        $('#groups-multiselect-demo').change(function () {
+            self.groupId = $(this).val();
+            console.log("assassdf ", self.groupId);
+        });
+
+        $(document).on('change', '#users-multiselect', function () {
+
+            var documents = $('#users-multiselect').val();
+           
+            if (documents == null || documents == "" || documents == undefined) {
+                $('#btnSubmit').attr('disabled', 'disabled');
+            } else {
+                $('#btnSubmit').removeAttr('disabled');
+            }
+        });
+
+        $('#users-multiselect').attr("multiple", "multiple").val('');
+        $('#users-multiselect').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 310,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering: true
+        });
+
+        $('#trainingLables-multiselect').attr("multiple", "multiple").val('');
+        $('#trainingLables-multiselect').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 310,
+            enableFiltering: false,
+            maxHeight: 350
+        });
+
+        
+
+        $('#globalaccess-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#globalaccess-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 310,
+            enableFiltering: false,
+            maxHeight: 350
+        });
+
+        $('#btnSubmit').click(function () {
+            var userName = $("#users-multiselect").val();
+
+            if (userName === '' || userName === null) {
+                $('#users-multiselect').addClass('requiredTxt');
+                notif({
+                    msg: "<b>Error :</b> Whoops. Please select user.",
+                    type: "error"
+                });
+
+            } else {
+                $('#users-multiselect').removeClass('requiredTxt');
+                $('#test').submit();
+            }
+
+        });
+
+        $('.date').datetimepicker({
+            format: 'DD MMM YYYY',
+            useCurrent: false
+        });
+        //$('#statement').dataTable({
+        //    searching: false,
+        //    paging: false,
+        //    info: false
+        //});
+
+        // This must be a hyperlink
+
+    });
+
+
+</script>

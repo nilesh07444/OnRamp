@@ -1,0 +1,15 @@
+﻿@section scripts{
+<script>
+    $(document).ready(function () {
+        @foreach (var notification in Html.PopNotifications())
+        {
+            <text>
+                notif({
+                    msg: '@notification.Message',
+                    type: '@notification.Type',
+                });
+            </text>     
+        }
+    });
+</script>
+}

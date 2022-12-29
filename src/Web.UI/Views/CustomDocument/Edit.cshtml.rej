@@ -1,0 +1,10 @@
+diff a/Web.UI/Views/CustomDocument/Edit.cshtml b/Web.UI/Views/CustomDocument/Edit.cshtml	(rejected hunks)
+@@ -728,7 +728,7 @@
+                             <input type="text" class="form-control chapterName" style="width:800px;" data-bind="textInput:Title" placeholder="Please enter a title..." />
+                             <button class="close" data-bind="click:$root.content.remove.bind($data,4)">&times;</button>
+                         </div>
+-                        <div class="panel-body" data-bind="hidden:state.minimized">
++                        <div class="panel-body" >
+ 
+                             <div class="row">
+                                 <div class="col-sm-12">

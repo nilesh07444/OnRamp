@@ -1,0 +1,358 @@
+﻿@model Ramp.Contracts.ViewModel.CourseListModel
+@using Common.Enums
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer
+
+<div class="col-sm-12" data-bind="foreach: data">
+    <div class="panel panel-info">
+        <div class="panel-heading clearfix" data-toggle="collapse" data-target="#Panelcolapse" style="line-height: 32px;"><span data-bind="text: Title"></span> <span class="caret"></span></div>
+
+        <div class="panel-body collapse in" id="Panelcolapse">
+            <div class="well well-sm">
+                <h3 data-bind="text: Title" style="text-align:center;"></h3>
+
+                <hr />
+                <div class="row">
+                    <div class="col-lg-12">
+                        @*Add course cover Picture*@
+                        <div class="col-lg-offset-2 col-lg-4">
+
+                            <img data-bind="attr: {src: CoverPicture}" style="width: 275px; height: 200px;" />
+                        </div>
+
+                        <div class="col-lg-4">
+                            @*Add course description*@
+                            <p data-bind="text: Description"></p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <br />
+            <br />
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="col-lg-3">
+                        <div class="well well-sm">
+                            @*Add course author*@
+                            <h5><b>Last Edited:</b> <span data-bind="text: CreatedBy.Name"></span></h5>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="well well-sm">
+                            @*Add course status*@
+                            <h5><b>Status:</b> <span data-bind="text: Status"></span></h5>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="well well-sm">
+                            @*Add course Admins*@
+                            <h5><b>Allocated Administrators:</b> <span data-bind="text:AllocatedAdminsName"></span></h5>
+
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="well well-sm">
+                            @*Add course duration*@
+                            <h5><b>Course Duration:</b> <span data-bind="text:ExpiryInDays"></span> Days</h5>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <br />
+
+            <br />
+            <div class="row">
+                <div class="col-lg-12">
+
+                    <div class="col-lg-6">
+                        <div class="well well-sm">
+                            <div style="text-align:center;">
+                                <h4>Document Information</h4>
+                                <br>
+                            </div>
+                            <div class="table-responsive">
+
+                                <table class="dataTable table-hover table-fixed">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-sm-1">Type</th>
+                                            <th class="col-sm-3">Title</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody data-bind="foreach: Documents">
+                                        <tr>
+                                            <td>
+                                                <span style="font-size:16px; font-weight:500;"></span>
+                                                <img class="img-circle center-block document-icon" style="width: 50px;" data-bind="attr: {src: $root.document.icon(Type)}" />
+                                            </td>
+                                            <td>
+
+                                                <span style="font-size:16px;font-weight:500;" data-bind="text:Title"></span>
+                                            </td>
+
+
+                                        </tr>
+                                    </tbody>
+
+                                </table>
+
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="well well-sm">
+                            <div style="text-align:center;">
+                                <h4>Achievements</h4>
+                                <br>
+                            </div>
+
+                            <p>Points:</p> <span data-bind="text:Points"></span>
+
+                            <p>Certificate:</p>
+
+                            @*<img class="img-responsive coverPicture"  data-bind="attr: { src: ko.unwrap(ThumbnailUrl) ? ko.unwrap(ThumbnailUrl) : ko.unwrap(Url), alt: Description }" />*@
+
+
+                        </div>
+
+
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="well well-sm">
+                            <div style="text-align:center;">
+                                <h4>Course Actions</h4>
+                                <br>
+                                @*Add course View participants*@
+                                <button data-bind="click:$root.openParticipantsModal.bind(Id)" class=" btn btn-default btn-primary" type="button" style="width:40%"><span class="glyphicon glyphicon-eye-open"></span> View Participants</button><br><br>
+                                @*Add course edit*@
+                                <button class="btn btn-default btn-primary" type="button" style="width:40%" data-bind="click: vm.edit.bind()"><span class="glyphicon glyphicon-edit"></span> Edit</button><br><br>
+                                @*Add course delete*@
+                                <button class="btn btn-default btn-primary" type="button" style="width:40%" data-bind="click: vm.delete.bind()"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+
+<script>
+
+        var vm = new app.data.documentController(@Html.ToJson(Model), @Html.ToJson((IEnumerable<dynamic>)ViewBag.Groups));
+
+    vm.enums = {};
+      vm.enums.documentStatus = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentStatus)));
+
+    vm.enums.filterGroup = [
+    {
+        title: 'Status',
+        options: $.map(vm.enums.documentStatus, function (i, index) { return { Id: 'Status:' + index, Name: i }; }).sort()
+        }];
+
+    vm.document = {
+        icon: function (type) {
+            switch (type) {
+                case 1:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)';
+                case 2:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)';
+                case 3:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)';
+                case 4:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)';
+                case 6:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)';
+                default:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Export], true)';
+            }
+        }
+    }
+    vm.openParticipantsModal = (data) => {
+        console.log("adasd ", data);
+        var ids = "";
+        try {
+            ids = data.Id();
+        }
+        catch {
+            ids = data.Id;
+        }
+        
+        var viewParticipants = $.get("@Url.Action("ViewAdmins", "Course", new { Area = "" })/" + ids);
+
+        viewParticipants.done(function (data) {
+            console.log("data fromma ction ", data)
+            $('#divViewParticipants').html(data);
+            $('#viewParticipantsModal').modal('show');
+
+        });
+        viewParticipants.fail(function (jqXHR, textStatus, errorThrown) {
+            console.error(errorThrown);
+
+        });
+    }
+        vm.delete = (data) => {
+            var confirms = confirm("Are you sure want to delete ?");
+            if (confirms) {
+                var viewParticipants = $.get("@Url.Action("Delete", "Course", new { Area = "" })/" + data.Id());
+                viewParticipants.done(function (data) {
+                    window.location.reload();
+                });
+            }
+
+        };
+        vm.edit = (data) => {
+
+            if (data != undefined) {
+                try {
+                    let admins = data.AllocatedAdmins().split(",")
+                    console.log("data data", data);
+                    //    admins.forEach(e=>{
+                    //        $("#users-multiselect-demo option[value='"+e+"']").className = 'active'
+                    //})
+                    vmEdit.selectedAdmins(admins);
+                    vmEdit.selectedCategories.push(data.CategoryId());
+                    checkValidation();
+                    //vmEdit.data.AllocatedAdmins(admins);
+                    // vmEdit.data.AllocatedAdmins = ko.observableArray();
+                    // vmEdit.data.AllocatedAdmins.push(admins)
+                    data.Documents().forEach(x => {
+                        console.log(x)
+                        //vmEdit.selectedAdmins.push(x.DocId());
+                        vmEdit.DocumentsInJSTree.push({
+                            id: x.DocId(),
+                            text: x.Title(),
+                            type: x.Type()
+                        });
+
+                    })
+
+                    // setVmEdit(null);
+                    console.log("vmEdit ", vmEdit);
+                    {
+                        vmEdit.data.AchievementType(data.AchievementType())
+                        //vmEdit.data.Achievements(data.Achievements())
+                        vmEdit.data.AllocatedAdmins(data.AllocatedAdmins())
+                        //vmEdit.data.AllocatedAdminsName(data.AchievementType())
+                        vmEdit.data.AssignedUsers(data.AssignedUsers())
+                        vmEdit.data.CategoryId(data.CategoryId())
+                        vmEdit.data.Certificate(data.Certificate())
+                        //vmEdit.data.CertificateId(data.CertificateId())
+                        //vmEdit.data.CertificateThumbnailId(data.CertificateThumbnailId())
+                        //vmEdit.data.CourseStatus(data.CourseStatus())
+                        vmEdit.data.CoverPicture(data.CoverPicture())
+                        // vmEdit.data.CoverPictureUpload(data.CoverPictureUpload())
+                        //vmEdit.data.CreatedBy(data.CreatedBy())
+                        vmEdit.data.Description(data.Description())
+                        vmEdit.data.Documents(data.Documents())
+                        vmEdit.data.EndDate(data.EndDate())
+                        vmEdit.data.ExpiryInDays(data.ExpiryInDays())
+                        vmEdit.data.Id = data.Id
+                        vmEdit.data.IsCourseExpiryEnabled(data.IsCourseExpiryEnabled())
+                        vmEdit.data.IsGlobalEnabled(data.IsGlobalEnabled())
+                        vmEdit.data.Points(data.Points())
+                        vmEdit.data.StartDate(data.StartDate())
+                        // vmEdit.data.Status(data.Status())
+                        vmEdit.data.Points(data.Points())
+                        vmEdit.data.Title(data.Title())
+                        vmEdit.data.WorkflowEnabled(data.WorkflowEnabled())
+
+
+                        $('#tree').bind('loaded.jstree', function (e, data) {
+                            console.log("after tree loaded fully ", vmEdit.DocumentsInJSTree())
+                            // invoked after jstree has loaded
+                            vmEdit.DocumentsInJSTree().forEach(e => {
+                                $('#tree').jstree(true)
+                                    .select_node(e.id);
+                            })
+                        })
+                    }
+                }
+                catch {
+                    let admins = data.AllocatedAdmins.split(",")
+                    console.log("data data", data);
+                    //    admins.forEach(e=>{
+                    //        $("#users-multiselect-demo option[value='"+e+"']").className = 'active'
+                    //})
+                    vmEdit.selectedAdmins(admins);
+                    vmEdit.selectedCategories.push(data.CategoryId);
+                    checkValidation();
+                    //vmEdit.data.AllocatedAdmins(admins);
+                    // vmEdit.data.AllocatedAdmins = ko.observableArray();
+                    // vmEdit.data.AllocatedAdmins.push(admins)
+                    data.Documents.forEach(x => {
+                        console.log(x)
+                        //vmEdit.selectedAdmins.push(x.DocId());
+                        vmEdit.DocumentsInJSTree.push({
+                            id: x.DocId,
+                            text: x.Title,
+                            type: x.Type
+                        });
+
+                    })
+
+                    // setVmEdit(null);
+                    console.log("vmEdit ", vmEdit);
+                    {
+                        vmEdit.data.AchievementType(data.AchievementType)
+                        //vmEdit.data.Achievements(data.Achievements)
+                        vmEdit.data.AllocatedAdmins(data.AllocatedAdmins)
+                        //vmEdit.data.AllocatedAdminsName(data.AchievementType)
+                        vmEdit.data.AssignedUsers(data.AssignedUsers)
+                        vmEdit.data.CategoryId(data.CategoryId)
+                        vmEdit.data.Certificate(data.Certificate)
+                        //vmEdit.data.CertificateId(data.CertificateId)
+                        //vmEdit.data.CertificateThumbnailId(data.CertificateThumbnailId)
+                        //vmEdit.data.CourseStatus(data.CourseStatus)
+                        vmEdit.data.CoverPicture(data.CoverPicture)
+                        // vmEdit.data.CoverPictureUpload(data.CoverPictureUpload)
+                        //vmEdit.data.CreatedBy(data.CreatedBy)
+                        vmEdit.data.Description(data.Description)
+                        vmEdit.data.Documents(data.Documents)
+                        vmEdit.data.EndDate(data.EndDate)
+                        vmEdit.data.ExpiryInDays(data.ExpiryInDays)
+                        vmEdit.data.Id = data.Id
+                        vmEdit.data.IsCourseExpiryEnabled(data.IsCourseExpiryEnabled)
+                        vmEdit.data.IsGlobalEnabled(data.IsGlobalEnabled)
+                        vmEdit.data.Points(data.Points)
+                        vmEdit.data.StartDate(data.StartDate)
+                        // vmEdit.data.Status(data.Status)
+                        vmEdit.data.Points(data.Points)
+                        vmEdit.data.Title(data.Title)
+                        vmEdit.data.WorkflowEnabled(data.WorkflowEnabled)
+
+
+                        $('#tree').bind('loaded.jstree', function (e, data) {
+                            console.log("after tree loaded fully ", vmEdit.DocumentsInJSTree())
+                            // invoked after jstree has loaded
+                            vmEdit.DocumentsInJSTree().forEach(e => {
+                                $('#tree').jstree(true)
+                                    .select_node(e.id);
+                            })
+                        })
+                    }
+
+                }
+            }
+
+        $("#loginmodal1").modal('show');
+    };
+
+</script>
+

@@ -1,0 +1,125 @@
+﻿@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv=“X-UA-Compatible” content="IE=11" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/ThemeJs")
+    @RenderSection("scripts", false)
+
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>
+
+    @Scripts.Render("~/bundles/bootstrap")
+
+    @Html.Partial("_NotifyPartial")
+</head>
+<body>
+    <div id="wrapper">
+        <div id="LoadingImageDiv" class="modal-backdrop fade in" style="background-color: #FFF !important; display: none">
+            <div style="left: 47%; position: absolute !important; top: 34%;">
+                <p>
+                    <img src="@(Url.Content("~/Content/images/Preloader_3.gif"))" />
+                </p>
+                <label>Loading</label>
+            </div>
+        </div>
+        @{
+            SessionInformation sessionInfo = SessionManager.GetSessionInformation();
+        }
+
+        <nav class="navbar navbar-default navbar-fixed-top" style="margin-bottom: 0; background-color: #27B899;" id="nav2">
+            <div class="container">
+                @{
+                    if (sessionInfo != null)
+                    {
+                        <div id="allNavigation1" role="navigation" style="margin-bottom: 0px; background-color: #27B899;">
+                            <div style="">
+                                <div class="navbar-collapse collapse">
+                                    @*<ul class="nav navbar-top-links navbar-right">*@
+                                    <ul class="nav navbar-nav navbar-right">
+                                        <li>
+
+                                        </li>
+                                        <li>
+
+                                        </li>
+                                        <li id="editProfile">
+                                            @*<a href="@(Url.Content("~/Account/EditMyProfile/" + @sessionInfo.Id))" style="color:white;"> My Profile</a>*@
+                                        </li>
+                                        <li>
+                                            <a href="@(Url.Content("~/Account/LogOff"))" id="logoutLink" style="color:white;">
+                                                Logout
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+
+            </div>
+        </nav>
+
+        <div id="page-wrapper">
+            @if (ViewBag.HelpContext != null)
+            {
+                <div id="divHelp" style="display: none; float: right;">
+                    <a href="http://knowledgebase.onramp.co.za/?p=@ViewBag.HelpContext" target="_blank">
+                        <div style="float: right;">
+                            <h2 class="helpText">Help</h2>
+                        </div>
+                    </a>
+                </div>
+            }
+            @RenderBody()
+            @*<footer>
+                <div class="col-lg-12">
+                    <div class="alert alert-success" style="background: #27B899; color: white; height:50px">
+                    </div>
+                </div>
+                <p style="position: absolute; ">
+                    <a href="@Href("~/")">
+                        <img src="~/images/powered.PNG" style="height: 80px; width: 220px; " />
+                    </a>
+                </p>
+                <p class="pull-right" style="color: #106B64;display:inline;margin-top:5%">Powered by OnRamp &copy;@DateTime.Now.Year</p>
+            </footer>*@
+        </div>
+
+    </div>
+
+    <footer>
+
+        <div class="alert alert-success" style="background: #27B899; color: white; height:50px">
+
+        </div>
+
+        <p style="position: absolute; ">
+            <a href="@Href("~/")">
+                <img src="~/images/powered.PNG" style="width: 220px; margin-left:15px; " />
+            </a>
+        </p>
+        <p class="pull-right" style="color: #106B64;display:inline;">Powered by OnRamp &copy;@DateTime.Now.Year</p>
+    </footer>
+
+
+</body>
+</html>
+<script type="text/javascript">
+    
+    $('#page-wrapper').css("min-height", '500px');
+
+    //$('#page-wrapper').css("max-height",'500px');
+  
+</script>

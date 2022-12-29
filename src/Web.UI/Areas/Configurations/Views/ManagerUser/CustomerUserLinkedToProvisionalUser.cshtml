@@ -1,0 +1,49 @@
+﻿@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.UserViewModel
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "../../../../Views/Shared/_Layout.cshtml";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Customer User</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="form-group">
+        @Html.Label("Select Provisional User")
+        @Html.DropDownListFor(m => m.SelectedUser, Model.Users.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+    </div>
+    <div id="CustomerUsersDiv">
+    </div>
+</div>
+
+<script type="text/javascript" language="javascript">
+    $(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+    });
+
+    $('#SelectedUser').change(function () {
+        var id = $(this).val();
+        var actionUrl = "CustomerUserLinkedToProvisionalUserPartial?userId=" + id;
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: {},
+            success: function (data) {
+                if (data.length > 0) {
+                    $('#CustomerUsersDiv').empty();
+                    $('#CustomerUsersDiv').html(data);
+                }
+            },
+            error: function (data) {
+            }
+        });
+    });
+
+</script>

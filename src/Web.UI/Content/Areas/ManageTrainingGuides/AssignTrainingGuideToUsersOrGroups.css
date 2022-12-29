@@ -1,0 +1,19 @@
+﻿.inline-group{
+    width:100%;
+}
+.footer{
+    padding:5px;
+    background-color:#555555;
+    opacity:0.9;
+    color:white;
+}
+.col-lg-6,.col-lg-12{
+    padding-left:2px;
+    padding-right:2px;
+}
+#LoadingImageDiv{
+    z-index:1000;
+}
+.equal-height{
+    overflow-y:scroll;
+}

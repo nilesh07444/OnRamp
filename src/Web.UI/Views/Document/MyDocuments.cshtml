@@ -1,0 +1,1337 @@
+﻿@using System.Linq
+@using System.Linq
+@using Common.Enums
+@using Common.Web
+@using Domain.Customer
+@using Web.UI.Code.Extensions
+@using Web.UI.Models
+@using System.Threading
+@using Ramp.Contracts.Security
+@model IEnumerable<Ramp.Contracts.ViewModel.AssignedDocumentListModel>
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+}
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<link href="~/Content/apex/apexcharts.css" rel="stylesheet" />
+<script src="~/Scripts/apex/apexcharts.js"></script>
+
+<style>
+    .chart {
+        width: 100%;
+        margin: 35px auto;
+    }
+
+    .apexcharts-legend {
+        justify-content: center;
+    }
+
+    .document-icon {
+        max-width: 60px;
+    }
+
+    .toggleButton {
+        background: transparent;
+        border: none;
+    }
+
+
+
+
+    .pending {
+        background-color: #A9A9A9;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .complete {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .underreview {
+        background-color: #0000FF;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .inprogress {
+        background-color: #FFA500;
+        color: #ffffff;
+        border-radius: 5px;
+        height: 23.5px;
+    }
+
+    .tryagain {
+        background-color: #0276FD;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .actionrequired {
+        background-color: #FF6347;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .passed {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .accepted {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+    .not {
+        background-color: #e86741;
+        color: #ffffff;
+        border-radius: 5px;
+    }
+
+
+    .btn-option {
+        margin-bottom: 5px;
+    }
+
+
+    .fancybox-inner {
+        overflow: hidden !important;
+    }
+
+    .company-logo {
+        max-width: 100%;
+    }
+
+
+
+    .status {
+        width: 100%;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 5px;
+    }
+
+
+    @@media (min-width: 992px) {
+        .col-md-5ths {
+            width: 20%;
+            float: left;
+        }
+    }
+
+    .menu-tile:hover {
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        transition: transform .15s ease-in-out;
+        transform: scale(1.1)
+    }
+</style>
+
+<div class="row hidden-sm hidden-xs">
+    <div class="col-sm-12">
+        <div class="col-sm-6">
+            @if (ViewData["Chart"] != null && ((ChartViewModel)ViewData["Chart"]).Count.Any())
+            {
+                <div class="col-sm-12">
+                    <div class=" panel panel-info">
+                        <div class="panel-heading clearfix" style="line-height: 34px;">
+                            Document  Capacity Counter
+                        </div>
+                        <div class="panel-body">
+                            <i style="font-size:13px;">The chart below represents the number of documents that are grouped by type.</i><br />
+                            <div id="divDocumentchart" class="chart">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-sm-6">
+            @if (ViewData["Chart"] != null && ((ChartViewModel)ViewData["Chart"]).Count.Any())
+            {
+                <div class="col-sm-12">
+                    <div class=" panel panel-info">
+                        <div class="panel-heading clearfix" style="line-height: 34px;">
+                            Document Status Counter
+                        </div>
+                        <div class="panel-body">
+                            <i style="font-size:13px;">The chart below represents the number of documents that are grouped by status.</i><br />
+
+
+                            <div id="divStatuschart" class="chart">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        @if (PortalContext.Current.UserCompany.EnableCategoryTree)
+        {
+            <div class="col-sm-2">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class=" panel panel-info " data-bind="with:$root.category.menu" style="overflow-x:auto;">
+                            <div class="panel-heading clearfix" style="line-height: 34px;">
+                                Categories
+                                @if (Thread.CurrentPrincipal.IsInRole(Role.CustomerAdmin))
+                                {
+
+                                    <div class="pull-right">
+                                        <a data-bind="click:$root.modals.manageCategories.open.bind()" title="Manage Categories" style="border-left: solid 1px; padding-left: 0.5em; cursor: pointer; color: white"><i class="glyphicon glyphicon-pencil"></i></a>
+                                    </div>
+
+                                }
+                            </div>
+                            <div class="panel-body">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search" style="max-width:unset" data-bind="textInput:match" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" data-bind="click:$root.category.handlers.clear.bind()"><span class="fa fa-close"></span></button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="categoryTree" data-bind="jstreeWithSearch:options,jstreeOptions: {plugins:['search', 'types'], types: {default: {icon: 'glyphicon glyphicon-plus-sign category-icon'}}},valueProperty:selected,filterProperty:match" style="height:300px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-10 ">
+                <div class="panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        My Documents
+                        <div class="pull-right">
+                            <form class="form-inline" onsubmit="return false">
+                                <div class="input-group">
+                                    <select class="selectpicker" multiple data-bind="foreach:$root.enums.filterGroup,selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'},selectedOptions:$root.filters">
+                                        <optgroup data-bind="attr:{label:title},foreach:options">
+                                            <option data-bind="text:Name,attr:{value:Id}"></option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Document or Tag Search" id="txtSearchText" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" id="btnSearch"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Type</th>
+                                    <th class="col-lg-3">Title</th>
+                                    <th class="col-lg-2">Date Assigned</th>
+                                    <th class="col-lg-2">Date Last Read</th>
+                                    <th>Status</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-sm-12 ">
+                <div class="panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        My Documents
+                        <div class="pull-right">
+                            <form class="form-inline" onsubmit="return false">
+                                <div class="input-group">
+                                    <select class="selectpicker" multiple data-bind="foreach:$root.enums.filterGroup,selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'},selectedOptions:$root.filters">
+                                        <optgroup data-bind="attr:{label:title},foreach:options">
+                                            <option data-bind="text:Name,attr:{value:Id}"></option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" id="txtSearchText" class="form-control" placeholder="Document Search" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" id="btnSearch"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Type</th>
+                                    <th class="col-lg-3">Title</th>
+                                    <th class="col-lg-2">Date Assigned</th>
+                                    <th class="col-lg-2">Date Last Read</th>
+                                    <th>Status</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+<br>
+
+<div class="modal fade" id="reminderModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Reminder</h4>
+            </div>
+            <div class="modal-body">
+                <span>You have started a test session that is still in progress. Please click continue test to resume your test or dismiss to ignore</span><br><br>
+                <strong> Test: <span id="spnTestTitle"></span> </strong>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" data-dismiss="modal" id="Accept" class="btn btn-primary">Continue test</button>
+                        <button type="button" id="btnNotAccept" data-dismiss="modal" class="btn btn-default" value="Send">Dismiss</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="ViewMessageModal" role="dialog" aria-labelledby="ViewMessageLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                Messages
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+
+                <table id="ViewMessageData" class=" dataTable table-hover table-fixed">
+                    <thead>
+                        <tr>
+                            <th>Message</th>
+                            <th>Type</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    @*<div class="btn-group">
+                            <button type="button" data-dismiss="modal" id="btnFinishApprove" class="btn btn-primary">Submit</button>
+                            <button type="button" id="btnNotApprove" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                        </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@Html.Partial("~/Views/Category/ManageCategoryModalPartial.cshtml")
+
+<script>
+
+    localStorage.setItem("PreviewMode", false);
+
+    $("#liVirtualClassroom").removeClass('active');
+
+    var checkTestPending = '@ViewBag.CurrentTestId';
+
+    var urlPendingTest = '';
+
+    var isOpenTest = '@ViewBag.IsOpenTest';
+
+    var testTitle = '@ViewBag.TestTitle';
+
+    console.log("checkTestPending ", checkTestPending);
+
+    console.log("isOpenTest ", isOpenTest);
+
+    console.log("testTitle ", testTitle);
+
+    $("#spnTestTitle").text(testTitle);
+
+    function CheckPendingTestOpenOrClose() {
+        localStorage.setItem("PreviewMode", false);
+         if ((urlPendingTest === '')) {
+             return true;
+         } else if (isOpenTest === 'True' || isOpenTest === true || isOpenTest === 'true') {
+             return true;
+         }
+         else if (isOpenTest === 'False' || isOpenTest === false || isOpenTest === 'false') {
+             $("#reminderModal").modal('show');
+             return false;
+         } else
+             return true;
+    }
+
+    function OpenViewMessageModal(id) {
+
+        console.log(id)
+        $("#ViewMessageModal").modal('show');
+
+
+        //Build an array containing Customer records.
+        var arrViewMessage = new Array();
+        arrViewMessage.push(["Message", "Type", "Date"]);
+
+        for (var i = 0; i < vm.documents().length; i++) {
+
+            if (vm.documents()[i].Id == id) {
+                arrViewMessage.push(vm.documents()[i].DeclineMessages);
+                //arrViewMessage.push(vm.documents()[i].CreatedOn);
+            }
+        }
+
+
+        //Create a HTML Table element.
+
+        var table = document.createElement("TABLE");
+        table.border = "1";
+        table.width = "100%";
+
+        //Get the count of columns.
+        var columnCount = arrViewMessage[0].length;
+
+        var row = table.insertRow(-1);
+        for (var i = 0; i < columnCount; i++) {
+            var headerCell = document.createElement("TH");
+            headerCell.innerHTML = arrViewMessage[0][i];
+            row.appendChild(headerCell);
+        }
+
+
+        for (var i = 0; i < arrViewMessage[1].length; i++) {
+
+            row = table.insertRow(1);
+            for (var j = 0; j < columnCount; j++) {
+
+                row.insertCell(0).innerHTML = arrViewMessage[1][i].messages;
+                if (arrViewMessage[1][i].type == "4") {
+                    row.insertCell(1).innerHTML = "Declined"
+                }
+                if (arrViewMessage[1][i].type == "5") {
+                    row.insertCell(1).innerHTML = "Approved"
+                }
+                const value = moment(arrViewMessage[1][i].CreatedOn).format('MM/DD/YYYY h:mm a');
+                row.insertCell(2).innerHTML = value;
+                break;
+            }
+        }
+        var dvTable = document.getElementById("ViewMessageData");
+        dvTable.innerHTML = "";
+        dvTable.appendChild(table);
+    }
+
+    $(function () {
+
+        $(document).on('keypress', function (e) {
+            if (e.which == 13) {
+                 var searchText = $('#txtSearchText').val();
+               $('#LoadingImageDiv').show();
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("DocumentsByFilter", "Document", new { Area = "" }))",
+                    data: { searchText: searchText },
+                    success: function (result) {
+
+                        console.log(result);
+                        vm.documents(result);
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            }
+        });
+
+        $('#btnSearch').click(function () {
+              var searchText = $('#txtSearchText').val();
+               $('#LoadingImageDiv').show();
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("DocumentsByFilter", "Document", new { Area = "" }))",
+                    data: { searchText: searchText },
+                    success: function (result) {
+
+                        vm.documents(result);
+                        $('#LoadingImageDiv').hide();
+                    }
+                })
+        });
+
+        if (checkTestPending != 'Not') {
+
+             @if (PortalContext.Current != null && PortalContext.Current.ShowInProgressPopup ==false)
+            {
+                 PortalContext.Current.ShowInProgressPopup = true;
+
+                @Html.Raw("$('#reminderModal').modal('show');");
+             }
+
+            urlPendingTest = '@ViewBag.CurrentTestId';
+        }
+
+        $("#btnContinueTest").click(function () {
+
+            window.location.assign("/Test/Preview/" + urlPendingTest);
+
+        });
+
+    });
+
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+        "alt-string-pre": function ( a ) {
+            return a.match(/alt="(.*?)"/)[1].toLowerCase();
+        },
+
+        "alt-string-asc": function( a, b ) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "alt-string-desc": function(a,b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    } );
+
+    ko.observableArray.fn.subscribeArrayChanged = function(addCallback, deleteCallback) {
+        this.subscribe(function(changes) {
+                for (var i = 0, j = changes.length; i < j; i++) {
+                    switch (changes[i].status) {
+                    case 'deleted':
+                        if (deleteCallback) deleteCallback(changes[i].value);
+                        break;
+                    case 'added':
+                        if (addCallback) addCallback(changes[i].value);
+                        break;
+                    }
+                }
+            },
+            null,
+            'arrayChange');
+    };
+
+    function Controller() {
+
+        var self = this;
+        self.unreadDocuments = ko.observableArray();
+        self.readDocuments = ko.observableArray();
+        self.documents = ko.observableArray();
+        self.filters = ko.observableArray();
+        self.types = [
+            { title: 'Training Manual', value: 1 },
+            { title: 'Test', value: 2 },
+            { title: 'Policy', value: 3 },
+            { title: 'Policy', value: 3 },
+            { title: 'Memo', value: 4 },
+            { title: 'Activity Book', value: 6 },
+            { title: 'Custom Document', value: 7 }
+        ];
+        self.selectedUnreadTypes = ko.observableArray([]);
+        self.selectedReadTypes = ko.observableArray([]);
+
+        self.unreadFilter = ko.computed(function() {
+            if (self.selectedUnreadTypes().length === 0) {
+                return self.unreadDocuments();
+            } else {
+                var collection = self.unreadDocuments();
+                if (self.selectedUnreadTypes().length > 0) {
+                    var types = self.selectedUnreadTypes().map(function(type) {
+                        return type.value;
+                    });
+                    collection = ko.utils.arrayFilter(collection,
+                        function(document) {
+                            return types.indexOf(document.DocumentType) !== -1;
+                        });
+                }
+                return collection;
+            }
+        });
+
+        self.readFilter = ko.computed(function() {
+            if (self.selectedReadTypes().length === 0) {
+                return self.readDocuments();
+            } else {
+                var collection = self.readDocuments();
+                if (self.selectedReadTypes().length > 0) {
+                    var types = self.selectedReadTypes().map(function(type) {
+                        return type.value;
+                    });
+                    collection = ko.utils.arrayFilter(collection,
+                        function(document) {
+                            return types.indexOf(document.DocumentType) !== -1;
+                        });
+                }
+                return collection;
+            }
+        });
+
+        self.filteredDocuments = ko.computed(function () {
+
+            if (self.filters().length === 0) {
+                return self.documents();
+            } else {
+                var documents = self.documents();
+                var filters = self.filters().map(function(item) {
+                    var split = item.split(':');
+                    return {
+                        Type: split[0],
+                        Id: split[1]
+                    };
+                });
+                var statusFilters = $.grep(filters,
+                    function(filter) {
+                        return filter.Type === 'Status';
+                    });
+                if (statusFilters.length === 1) {
+                    var unread = statusFilters[0].Id === '1';
+                    documents = $.grep(documents,
+                        function(document) {
+                            {
+                                return unread
+                                    ? document.LastViewedDate === null
+                                    : document.LastViewedDate !== null;
+                            }
+                        });
+                }
+                var types = $.grep(filters,
+                    function(filter) {
+                        return filter.Type === 'Type';
+                    }).map(function(filter) {
+                    return parseInt(filter.Id);
+                    });
+                if (types.length !== 0 && types.length !== 4) {
+                    documents = $.grep(documents,
+                        function(document) {
+                            return types.indexOf(document.DocumentType) !== -1;
+                        });
+                }
+
+                return documents;
+            }
+
+        });
+
+        @*self.SearchFilter = function () {
+            var searchText = $('#txtSearchText').val();
+               $('#LoadingImageDiv').show();
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("DocumentsByFilter", "Document", new { Area = "" }))",
+                    data: { searchText: searchText },
+                    success: function (result) {
+                        vm.documents(result);
+                        $('#LoadingImageDiv').hide();
+                    }
+                })
+        };*@
+
+        self.document = {
+            getMoreInfo: function(model) {
+                return ko.unwrap(model.ReferenceId) + '\n' + 'Description: \n' + ko.unwrap(model.Description);
+            },
+            getViewLink: function (model) {
+                var url = '';
+                switch (model.DocumentType) {
+                case 1:
+                    url = '@Url.Action("Preview", "TrainingManual", new {Area = ""})';
+                    break;
+                case 2:
+                    url = '@Url.Action("Preview", "Test", new {Area = ""})';
+                    break;
+                case 3:
+                    url = '@Url.Action("Preview", "Policy", new {Area = ""})';
+                    break;
+                case 4:
+                    url = '@Url.Action("Preview", "Memo", new {Area = ""})';
+                        break;
+                case 6:
+                    url = '@Url.Action("Preview", "Activitybook", new {Area = ""})';
+                        break;
+                     case 7:
+                    url = '@Url.Action("Preview", "CustomDocument", new {Area = ""})';
+                    break;
+                default:
+                    break;
+                }
+                return url + '/' + model.Id;
+            },
+            getType: function(model) {
+                switch (ko.unwrap(model.DocumentType)) {
+                case 1:
+                    return 'Training Manual';
+                case 2:
+                    return 'Test';
+                case 3:
+                    return 'Policy';
+                case 4:
+                    return 'Memo';
+                case 6:
+                    return 'Activitybook';
+                case 7:
+                    return 'Custom Document';
+                }
+                return '';
+            },
+            getStatus: function (model) {
+
+                if (model.Title == "21-Oct-2022 Testing Form Section") {
+
+                }
+                var expired = moment(model.ExpiryDate).isBefore(moment());
+
+                if (!expired && ko.unwrap(model.Status) === 2 && ko.unwrap(model.DocumentType) === 2 && ko.unwrap(model.AttemptsRemaining) >= 1) {
+                    return 'Tryagain';
+                }
+                else {
+                    switch (ko.unwrap(model.Status)) {
+                        case 0:
+                            return 'Pending';
+                        case 1:
+                            return 'In Progress';
+                        case 2:
+                            return 'Under Review';
+                        case 3:
+                            return 'Action Required';
+                        case 4:
+                            if (model.DocumentType == 1 || model.DocumentType == 4 || model.DocumentType == 6 || model.DocumentType == 7) return 'Complete'
+                            return 'Accepted';
+                        case 5:
+                            return 'Approved';
+                        case 6:
+                            return 'Passed';
+
+
+                    }
+                }
+                return '';
+            },
+            getIconUrl: function(model) {
+                switch (ko.unwrap(model.DocumentType)) {
+                case 1:
+                    return '@Href("~/Content/images/Docicons/TM.png")';
+                case 2:
+                    return '@Href("~/Content/images/Docicons/T.png")';
+                case 3:
+                    return '@Href("~/Content/images/Docicons/P.png")';
+                case 4:
+                        return '@Href("~/Content/images/Docicons/M.png")';
+                case 6:
+                        return '@Href("~/Content/images/CustomDocument.png")';
+                case 7:
+                        return '@Href("~/Content/images/CustomDocument.png")';
+
+                }
+                return '';
+            },
+            formatDateTime: function (prop) {
+
+                return moment(prop).format('L LTS');
+            },
+            print: function (id, type) {
+
+                var url = '';
+                switch (type) {
+                case 1:
+                    url = '@Url.Action("Print", "TrainingManual", new {Area = ""})';
+                    break;
+                case 2:
+                    url = '@Url.Action("Print", "Test", new {Area = ""})';
+                    break;
+                case 3:
+                    url = '@Url.Action("Print", "Policy", new {Area = ""})';
+                    break;
+                case 4:
+                    url = '@Url.Action("Print", "Memo", new {Area = ""})';
+                        break;
+                case 6:
+                    url = '@Url.Action("DownloadPrintExcel", "Activitybook", new {Area = ""})';
+                    break;
+               case 7:
+                    url = '@Url.Action("Print", "custom", new {Area = ""})';
+                        break;
+                default:
+                    break;
+                }
+
+                if (type == 7) {
+
+                    url = '@Url.Action("DownloadSubmissionsZip", "ActivitybookSubmissionReport", new { Area = "Reporting" })' + '?' + $.param({
+                        FromDate: "",
+                        ToDate: "",
+                        CheckListIds: id,
+                        CheckListId: id,
+                        ToggleFilter: ""
+
+                    }, true);
+                } else {
+                    url = url + '/' + id;
+
+                }
+
+                var request = new XMLHttpRequest();
+                request.open("GET", url);
+                request.responseType = 'blob';
+                request.onload = function() {
+                    var userAgent = window.navigator.userAgent;
+                    var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                    if (!allowBlob) {
+                        window.navigator.msSaveBlob(this.response,
+                            this.getResponseHeader('filename') || "download-" + $.now());
+                    } else {
+                        var url = window.URL.createObjectURL(this.response);
+                        var a = document.createElement("a");
+                        document.body.appendChild(a);
+                        a.href = url;
+                        a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                        a.click();
+                        window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                    }
+                };
+                request.send();
+            },
+            testWarning: function(expired, attemptsRemaining) {
+                if (notif) {
+                    var msg = '';
+                    if (attemptsRemaining <= 0) {
+                        msg = 'You have reached the maximum limit of attempts';
+                    } else if (expired) {
+                        msg = 'Test has expired';
+                    }
+                    notif({
+                        msg: msg,
+                        type: 'error'
+                    });
+                }
+            }
+        };
+    };
+
+    var vm = new Controller();
+
+    vm.category = {
+        menu: {
+            match: ko.observable(),
+            selected: ko.observable(),
+            options: ko.observableArray(),
+            initialize: function () {
+                vm.category.menu.selected.subscribe(vm.category.handlers.filter);
+            }
+        },
+        handlers: {
+            filter: function (newValue, oldValue) {
+                $('#LoadingImageDiv').show();
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("DocumentsByCategory", "Document", new { Area = "" }))",
+                    data: { categoryId: newValue },
+                    success: function (result) {
+
+                        vm.documents(result);
+                        $('#LoadingImageDiv').hide();
+                    }
+                })
+            },
+            clear: function () {
+                vm.category.menu.match('');
+                vm.category.menu.selected('');
+            }
+        }
+    };
+
+    vm.enums = {};
+
+    vm.enums.documentType = @Html.ToJson(PortalContext.Current.UserCompany.EnableChecklistDocument? EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)) : EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType)));
+
+    vm.enums.readStatus = ['Read', 'Unread'];
+
+    vm.enums.filterGroup = [
+        {
+            title: 'Type',
+            options: $.map(vm.enums.documentType,
+                function(i, index) {
+                    if (index != 0 && index != 5 && index!=7 ) {
+                        return { Id: 'Type:' + index, Name: i };
+                    }
+                }).reverse()
+        },
+        {
+            title: 'Status',
+            options: $.map(vm.enums.readStatus,
+                function(i, index) {
+                    return { Id: 'Status:' + index, Name: i };
+                })
+        }
+    ];
+
+    vm.modals = {
+        manageCategories: {
+            open: function () {
+                $('#manageCategoriesModal').modal('show');
+            },
+            close: function () {
+                $('#manageCategoriesModal').modal('hide');
+            }
+        }
+    }
+
+    vm.category.menu.options = ko.observableArray(@Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Categories));
+
+    vm.category.menu.initialize();
+
+
+    //$(function () {
+
+    //    var viewmessageTable = $('#ViewMessageData')({
+
+
+
+    //        columns: [
+
+    //            {
+    //                data: 'Message',
+    //                render: function (data, type, row) {
+    //                    //var details = row.DocumentType + "~" + row.Title + "~" + row.TrainingLabels + "~" + row.Author;
+    //                    //if (row.DocumentType === 2) {
+    //                    //    details += "~" + row.PassMarks + "~" + row.Duration;
+    //                    //}
+    //                    return '<span Message="' +
+    //                        vm.document.getMoreInfo(row) +
+    //                        '" style="font-size:14px;"   alt="' +
+    //                        data +
+    //                        '">' +
+    //                        data +
+    //                        '</span>&nbsp;&nbsp;' +
+
+    //                        '<a href="javascript:void(0)" data-toggle="popover" data-html="true" DeclineMessages="' + row.DeclineMessages +'" class="fa fa-info-circle" style="color:#00a5e2;" onmouseover="bootstrapPopoverHandler(this)"></a>' +
+    //                        '<br></span>';
+    //                        //+ '<span style="font-size:12px;">Tags: <span style="font-size:12px;" ></span>' + row.TrainingLabels + '</span>' +
+    //                        //'<br></span>' + '<span style="font-size:12px;">Author: <span style="font-size:12px;" ></span>' + row.Author + '</span>';
+    //                }
+    //            }
+    //        ]
+
+    //    });
+
+    //});
+    function downloadSubmission(Id) {
+
+
+
+
+        var url =  '/CustomDocument/print/' + Id;
+
+        console.log("urrl ", url)
+
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = 'blob';
+        request.onload = function () {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+            }
+        }
+        request.send();
+    }
+
+    $(function () {
+
+        $('#manageCategoriesModal').on('hidden.bs.modal',
+            function () {
+                $('#LoadingImageDiv').show();
+                window.setTimeout(function () { window.location = window.location; }, 1000);
+            });
+
+        var documentsTable = $('#documents').DataTable({
+            drawCallback: function () {
+                $('[data-toggle="popover"]').popover({
+                    trigger: 'hover'
+                });
+            },
+            columns: [
+                {
+                    data: 'Id',
+                },
+                {
+                    data: 'DocumentType',
+                    render: function (data, type, row) {
+                        return '<span>' + vm.document.getType(row) + '</span>'
+                        //#region This block is commented by softude -- Replaced Document Type Icon to Text
+                        //return '<img  title="' + vm.document.getType(row)+'" alt="' +
+                        //    vm.document.getType(row) +
+                        //    '" class="img-circle center-block document-icon" src="' +
+                        //    vm.document.getIconUrl(row) +
+                        //    '"/>';
+                        //#endregion
+                    }
+                },
+                {
+                    data: 'Title',
+                    render: function (data, type, row) {
+                        var details = row.DocumentType + "~" + row.Title + "~" + row.TrainingLabels + "~" + row.Author;
+                        if (row.DocumentType === 2) {
+                            details += "~" + row.PassMarks + "~" + row.Duration;
+                        }
+                        return '<span title="' +
+                            vm.document.getMoreInfo(row) +
+                            '" style="font-size:14px;"   alt="' +
+                            data +
+                            '">' +
+                            data +
+                            '</span>&nbsp;&nbsp;' +
+
+                            '<a href="javascript:void(0)" data-toggle="popover" data-html="true" title="' + row.Title +'" id="' + details + '" class="fa fa-info-circle" style="color:#00a5e2;" onmouseover="bootstrapPopoverHandler(this)"></a>' +
+                            '<br></span>';
+                            //+ '<span style="font-size:12px;">Tags: <span style="font-size:12px;" ></span>' + row.TrainingLabels + '</span>' +
+                            //'<br></span>' + '<span style="font-size:12px;">Author: <span style="font-size:12px;" ></span>' + row.Author + '</span>';
+                    }
+                },
+                {
+                    data: 'AssignedDate',
+                    render: function(data, type, row) {
+                        return row.ExpiryDate === null
+                            ? vm.document.formatDateTime(data)
+                            : vm.document.formatDateTime(data) +
+                            '</br><strong style="font-size: 0.9em;">Expires: ' + vm.document.formatDateTime(row.ExpiryDate) + '</strong>';
+                    }
+                },
+                {
+                    data: 'LastViewedDate',
+                    render: function(data, type, row) {
+                        return data ? vm.document.formatDateTime(data) : 'Pending';
+                    }
+                },
+                {
+                    data: 'Status',
+                    render: function (data, type, row) {
+                        var statusClassName = vm.document.getStatus(row).split(" ").join("");
+                        var status = vm.document.getStatus(row);
+                        return '<div class="align-middle badge badge-default status ' + statusClassName.toLowerCase() + '">' + status.toUpperCase() + '</div>';
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data, type, row) {
+                    var options = [];
+                    if (row.DocumentType === 2) {
+                            var testId = ko.unwrap(row.Id);
+                            var expired = moment(row.ExpiryDate).isBefore(moment());
+                            if (expired || row.AttemptsRemaining <= 0) {
+                                var status = vm.document.getStatus(row);
+                                var msg = row.AttemptsRemaining <= 0 ? 'No Remaining Attempts' : 'Test Expired';
+                                options.push('<a href="javascript:void(0)" title="' +
+                                    msg +
+                                    '" onclick="vm.document.testWarning(' +
+                                    expired +
+                                    ',' +
+                                    row.AttemptsRemaining +
+                                    ')" class="btn btn-default btn-option disabled" aria-disabled="true"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                    var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                        ResultId: testId
+                                    }, true);
+                                    options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                }
+                            }
+                            else {
+                                var status = vm.document.getStatus(row);
+                                if (status.toLowerCase() === "tryagain") {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Try Again</a>');
+                                } else {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                    if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                        var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                            ResultId: testId
+                                        }, true);
+                                        options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                    }
+                                }
+
+                            }
+                        }
+
+                    if (row.DocumentType === 6) {
+                            if (row.Status == 0) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + row.Id + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Start Activity Book</a>')
+                            } else if (row.Status == 4) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + row.Id + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Continue Activity Book</a>')
+                            } else if (row.Status == 5) {
+                                 options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookPreview", "ActivitybookSubmissionReport", new { Area = "Reporting" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-eye-open"></span> View Submission</a>')
+
+                            }
+                    }
+
+                    if (row.DocumentType === 7) {
+                        options.push(`  <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" onclick="downloadSubmission('${row.Id}')" >
+                                                    <span class="glyphicon glyphicon-download-alt"></span> Download submission
+                                                </button>`)
+
+                            if (row.Status == 0) {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                    options.push('<a href="@Url.Action("Preview", "CustomDocument", new { Area = "" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Start Document</a>')
+                            }
+                            else if (row.Status == 1) {
+                                    options.push('<a href="@Url.Action("Preview", "CustomDocument", new { Area = "" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Continue Document</a>')
+                            }
+                            else if (row.Status == 3) {
+                                    //options.push('<a href="' +
+                                    //    vm.document.getViewLink(row) +
+                                //    '" class="btn btn-default btn-option ViewCss"><span class="glyphicon glyphicon-eye-open"></span> View Message</a>')
+
+
+                                options.push('<a onClick=" return OpenViewMessageModal(\'' + row.Id + '\')" class="btn btn-default btn-option ViewCss" style="display:none;"><span class="glyphicon glyphicon-eye-open"></span> View Message</a>')
+
+                                    options.push('<a href="@Url.Action("Preview", "CustomDocument", new { Area = "" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Continue Document</a>')
+                            }else if (row.Status == 4) {
+
+                                     options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+
+                                /*commented by softude*/
+                                @*options.push('<a href="@Url.Action("Preview", "CustomDocument", new { Area = "Reporting" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-eye-open"></span> View Submission</a>')*@
+
+                                /*added by softude*/
+                                    options.push('<a href="' + vm.document.getViewLink(row) + '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();" class="btn btn-default btn-option"><span class="glyphicon glyphicon-eye-open"></span> View Submission</a>')
+
+                                }
+                            }
+
+                    //else if (row.DocumentType !== 2) {
+                    //        options.push('<a href="' +
+                    //            vm.document.getViewLink(row) +
+                    //            '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> View</a>')
+                    //}
+
+                        if (row.Printable && row.DocumentType !== 7) {
+                            options.push('<a href="javascript:void(0)" onclick="vm.document.print(\'' +
+                                row.Id +
+                                '\', ' +
+                                row.DocumentType +
+                                ')" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download</a>');
+                        }
+
+                        if (row.CertificateUrl && row.DocumentType !== 7) {
+                            options.push('<a href="' +
+                                row.CertificateUrl +
+                                '" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download Certificate</a>');
+                        }
+
+                        return '<div class="btn-group-xs">' + options.join('&nbsp;');
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    targets: [0],
+                    visible: false,
+                    searchable: false
+                },
+                { type: 'alt-string', targets: [1, 2] },
+                { type: 'date', targets: [3, 4] },
+                { orderable: false, targets: [6] }
+            ], "language": {
+                "emptyTable": "You currently have no documents assigned to you."
+            },
+            paging: false,
+            searching: false,
+            info: false,
+            "aaSorting": []
+        });
+
+        vm.filteredDocuments.subscribe(function(newValue) {
+            documentsTable.clear();
+            documentsTable.rows.add(newValue);
+            documentsTable.draw();
+        });
+
+        ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+
+        vm.documents(@Html.ToJson(Model));
+
+        $('#categoryTree').jstree('open_all');
+
+        vm.unreadDocuments(@Html.ToJson(Model.Where(x => !x.LastViewedDate.HasValue).ToList()));
+
+        vm.readDocuments(@Html.ToJson(Model.Where(x => x.LastViewedDate.HasValue).ToList()));
+
+    });
+
+    function bootstrapPopoverHandler(ele) {
+        var $el = $(ele);
+        var id = $(ele).attr('id')
+        var arr = id.split('~');
+        var docType = arr[0];
+        var title = arr[1];
+        var trainingLabel = arr[2];
+        var author = arr[3];
+        var content = "<span style='font-size:12px'>Tags: </span> <span style='font-size:12px;'>" + trainingLabel + "</span><br>";
+        content += "<span style='font-size:12px'>Author: </span> <span style='font-size:12px;'>" + author + "</span>";
+        if (docType == "2") {
+            content += "<br><span style='font-size:12px'>Pass Mark: </span> <span style='font-size:12px;'>" + arr[4] + "%</span>";
+            content += "<br><span style='font-size:12px'>Duration: </span> <span style='font-size:12px;'>" + arr[5] + " minutes </span>";
+        }
+
+        //$el.attr('data-toggle', 'popover');
+        //$el.attr('data-trigger', 'onhover');
+        //$el.attr('data-html', 'true');
+        $el.attr('data-placement', 'right');
+        $el.attr('data-content', content);
+        $el.popover();
+    }
+
+</script>
+
+<script>
+
+    var docoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Count))'),
+
+         chart: {
+             height: 150,
+             width: "65%",
+             type: 'donut',
+        },
+
+         dataLabels: {
+            enabled: false
+        },
+
+         labels: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Type))'),
+
+         responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+
+         legend: {
+            position: 'right',
+            offsetY: 0,
+            height: 230,
+         },
+
+         colors: ['#d04627', '#7A3978', '#197248', '#2B5892', '#B51616'],
+
+         fill: {
+               colors: ['#d04627', '#7A3978', '#197248', '#2B5892', '#B51616']
+           }
+    };
+
+    var docchart = new ApexCharts(document.querySelector("#divDocumentchart"), docoptions);
+
+    docchart.render();
+
+    var statusoptions = {
+
+        series: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).StatusCount))'),
+
+        chart: {
+            height: 150,
+            width: "65%",
+            type: 'donut',
+        },
+
+        dataLabels: {
+            enabled: false
+        },
+
+        labels: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Status))'),
+
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+
+        legend: {
+            position: 'right',
+            offsetY: 0,
+            height: 230,
+        },
+
+        colors: ['#ffa500', '#0276FD', '#c40000', '#00cc00', '#e86741', '#00cc00'],
+
+        fill: {
+               colors: ['#ffa500', '#0276FD', '#c40000', '#00cc00', '#e86741', '#00cc00']
+           }
+
+    };
+
+    var statuschart = new ApexCharts(document.querySelector("#divStatuschart"), statusoptions);
+
+    statuschart.render();
+
+</script>
+

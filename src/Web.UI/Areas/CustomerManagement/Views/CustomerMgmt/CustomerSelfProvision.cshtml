@@ -1,0 +1,165 @@
+﻿@using CaptchaMvc.HtmlHelpers
+
+@using CaptchaMvc;
+
+@using Web.UI.Code.Extensions
+
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.CustomerSelfProvisionViewModel
+
+@{
+    Layout = null;
+    ViewBag.Title = "OnRamp Online Training Platform";
+    var version = System.Reflection.Assembly.GetAssembly(typeof(Web.UI.App_Start.RampSecurityConfig)).GetName().Version.ToString();
+}
+<html>
+<head>
+    <link href="~/Content/sb-admin.css" rel="stylesheet" />
+    @Styles.Render("~/bundles/css")
+    <link href="~/Content/admin.css?v=@version" rel="stylesheet" />
+    @Scripts.Render("~/bundles/js")
+</head>
+<body class="customer-self-provision-body">
+    <div class="container customer-self-provision">
+        <div class="col-lg-12">
+            
+            @using (Html.BeginForm("CustomerSelfProvision", "CustomerMgmt", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <div class="row">
+                    <div class="customer-self-provision-form col-lg-8">
+                        <div class="col-md-12 col-centered">
+                            <h3 class="text-center">Get yourself set up with OnRamp</h3>
+                            <h5 class="text-center">You're just 2 minutes away from experiencing the power of OnRamp</h5>
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <span>Create Your Company</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="col-md-6 signUpFont">
+                                                @Html.ValidationSummary(true)
+                                                <div class="form-group">
+                                                    @Html.Label("Give your training portal a name")
+                                                    @Html.TextBoxFor(model => model.ClientSystemName, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.ClientSystemName)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Company name")
+                                                    @Html.TextBoxFor(model => model.CompanyName, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.CompanyName)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Physical address")
+                                                    @Html.TextBoxFor(model => model.PhysicalAddress, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.PhysicalAddress)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Postal address")
+                                                    @Html.TextBoxFor(model => model.PostalAddress, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.PostalAddress)
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 signUpFont">
+                                                <div class="form-group">
+                                                    @Html.Label("Company telephone number")
+                                                    @Html.TextBoxFor(model => model.TelephoneNumber, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.TelephoneNumber)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Website address")
+                                                    @Html.TextBoxFor(model => model.WebsiteAddress, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.WebsiteAddress)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Choose a unique domain for your company")
+                                                    <div class="input-group" style="width: 281px;">
+                                                        @Html.TextBoxFor(model => model.LayerSubDomain, new { @class = "form-control" })
+                                                        <span class="input-group-addon">.@AppSettings.Urls.DomainSuffix</span>
+                                                    </div>
+                                                    @Html.ValidationMessageFor(model => model.LayerSubDomain)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Upload logo")
+                                                    @Html.TextBoxFor(m => m.CompanyLogo, new { type = "file", @class = "btn btn-default" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <span class="signUpFont left">Create your user account : Let's set up your first user</span>
+                                    <span class="signUpFont pull-right">You'll be able to add more shortly</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    @Html.Label("Full name")
+                                                    @Html.TextBoxFor(model => model.FullName, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.FullName)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("ID number")
+                                                    @Html.TextBoxFor(model => model.IDNumber, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.IDNumber)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Email address")
+                                                    @Html.TextBoxFor(model => model.EmailAddress, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.EmailAddress)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Mobile number")
+                                                    @Html.TextBoxFor(model => model.MobileNumber, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.MobileNumber)
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    @Html.Label("Gender")
+                                                    @Html.DropDownListFor(model => model.Gender, Web.UI.Code.Helpers.GenderHelper.ToDropDownList(), new { @class = "form-control", tabindex = 3 })
+                                                    @Html.ValidationMessageFor(model => model.Gender)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Password")
+                                                    @Html.PasswordFor(model => model.Password, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.Password)
+                                                </div>
+                                                <div class="form-group">
+                                                    @Html.Label("Confirm Password")
+                                                    @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.ConfirmPassword)
+                                                </div>
+                                                @Html.MathCaptcha()
+                                                <p class="Error" style="color:red">  @ViewBag.ErrMessage </p>
+                                            </div>
+                                            <div class="text-center">
+                                                <input type="submit" value="Get Started" class="btn btn-lg get-started" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 behki-div hidden-xs hidden-sm hidden-md">
+                        <img src="~/Content/images/Login/ONRAMP_CustomerSelfProvisionPortal_Bheki.png" />
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#CaptchaInputText').addClass("form-control");
+    });
+</script>

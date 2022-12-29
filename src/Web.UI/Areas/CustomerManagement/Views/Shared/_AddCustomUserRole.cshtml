@@ -1,0 +1,281 @@
+﻿@{
+    Layout = null;
+}
+@*@model Ramp.Contracts.ViewModel.AdminSettingsViewModel*@
+
+<style>
+    .required {
+        color: red;
+    }
+
+    .requiredTxt {
+        border: solid red;
+    }
+
+    .cbError {
+        outline: 3px solid #c00;
+    }
+</style>
+
+<form>
+    <div class="modal-body" id="divAddRole">
+        <div class="row" id="AdminRoles">
+            <div class="col-lg-offset-1 col-lg-10">
+                <br />
+                <p>Please provide a title for your custom role and select the applicable permission or permissions for this role. For more information on the User Permission hover on the blue information icon</p><br />
+                <div class="form-group">
+                    <span class="required">* </span>@Html.Label("Role Title"):<br>
+                    @*@Html.TextBoxFor(m => m.AddCustomUserRole.RoleName, new { @class = "form-control requiredClass ", @id = "inp", tabindex = 1 })*@
+                    <input id="inp" class="form-control" type="text"></input>
+
+                </div>
+                <span class="required"></span>@Html.Label("Permission Selection")<br>
+                <div class="panel panel-info">
+                    <div class="panel-heading">User Permissions</div>
+                    <div class="panel-body">
+
+                        <div class="pull-left form-group">
+
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.ContentCreator, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="StandardUser">
+                                <label>Standard User</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to have a standard user profile." class=" fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.ContentCreator, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="ContentCreator">
+                                <label>Content Creator</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to create documents." class=" fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.ContentApprover, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="ContentApprover">
+                                <label>Content Approver</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to approve documents that were created by the content creator." class=" fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.ContentAdmin, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="ContentAdmin">
+                                <label>Document Manager</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to create documents and can immediately publish them." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.PortalAdmin, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="PortalAdmin" />
+                                <label>Settings Manager</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to configure portal settings." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.Publisher, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="Publisher">
+                                <label>Document Sender</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to send published documents." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.Reporter, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="Reporter">
+                                <label>Report Manager</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to pull reports." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.UserAdmin, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="UserAdmin">
+                                <label>User Manager</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to create and manage users." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.ManageTags, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="ManageTags">
+                                <label>Tag Manager</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to create and manage tags." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                @*@Html.CheckBoxFor(m => m.AddCustomUserRole.ManageVirtualMeetings, new { @class = "cb" })*@
+                                <input type="checkbox" class="cb" name="ManageVirtualMeetings">
+                                <label>Virtual Meetings Manager</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to create and manage virtual meetings." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+
+                            <div class="user_permission">
+                                <input type="checkbox" class="cb" name="ManageAutoWorkflow">
+                                <label>Manage Auto Assign Workflow</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to create and manage auto assign workflows." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            <div class="user_permission">
+                                <input type="checkbox" class="cb" name="ManageReportSchedule">
+                                <label>Manage Report Schedule</label> <span data-toggle="tooltip" data-placement="right" title="This permission allows a user to create and manage report Schedules." class="fa fa-info-circle" style="color:#00a5e2;"></span>
+                                <br />
+                            </div>
+                            @*@if (EnabledTrainingActivityLoggingModule)
+        {
+            <div class="user_permission">
+                @Html.CheckBoxFor(m => m.ManageActivityLog)
+                <label>Training Manager</label>
+                <br />
+            </div>
+
+
+        }*@
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <input type="button" id="btnSave1" value="Save" class="btn btn-primary" />
+                            <input type="button" id="btnCancel1" value="Cancel" class="btn" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    var roleNameCheck = false;
+    var cbCheck = false;
+
+
+
+
+    function checkValidation() {
+        console.log("inisede check roel name validations")
+        var x = document.getElementById("inp");
+
+        if (x.value === '' || x.value === null || x.value === undefined || x.value.length == 0) {
+            console.log("role name not valid")
+            x.classList.add('requiredTxt');
+            roleNameCheck = false;
+        } else {
+            console.log("role name valid")
+            x.classList.remove('requiredTxt');
+            roleNameCheck = true;
+        }
+
+        // return check;
+    }
+
+    function checkCBValidation() {
+        var r = document.getElementsByClassName("cb");
+
+        for (let ele of r) {
+            if (ele.checked) {
+                cbCheck = true;
+                break
+            }
+            else {
+                cbCheck = false;
+            }
+        };
+
+        for (let ele of r) {
+            if (cbCheck) {
+                ele.classList.remove('cbError');
+            } else {
+                ele.classList.add('cbError');
+            }
+        }
+
+        //return cbCheck;
+    }
+
+    $("#btnSave1").click((data) => {
+        //checkValidation()
+        checkCBValidation();
+        var model1 = {
+            "StandardUser": false,
+            "RoleName": null,
+            "ContentCreator": false,
+            "ContentApprover": false,
+            "ContentAdmin": false,
+            "PortalAdmin": false,
+            "Publisher": false,
+            "Reporter": false,
+            "UserAdmin": false,
+            "ManageTags": false,
+            "ManageVirtualMeetings": false,
+            "ManageAutoWorkflow": false,
+            "ManageReportSchedule": false
+
+        };
+        model1.RoleName = document.getElementById("inp").value;
+
+        var r = document.getElementsByClassName("cb");
+
+        for (let i = 0; i < r.length; i++) {
+            //console.log(i, r[i].value)
+            for (let j in model1) {
+                if (r[i].name.includes(j)) {
+                    model1[j] = r[i].checked;
+                }
+            }
+        }
+
+        console.log("save clicked ", model1);
+       // roleNameCheck &&
+        if ( cbCheck) {
+            $.post("/CustomerManagement/CustomerMgmt/AddEditCutomUserRole",
+                {
+                    data: JSON.stringify(model1)
+                }
+            )
+                .done((data) => {
+                    console.log("data 1 ", data);
+                    if (data.success) {
+                        notif({
+                            msg: "<b>Success :</b> Custom Role Added.",
+                            type: "success",
+                        });
+                        $("#addCustomRoleModal").modal("hide");
+                        setTimeout(() => { location.reload(); }, 500)
+                    } else {
+                        notif({
+                            msg: 'Some error Occured',
+                            type: 'error'
+                        });
+                    }
+                })
+                .fail((data) => {
+                    console.log("data 2 ", data)
+                    notif({
+                        msg: 'Some error Occured',
+                        type: 'error'
+                    });
+                })
+
+        }
+        else {
+            console.log("validation failed");
+            console.log("rolename check ", roleNameCheck);
+            console.log("cbCheck ", cbCheck);
+        }
+
+
+    })
+    $("#btnCancel1").click(() => {
+        $("#addCustomRoleModal").modal("hide");
+    })
+
+    $(".cb").change((data) => {
+        checkCBValidation();
+        //console.log("data ", data.target.name + " " + data.target.checked)
+        //if (data.target.name == "ContentCreator" && data.target.checked) {
+        //    let t = $("[name='ContentApprover']");
+        //    console.log("t1 ", t[0].checked);
+        //    t[0].checked = false;
+
+        //} else if (data.target.name == "ContentApprover" && data.target.checked) {
+        //    let t = $("[name='ContentCreator']");
+        //    console.log("t2 ", t[0].checked)
+        //    t[0].checked = false;
+        //}
+    })
+
+</script>

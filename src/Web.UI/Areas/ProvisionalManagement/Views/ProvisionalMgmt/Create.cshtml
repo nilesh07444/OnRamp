@@ -1,0 +1,142 @@
+﻿@model Domain.Models.User
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<h2>Create</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>User</h4>
+        <hr />
+        @Html.ValidationSummary(true)
+
+        <div class="form-group">
+           @* <div class="form-group">
+                @Html.LabelFor(model => model.ParentUserID, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ParentUserID)
+                    @Html.ValidationMessageFor(model => model.ParentUserID)
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.ComapnyID, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ComapnyID)
+                    @Html.ValidationMessageFor(model => model.ComapnyID)
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.CompanyName, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.CompanyName)
+                    @Html.ValidationMessageFor(model => model.CompanyName)
+                </div>
+            </div>*@
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.FirstName, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.FirstName)
+                    @Html.ValidationMessageFor(model => model.FirstName)
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.LastName, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.LastName)
+                    @Html.ValidationMessageFor(model => model.LastName)
+                </div>
+            </div>
+
+          @*  <div class="form-group">
+                @Html.LabelFor(model => model.PhysicalAddress, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.PhysicalAddress)
+                    @Html.ValidationMessageFor(model => model.PhysicalAddress)
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.PostalAddress, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.PostalAddress)
+                    @Html.ValidationMessageFor(model => model.PostalAddress)
+                </div>
+            </div>*@
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.EmailAddress, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.EmailAddress)
+                    @Html.ValidationMessageFor(model => model.EmailAddress)
+                </div>
+            </div>
+
+           @* <div class="form-group">
+                @Html.LabelFor(model => model.TelephoneNumber, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.TelephoneNumber)
+                    @Html.ValidationMessageFor(model => model.TelephoneNumber)
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.WebsiteAddress, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.WebsiteAddress)
+                    @Html.ValidationMessageFor(model => model.WebsiteAddress)
+                </div>
+            </div>*@
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Password, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Password)
+                    @Html.ValidationMessageFor(model => model.Password)
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.MobileNumber, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.MobileNumber)
+                    @Html.ValidationMessageFor(model => model.MobileNumber)
+                </div>
+            </div>
+
+           @* <div class="form-group">
+                @Html.LabelFor(model => model.LayerSubDomain, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.LayerSubDomain)
+                    @Html.ValidationMessageFor(model => model.LayerSubDomain)
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.ProvisionalAccountLink, new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ProvisionalAccountLink)
+                    @Html.ValidationMessageFor(model => model.ProvisionalAccountLink)
+                </div>
+            </div>*@
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Create" class="btn btn-default" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>

@@ -1,0 +1,37 @@
+﻿@model Ramp.Contracts.ViewModel.SettingViewModel
+@{
+    Layout = "../../../../Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Settings</h1>
+    </div>
+</div>
+
+@using (Html.BeginForm("CreateOrUpdateSetting", "Settings"))
+{
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-info">
+                <div class="panel-heading"> Password Policy </div>
+                @Html.ValidationSummary(true)
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            @Html.ValidationSummary(true)
+                            <div class="form-group">
+                                @Html.Label("Number of days the password is valid for")
+                                @*@Html.EditorFor(model => model.SettingViewModelShort.PasswordPolicy)*@
+                                @Html.TextBoxFor(model => model.SettingViewModelShort.PasswordPolicy, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.SettingViewModelShort.PasswordPolicy)
+                            </div>
+                            <input type="submit" value="Save" class="btn btn-default" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

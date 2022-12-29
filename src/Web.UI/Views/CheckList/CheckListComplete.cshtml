@@ -1,0 +1,603 @@
+﻿@model Ramp.Contracts.ViewModel.CheckListModel
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer
+@using Common.Enums
+
+@using System.Threading
+@{
+    string checkuser = "admin";
+    if (Thread.CurrentPrincipal.IsInStandardUserRole()) {
+        checkuser = "StandardUser";
+    } else {
+        checkuser = "admin";
+    }
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole()) {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+
+    } else {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+
+    }
+
+
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var isGlobalAccessed = ViewBag.IsGlobalAccessed;
+    var numberNorm = 0;
+
+    if (Model.ContentModels.FirstOrDefault() != null && Model.ContentModels.First().Number == 0) {
+        numberNorm = 1;
+    }
+
+}
+
+<link href="~/Content/Areas/Document/Preview.css" rel="stylesheet" />
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<style>
+    #divContent .form-control {
+        max-width: unset;
+    }
+
+    .applyRequired {
+        outline: 2px solid #c00;
+    }
+
+
+
+    * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+    }
+
+    input.checkbox {
+        width: 17px;
+        height: 17px;
+    }
+
+    textarea {
+        -webkit-user-select: auto;
+    }
+
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+<div id="blueimp-gallery" class="blueimp-gallery">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+<div class="row">
+    <div class="col-sm-3">
+        <div id="divContent">
+            <div class="panel panel-info" data-bind="with:data">
+                <div class="panel-heading">
+                    <h4>Contents</h4>
+                </div>
+
+                <div class="panel-footer">
+                    <table>
+                        <tbody data-bind="foreach: ContentModels">
+                            <tr>
+                                <td><span data-bind="text:ko.unwrap(Number) + @numberNorm"></span></td>
+                                <td>&nbsp;<span class="anchor" data-bind="click:$root.content.set.bind(),text:app.data.utils.string.truncate(Title,30),css:{'active-chapter' : $root.content.isSelected($data)}"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br />
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h4>Feedback</h4>
+                </div>
+                <div class="panel-footer text-center" data-bind="with:$root.feedback">
+                    <select class="form-control" data-bind="options:contentTypes,
+                                                            optionsValue:'Id',
+                                                            optionsText:'Name',
+                                                            optionsCaption : 'What type of feedback ?',
+                                                            value:ContentType"></select>
+                    <p></p>
+                    <textarea class="form-control" data-bind="textInput:Content" rows="7"></textarea>
+                    <p></p>
+                    <button class="btn btn-success btn-sm" type="button" data-bind="click:save.bind()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-9" data-bind="with:data">
+
+        <h1 class="lead" data-bind="text:ko.unwrap(Title).toUpperCase()"></h1>
+        <h4><strong><span class="pageHeading_ref" data-bind="text:$root.enums.documentType[ko.unwrap(DocumentType)].toUpperCase() + ' REF: '"></span><span data-bind="text:ReferenceId"></span></strong></h4>
+        <div class="well">
+            <p data-bind="text:Description"></p>
+        </div>
+        <div class="input-group">
+            <label>View Mode</label>
+            <span class="btn-group-sm" data-bind="with:$root.content.previewMode">
+                <button type="button" class="btn btn-default" data-bind="click:set.bind(0),css : {'btn-primary' : isPortraitMode()}">Portrait</button>
+                <button type="button" class="btn btn-default" data-bind="click:set.bind(1) ,css : {'btn-primary' : isStorybookMode()}">Storybook</button>
+            </span>
+        </div>
+        <!-- ko if: $root.content.previewMode.isStorybookMode() -->
+        <div class="pull-right" data-bind="with:$root.paging">
+            <button class="btn btn-default" data-bind="click:previous.bind(),disable:isCover() || (!hasCover() && isFirst())">Prev</button>
+            <button class="btn btn-primary" data-bind="click:next.bind(),disable:isLast()">Next</button>
+        </div>
+        <br />
+        <!--/ko -->
+        <!-- ko if:$root.paging.shouldShowCover() -->
+        <br />
+        <div class="text-center" data-bind="with:CoverPicture">
+            <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                <img class="img-responsive" data-bind="attr:{src:Url,title:Description}" style="margin-left:auto;margin-right:auto" />
+            </a>
+        </div>
+        <!-- /ko -->
+        <br />
+        <!-- ko foreach:ContentModels -->
+        <!-- ko if:$root.paging.shouldShowContent($data) -->
+        <div data-bind="attr:{id:Id}">
+            <div class="panel panel-info" id="isValidateChkBox">
+
+                <div class="panel-heading hidden-xs">
+
+                    <div class="heading pull-left">
+                        <h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;
+                        <p class="chapterName" data-bind="text:app.data.utils.string.truncate(Title,90)"></p>
+                    </div>
+
+                    <div class="heading pull-right chkIsChecked">
+                        <input type="checkbox" class="checkbox" data-bind="checked:IsChecked" />
+                        @*, css: { 'applyRequired': CheckRequired }, click: vm.checkBoxHandler.bind()*@
+
+                    </div>
+                    <div class="btn-group pull-right hidden-sm">
+                        <a class="btn btn-default" data-bind="visible:ko.unwrap(DocLinkAndAttachmentCount) > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }">
+                            <span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide Attachments' : 'Show Attachments'"></span>&nbsp;
+                            <span class="badge" data-bind="text:ko.unwrap(DocLinkAndAttachmentCount)"></span>
+                        </a>
+                    </div>
+
+                    <div class="btn-group pull-right visible-sm">
+                        <a class="btn btn-default" data-bind="visible:ko.unwrap(DocLinkAndAttachmentCount) > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(DocLinkAndAttachmentCount)"></span></a>
+                    </div>
+                    <span class="clearfix"></span>
+                </div>
+
+                <div class="panel-heading visible-xs">
+                    <div class="heading pull-left">
+                        <h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;
+                        <p class="chapterName" data-bind="text:app.data.utils.string.truncate(Title,90)"></p>
+                    </div>
+                    <div class="heading pull-right chkIsChecked">
+                        <input type="checkbox" class="checkbox" data-bind="checked:IsChecked" />
+
+                    </div>
+                    <div class="panel-heading visible-xs text-center">
+                        <div class="btn-group">
+                            <a class="btn btn-default" data-bind="visible:ko.unwrap(Attachments).length, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(Attachments).length"></span></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapse" style="position: relative" data-bind="attr:{ id:'attachments_'+ko.unwrap(Id) }, slideVisible:state.showAttachments">
+                    <div data-bind="foreach:Attachments" style="padding: 5px">
+                        <div class="pull-left text-center" style="margin-left: 15px;width: 115px; ">
+                            <div style="height: 100px;">
+                                <!-- ko if:ko.unwrap(Type).indexOf('Image') === 0 -->
+                                <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                                    <img class="img-responsive attachment img-thumbnail" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                </a>
+                                <!-- /ko -->
+                                <!-- ko if:ko.unwrap(Type).indexOf('Video') === 0 -->
+                                <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                                    <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                    <div class="content center-block">
+                                        <video controls height="320" width="600">
+                                            <source data-bind="attr:{ src:Url }" type="video/mp4" />
+                                            Your browser does not support the HTML 5 video tag.
+                                        </video>
+                                    </div>
+                                </a>
+                                <!-- /ko -->
+                                <!-- ko if:ko.unwrap(Type).indexOf('Audio') === 0 -->
+                                <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                                    <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                    <div class="content center-block">
+                                        <audio controls style="width:100%">
+                                            <source data-bind="attr:{ src:Url }" type="audio/mp3" />
+                                            Your browser does not support the HTML 5 audio tag.
+                                        </audio>
+                                    </div>
+                                </a>
+                                <!-- /ko -->
+                                <!-- ko ifnot:(ko.unwrap(Type).indexOf('Image') === 0 || ko.unwrap(Type).indexOf('Video') === 0 || ko.unwrap(Type).indexOf('Audio') === 0)-->
+                                <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description},click:$root.content.previewUpload.bind($data)" />
+                                <!-- /ko -->
+                            </div>
+                            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                                <small data-bind="text:Description"></small>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ko if: ko.unwrap($data.DocLinks)?.length > 0-->
+                    <div style="padding: 10px 10px">
+                        <strong style="margin-left: 15px">Links:</strong>
+                    </div>
+
+                    <div class="row col-md-12" style="padding-bottom: 10px" id="docLinks" data-bind="foreach:$data.DocLinks, attr: {id: 'chapter_' + $index() }">
+                        <div class="col-md-2">
+                            <a class="iframe" data-bind="attr: {href: Url}">
+                                <img class="img-responsive upload-thumbnail hover-zoom cursor" data-bind="attr:{title:Url}" src="@Url.Content("~/Content/images/file/WebFrame.png")" />
+                                <p class="text-center"> <span data-bind="text: Name"></span></p>
+                            </a>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <div class="clearfix"></div>
+                    <hr />
+                </div>
+
+                <div class="panel-info">
+                    <div class="panel-body" data-bind="hidden:state.minimized">
+                        <div class="row">
+
+                            <div class="col-lg-12 chapter-content">
+                                <!-- ko if:Content -->
+                                <p> <div class="content-tools" data-bind="contentTools:{query:'',identifier:'name',value:Content},identifier:ko.unwrap(Id),html:Content" data-editable></div></p>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="row col-lg-12">
+                            <!-- ko if:NoteAllow -->
+                            <div class="col-lg-5 pull-left">
+                                <div class="form-group">
+                                    <label id="resources" class="control-label">Leave additional notes:</label>
+                                </div>
+                                <div class="heading pull-left IssueDiscription">
+
+                                    <textarea cols="500" class="form-control" data-bind="textInput:IssueDiscription" rows="5"></textarea>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+
+                            <div class="col-sm-7">
+                                @if (!Model.Status) {
+                                    <!-- ko if:AttachmentRequired -->
+                                    <!-- Below line can be used to outline Attachment area if AttachmentRequired is true -->
+                                    <!-- 'applyRequired': StandardUserAttachments.length == 0 && ko.unwrap(Attachments).length==0 && AttachmentRequired, -->
+                                    <div data-bind="css: { 'col-sm-12': StandardUserAttachments().length > 0, '': StandardUserAttachments().length === 0 }">
+                                        <div class="form-group">
+                                            <label id="resources" class="control-label">Choose any of the below to upload</label>
+                                        </div>
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/wordDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/excelDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/otherDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/audDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" title="Accepted filetypes: &#013; .MP3" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/imgDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data);" title="Accepted filetypes: &#013; .PNG &#013; .JPEG &#013; .JPG &#013; .GIF &#013; .BMP" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/videoDoc.png")" id="videoUploadId" data-bind="click:vm.upload.triggerUpload.bind($data)" title="Accepted filetypes: &#013; .MP4" />
+
+                                        <div id="inputs"></div>
+                                    </div>
+                                    <!-- /ko -->
+                                }
+                            </div>
+                            <div class="row col-sm-7 pull-right">
+                                <div class="table-responsive">
+                                    <!-- ko if:StandardUserAttachments().length>0 -->
+                                    <table class="table table-striped table-condensed" data-bind="visible:ko.unwrap(StandardUserAttachments).length > 0">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="5" style="padding:0">
+                                                    <label class="success arrangeHeader">Arrange Attachments</label>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach:StandardUserAttachments,uiSortableList:Attachments,handle:'.uploadhandle'">
+                                            <tr data-bind="if:!ko.unwrap($data.Error)">
+                                                <td style="max-width: 50px">
+                                                    <a class="btn"><span class="glyphicon glyphicon-sort uploadhandle" style="color:black"></span></a>
+                                                </td>
+                                                <td class="upload upload-detail-20">
+                                                    <a data-bind="attr:{href: ko.unwrap($data.Url)},click:app.data.plugins.blueimpGallary.trigger.bind($data)" target="_blank">
+                                                        <img class="img-responsive upload-thumbnail" data-bind="attr:{src:ko.unwrap($data.ThumbnailUrl)}" />
+                                                    </a>
+                                                </td>
+                                                <td class="upload upload-detail-40">
+                                                    <textarea type="text" class="form-control" data-bind="value:$data.Description" style="width:100%" rows="4"></textarea>
+                                                </td>
+                                                <td class="upload upload-detail-20">
+                                                    <label data-bind="text:vm.upload.getScaledSize(ko.unwrap($data.Size))"></label>
+                                                    <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible :ko.unwrap($data.InProcess)">
+                                                        <div class="progress-bar progress-bar-success" data-bind="style:{width:ko.unwrap($data.Progress)}"></div>
+                                                    </div>
+                                                </td>
+                                                <td class="upload upload-detail-20" style="max-width: 50px">
+                                                    <div data-bind="if: ko.unwrap($data.InProcess)">
+                                                        <button class="btn btn-danger upload-action" data-bind="click:vm.upload.cancel.bind($data,$parent)"><i class="glyphicon glyphicon-ban-circle"></i></button>
+                                                    </div>
+                                                    <div data-bind="ifnot: ko.unwrap($data.InProcess)">
+                                                        <button class="btn btn-danger upload-action" data-bind="click:vm.upload.delete.bind($data,$parent)"><i class="glyphicon glyphicon-trash"></i></button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- /ko -->
+        <!-- /ko -->
+        <br>
+
+        @if (!Model.Status) {
+            @:<input class="btn btn-primary" value="Finish Later" type="button" data-bind="click: finishlaterCheckList.bind($data)" /> &nbsp; &nbsp; <input class="btn btn-primary" id="btnComplete" value="Complete Checklist" type="button" data-bind="click: submitCheckList.bind($data)" />
+        }
+        <br><br><br>
+
+    </div>
+
+    <div class="modal fade" id="finishLaterModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    Are you sure you want to complete your checklist later?
+                </div>
+                <div class="modal-body">
+                    <span>By clicking "Finish Later" you will be navigated back to your documents and your progress will be saved. </span><br><br>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" data-dismiss="modal" id="btnFinishLater" class="btn btn-primary">Finish Later</button>
+                            <button type="button" id="btnNotAccept" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="CheckListCompleteModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    Are you sure you want to submit your checklist?
+                </div>
+                <div class="modal-body">
+                    <span>By clicking "Submit" your checklist will be submitted to your administrator.</span><br><br>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" data-dismiss="modal" id="btnCompleteCheckList" class="btn btn-primary">Submit</button>
+                            <button type="button" data-dismiss="modal" class="btn btn-default" >Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="disclaimerModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Information</h4>
+            </div>
+            <div class="modal-body">
+                <span>By agreeing to this message, you acccept that when your Checklist session expires you will not be able to complete your Checklist, please ensure that you have a stable internet connection before you begin with this Checklist.</span>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" data-dismiss="modal" id="Accept" class="btn btn-primary">I Agree</button>
+                        <button type="button" data-dismiss="modal" class="btn btn-default" value="Send">I Disagree</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var isGlobal = '@isGlobalAccessed';
+    var vm = new app.data.previewController(@Html.ToJson(Model),@Html.ToJson(ViewBag.Links as IDictionary<string,string>),
+        {
+            startTime: '@ViewBag.StartTime',
+            trackingInterval: parseInt(@ViewBag.TrackingInterval)
+        }, @Html.ToJson(new Ramp.Contracts.ViewModel.CheckListChapterModel()),
+         [
+            "image:png", "image:jpeg", "image:jpg", "image:gif", "image:bmp", "video:mp4", "document:ppsx", "document:pps", "document:docx", "document:xls", "document:xlsx", "document:ppt", "document:pptx", "document:pdf", "document:csv",
+            "audio:mp3"
+        ],
+        @Html.ToJson(new Ramp.Contracts.ViewModel.FileUploadResultViewModel()), @Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Categories)
+    , null);
+
+    vm.initialize();
+    vm.enums = {};
+    vm.enums.documentType = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)));
+    vm.checkBoxHandler = function (event, data) {
+        var x = ko.unwrap(event);
+        console.log(ko.unwrap(x.CheckRequired));
+         
+        if (!(data.currentTarget.checked) && ko.unwrap(x.CheckRequired)) {
+            //console.log('Apply css...')
+            document.getElementById("isValidateChkBox").style.outline = "2px solid #c00";
+        } else {
+            //console.log("remove..")
+            document.getElementById("isValidateChkBox").style.outline = "none";
+        }
+        return true
+    }
+    var self = this; 
+
+    $(function () {
+        $(".ct-app").hide();
+        $(".iframe").fancybox({
+            type: 'iframe'
+        });
+         $("#disclaimerModal").modal('show');
+         var check = '@checkuser';
+        $("#btnNotAccept").click(function () {
+
+            if (check === 'admin') {
+                window.location.assign("/Document/Index");
+            } else {
+                window.location.assign("/Document/MyDocuments");
+            }
+        });
+        $("#closeModal").click(function () {
+
+            if (check === 'admin') {
+                window.location.assign("/Document/Index");
+            } else {
+                window.location.assign("/Document/MyDocuments");
+            }
+
+        });
+
+
+             });
+
+
+    self.deleteAttachment = function (data, selecteditem) {
+
+        var standaredAttachement = (ko.unwrap(data)).StandardUserAttachments;
+        standaredAttachement.remove(selecteditem);
+
+    }
+
+    self.submitCheckList = function (data) {
+        self.finishData = data;
+        var check = true;
+        var requiredChapters = "";
+        $.each(ko.unwrap(data.ContentModels), function (index, val) {
+            //if (ko.unwrap(val.AttachmentRequired) && ko.unwrap(val.StandardUserAttachments).length == 0) {
+            //    notif({
+            //        msg: 'Attachment is required',
+            //        type: 'error'
+            //    });
+            //    check = false;
+            //}
+
+            if (ko.unwrap(val.CheckRequired) && !ko.unwrap(val.IsChecked)) {
+                requiredChapters = ko.unwrap(requiredChapters) + ko.unwrap(val.Title) + ','
+                notif({
+                    msg: ko.unwrap(requiredChapters) + ' check item is required',
+                    type: 'error'
+                });
+                check = false;
+                document.querySelectorAll("#isValidateChkBox")[index].style.outline = "2px solid #c00";
+            } else {
+                document.querySelectorAll("#isValidateChkBox")[index].style.outline = '';
+            }
+        });
+        if (check)
+            $("#CheckListCompleteModal").modal('show');
+    }
+
+    $("#btnCompleteCheckList").click(function () {
+
+         $('#LoadingImageDiv').show();
+            var url = '@Url.Action("CompleteChecklistChapters")';
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        ContentModel: ko.mapping.toJS(self.finishData), status: true, IsGlobalAccessed:'@isGlobalAccessed'
+                    }
+                })
+                .done(function (data) {
+                    if (data == "done") {
+                        notif({
+                            msg: 'Checklist submitted successfully, taking you back to your library',
+                            multiline: true,
+                            type: 'success'
+                        });
+                        if (isGlobal === 'True' || isGlobal === 'true' || isGlobal===true )
+                            window.location.assign("/Document/GlobalDocuments");
+                        else
+                            window.location.assign("/Document/MyDocuments");
+                    }
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+
+    });
+
+    self.finishlaterCheckList = function (data) {
+        self.finishData = data;
+        $("#finishLaterModal").modal('show');
+    }
+    $("#btnFinishLater").click(function () {
+
+         $('#LoadingImageDiv').show();
+            var url = '@Url.Action("CompleteChecklistChapters")';
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        ContentModel: ko.mapping.toJS(self.finishData), status: false, IsGlobalAccessed:'@isGlobalAccessed'
+                    }
+                })
+                .done(function (data) {
+                    notif({
+                        msg: 'Your progress has been saved, taking you back to your library',
+                        multiline: true,
+                        type: 'success'
+                    });
+
+                    if (isGlobal === 'True' || isGlobal === 'true' || isGlobal === true)
+                        window.location.assign("/Document/GlobalDocuments");
+                    else
+                        window.location.assign("/Document/MyDocuments");
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+
+    });
+
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+    $(function () {
+
+    });
+
+</script>
+

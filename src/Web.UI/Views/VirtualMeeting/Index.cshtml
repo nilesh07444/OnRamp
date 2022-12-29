@@ -1,0 +1,933 @@
+﻿@model Ramp.Contracts.ViewModel.MeetingViewModel
+
+@{
+    var companyId = ViewBag.CompanyId;
+
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
+<style>
+    .bnotStarted {
+        background-color: #ffa500;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .ended {
+        background-color: #c40000;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .aInprogress {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .status {
+        width: 75%;
+        font-weight: 600;
+        font-size: 14px;
+        font-family: Arial;
+        padding: 5px;
+    }
+
+    .requiredTxt {
+        border: solid red;
+    }
+
+    .document-icon {
+        max-width: 60px;
+    }
+
+
+    .btn-option {
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-sm-12 ">
+            <div class="panel panel-info">
+                <div class="panel-heading clearfix" style="line-height: 34px;">
+                    Virtual Meetings
+                    <a id="virtualClassRoomId" style="border-left: solid 1px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer "><i class="glyphicon glyphicon-plus"></i></a>
+                    <div class="pull-right">
+                        <form class="form-inline">
+                            <div class="input-group" style="width: 170px;">
+                                <select class="selectpicker" multiple id="ddlFilter">
+                   
+                                    <optgroup label="Status">
+                                        <option value="aInprogress">In progress</option>
+                                        <option value="Ended">Ended</option>
+                                        <option value="bNotStarted">Pending</option>
+                                    </optgroup>
+
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtSearch" placeholder="Virtual Meeting Search" data-bind="" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" id="btnSearch"><span class="glyphicon glyphicon-search"></span></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="table-responsive" id="divMeeting">
+                    @Html.Partial("~/Views/VirtualMeeting/_MeetingList.cshtml", Model)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4" style="padding-top: 4px">
+                    Show <select id="ddlShowEntry">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select> entries
+                </div>
+                <div class="pull-right">
+                    <ul class="pagination" style="margin: 0 15px 20px 0;">
+                        <li id="prevPageCss"><a href="#">&larr; Previous</a></li>
+                        @for (int i = Model.Paginate.StartPage; i <= Model.Paginate.EndPage; i++) {
+                            <li class="PageCss" id="@(i)"><a href="#">@(i)</a></li>
+                        }
+
+                        <li id="nextPageCss"><a href="#">Next &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="pull-right" style="padding-top: 6px; margin-right: 2em;">Showing <span>@(Model.Paginate.FirstPage)</span> to <span>@(Model.Paginate.LastPage) </span> of <span>@Model.Paginate.TotalItems</span> entries</div>
+
+                <input type="hidden" value="@Model.Paginate.StartPage" id="hdnStartPage" />
+                <input type="hidden" value="@Model.Paginate.EndPage" id="hdnEndPage" />
+                <input type="hidden" value="@Model.Paginate.IsLastPage" id="hdnIsLastPage" />
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="viewParticipantsModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Virtual Meeting Room Participants</h4>
+            </div>
+            <div class="modal-body" id="divViewParticipants">
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="CancelMeetingModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">You are about to cancel a Virtual Meeting Room</h4>
+            </div>
+            <div class="modal-body" id="divCancelMeeting">
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" id="btnCancelMeeting" data-dismiss="modal" class="btn btn-primary" value="Cancel Meeting">Cancel Meeting</button>
+                        <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="virtualClassRoomModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Create your Virtual Meeting Room</h4>
+            </div>
+            <div class="modal-body" id="divVirtualClassroom">
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        @*<button type="button" id="btnNext" data-dismiss="modal" class="btn btn-primary" value="Next">Next</button>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="VirtualClassSummaryModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Virtual Meeting Room Summary</h4>
+            </div>
+            <input type="hidden" id="hdnRecipientEmails" />
+            <div class="modal-body" id="divVirtualClassroomSummary">
+
+            </div>
+
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+
+                        <button class="btn btn-default" id="btnBacktoCreate" data-dismiss="modal">Back</button>
+                        <button class="btn btn-primary" id="btnConfirmed" data-dismiss="modal">Confirm</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="VirtualClassConfirmedModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title"> Virtual classroom created</h4>
+            </div>
+            <div class="modal-body" id="divVirtualClassroomConfirmed">
+                <span>Virtual classroom has been created successfully</span>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" id="btnClose" data-dismiss="modal" class="btn btn-primary" value="Close">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="assignVirtualClassModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Select your virtual meeting room participants</h4>
+            </div>
+            <div class="modal-body" id="divassignVirtualClassroom">
+
+            </div>
+
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+
+                        <button class="btn btn-default" id="btnBackToCreateVirtual" data-dismiss="modal">Back</button>
+                        <button class="btn btn-primary" id="btnAssignUser">Next</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="AddParticipantsModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Add Participants to Virtual Meeting Room </h4>
+            </div>
+            <div class="modal-body" id="divAddParticipants">
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Close</button>
+                        &nbsp;&nbsp; <button class="btn btn-primary" id="btnAddParticipants">Add Participants</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="RemoveParticipantsModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Remove Participants From Virtual Meeting Room </h4>
+            </div>
+            <link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+            <script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+            <div class="modal-body" id="divRemoveParticipants">
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Close</button>
+                        &nbsp;&nbsp; <button class="btn btn-primary" id="btnRemoveParticipants">Remove Participants</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="shareMeetingModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Share your meeting</h4>
+            </div>
+            <div class="modal-body" id="divViewParticipants">
+                <p>What to share your meeting to external users? Please enter the recipient/s email and a notification will be sent. You can enter more than one email by separating each email address with a ","</p>
+                <br />
+                <h4>Recipients:</h4>
+
+                <div class="form-group">
+                    <input type="text" class="form-control" style="min-width:100%;" id="txtSharePublicLinkByEmails" />
+                </div>
+                <br />
+                <br />
+                <p>Want to share your meeting using another channel? Please copy the link below in order to share the meeting. Please note that the link below will only be valid once the meeting has been successfully created</p>
+                <br />
+
+
+                <a style="cursor:pointer"> <span id="shareMeetingUrl"></span></a>
+                <input type="hidden" name="name" id="hdnShareDocumentId" value="" />
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button"  data-dismiss="modal" class="btn btn-default" value="Cancel">Cancel</button>
+                        <button type="button" id="btnShare" class="btn btn-primary" value="Share">Share</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="shareRecipientModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Share your meeting</h4>
+            </div>
+            <div class="modal-body" id="divShareRecipientMeeting">
+                <p>What to share your meeting to external users? Please enter the recipient/s email and a notification will be sent. You can enter more than one email by separating each email address with a ","</p>
+                <br />
+                <h4>Recipients:</h4><br />
+
+                <div class="form-group">
+                    <input type="text" class="form-control" style="min-width:100%;" id="txtRecipientEmails" />
+                </div>
+                <br />
+                <br />
+                <p>Want to share your meeting using another channel? Please copy the link below in order to share the meeting. Please note that the link below will only be valid once the meeting has been successfully created</p>
+                <br />
+
+                <a style="cursor:pointer;"><span id="shareVirtualMeetingUrl"></span></a>
+            </div>
+
+            <input type="hidden" id="hdnUsers" />
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+
+                        <button class="btn btn-default" id="btnBackToAssignUSser" data-dismiss="modal">Back</button>
+                        <button class="btn btn-primary" id="btnNextConfirmation">Next</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@if (ViewBag.InprogressMeetings != null && ((List<Ramp.Contracts.ViewModel.VirtualClassModel>)ViewBag.InprogressMeetings).Count() > 0) {
+    <div class="modal fade" id="InprogressMeetingModal" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Virtual Meeting Rooms in progress</h4>
+                </div>
+                <div class="modal-body" id="divInprogressMeeting">
+                    @Html.Partial("~/Views/Document/_InprogressMeetings.cshtml", (List<Ramp.Contracts.ViewModel.VirtualClassModel>)ViewBag.InprogressMeetings)
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+
+    @if (ViewBag.InprogressMeetings != null && ((List<Ramp.Contracts.ViewModel.VirtualClassModel>)ViewBag.InprogressMeetings).Count()>0) {
+            @: $('#InprogressMeetingModal').modal('show');
+      }
+
+    $('#' + '@Model.Paginate.PageIndex').addClass('active');
+
+     /*************Assign virtual class room to users***************/
+    function fnVirtualClass() {
+
+        $('#virtualClassRoomModal').modal("hide");
+
+        var virtualClass = $.get("@Url.Action("AssignUserToVirtualClass", "VirtualMeeting", new { Area = "" })");
+
+        virtualClass.done(function (data) {
+
+            $("#divassignVirtualClassroom").html(data);
+            $('#assignVirtualClassModal').modal("show");
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        virtualClass.always(function () {
+
+                });
+    }
+    function fnGetMeetings(pageIndex) {
+        var filters = $("#ddlFilter").val();
+        if (filters === "" || filters === null || filters === undefined) {
+            filters = "";
+        } 
+
+        var searchText = $('#txtSearch').val();
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+        endPage = $('#hdnEndPage').val();
+
+            var meeting = $.get("@Url.Action("FilterMeeting", "VirtualMeeting", new { Area = "" })", {
+                filters: filters.toString(),searchText: searchText, pageIndex: parseInt(pageIndex), pageSize: pageSize, startPage: startPage, endPage: endPage
+
+                });
+
+            meeting.done(function (data) {
+            $('#divMeeting').html(data);
+                });
+            meeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+
+    }
+    /****************to validate multiple email with "," separated********************/
+    function ValidateRecipientEmails( emails) {
+
+        if (emails != null && emails != "" && emails != undefined)
+        {
+            var emailList = emails.split(',');
+            for (i = 0; i < emailList.length; i++) {
+                for (i = 0; i < emailList.length; i++) {
+                    var regex = /^([a-zA-Z0-9_.+-])+\@@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+                    var result = regex.test(emailList[i]);
+                    if (!result) {
+
+                        notif({
+                            msg: "<b>Warning :</b> Please ensure that you have entered the email correctly and ensure that they are separated by a comma",
+                            type: "error",
+                            multiline: true
+                        });
+                        return false;
+
+                    }
+
+                }
+                return true;
+            }
+        }
+        return true;
+                }
+    var assignAddUsers = [];
+    $(function () {
+
+        $('#liMeetingRoom').addClass('active');
+
+         /******************Used to filter the Meeting based on selected filters *************************/
+        $("#ddlFilter").change(function () {
+            var pageIndex = $('.PageCss.active').attr('id');
+            fnGetMeetings(pageIndex);
+
+        });
+
+        /****************this is used to remove the participants from selected meeting**********************/
+        $(document).on('click', '#btnRemoveParticipants', function () {
+            var documentId = $('#hdnDocumentId').val();
+            //var unassignUsers = [];
+            //$('.UserCss').each(function () {
+            //    if ($(this).is(':checked')) {
+            //        unassignUsers.push($(this).attr('id'));
+            //    }
+            //});
+
+            var users = assignAddUsers.toString();
+            if (users === null || users === "" || users === undefined) {
+                notif({
+                    msg: "<b>Warning :</b> Please ensure that you select a user first",
+                    type: "error",
+                    multiline: true
+                });
+
+                return false;
+            }
+
+            var meeting = $.get("@Url.Action("RemoveParticipantsFromMeeting", "VirtualMeeting", new { Area = "" })", {
+                userIds: users, documentId: documentId
+
+                });
+
+            meeting.done(function (data) {
+                $('#divMeeting').html(data);
+                $('#RemoveParticipantsModal').modal('hide');
+                notif({ msg: "<b>Success :</b> Participants has been successfully removed", type: "success", multiline: true });
+                });
+            meeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+
+        });
+        /****************this is used to add the participants from the selected Meeting**********************/
+        $(document).on('click', '#btnAddParticipants', function () {
+            var documentId = $('#hdnDocumentId').val();
+
+            
+            var users = assignAddUsers.toString();
+            if (users === null || users === "" || users === undefined) {
+                notif({
+                    msg: "<b>Warning :</b> Please ensure that you select a user first",
+                    type: "error",
+                    multiline: true
+                });
+
+                return false;
+            }
+            var hostname = window.location.origin +'@Url.Action("VirtualMeeting", "Document")'
+            var meeting = $.get("@Url.Action("AddParticipantsToMeeting", "VirtualMeeting", new { Area = "" })", {
+                userIds: users, documentId: documentId, hostname: hostname
+
+                });
+
+            meeting.done(function (data) {
+                $('#divMeeting').html(data);
+                $('#AddParticipantsModal').modal('hide');
+                notif({ msg: "<b>Success :</b> Participants has been successfully added", type: "success", multiline: true });
+                });
+            meeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        });
+
+         /*************this one is used to Add participants from the selected Meeting*****************/
+        $(document).on('click', '.AddParticipants', function () {
+            var id = $(this).attr('id');
+            assignAddUsers = [];
+            var virtualClass = $.get("@Url.Action("GetGroupList", "VirtualMeeting", new { Area = "" })", {
+                documentId: id, check: true
+                });
+        virtualClass.done(function (data) {
+
+            $("#divAddParticipants").html(data);
+            $('#AddParticipantsModal').modal('show');
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        virtualClass.always(function () {
+
+                });
+        });
+        /*************this one is used to Remove participants from the selected Meeting*****************/
+        $(document).on('click', '.RemoveParticipants', function () {
+            assignAddUsers = [];
+            var id = $(this).attr('id');
+
+             var virtualClass = $.get("@Url.Action("GetGroupList", "VirtualMeeting", new { Area = "" })", {
+                 documentId: id, check: false
+                });
+
+        virtualClass.done(function (data) {
+
+            $("#divRemoveParticipants").html(data);
+            $('#RemoveParticipantsModal').modal('show');
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        virtualClass.always(function () {
+
+                });
+        });
+
+        /*************this one is used to show the modal to share the public meeting***************/
+        $(document).on('click','.ShareMeeting', function () {
+            var id = $(this).attr('id');
+            $('#hdnShareDocumentId').val(id);
+            var hostname = window.location.origin
+            var url = hostname + "/public/meeting/" + id;
+            $('#shareMeetingUrl').text(url);
+            $('#shareMeetingModal').modal('show');
+        });
+        $(document).on('blur', '#txtSharePublicLinkByEmails', function () {
+            var emails = $(this).val();
+            if (emails != "" && emails != null && emails != undefined) {
+                $("#txtSharePublicLinkByEmails").removeClass('requiredTxt');
+            } else {
+                $("#txtSharePublicLinkByEmails").addClass('requiredTxt');
+            }
+        });
+
+        /*****************share the meeting url with others by email*****************/
+        $(document).on('click', '#btnShare', function () {
+            var emails = $("#txtSharePublicLinkByEmails").val();
+
+            var link = $('#shareMeetingUrl').text();
+            var documentId = $('#hdnShareDocumentId').val();
+            if (emails != "" && emails != null && emails != undefined) {
+                $("#txtSharePublicLinkByEmails").removeClass('requiredTxt');
+                if (ValidateRecipientEmails(emails)) {
+                    var virtualMeeting = $.get("@Url.Action("SharePublinkByEmail", "VirtualMeeting", new { Area = "" })", {
+                        emails: emails,
+                        link: link,
+                        documentId: documentId
+                    });
+
+                    virtualMeeting.done(function (summary) {
+                        notif({ msg: "<b>Success :</b> Public Meeting shared successfully", type: "success", multiline: true });
+                        $('#shareMeetingModal').modal('hide');
+                    });
+                    virtualMeeting.fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error(errorThrown);
+                    });
+                }
+
+            } else {
+                notif({
+                    msg: "<b>Warning :</b> Please ensure that you put emails",
+                    type: "error",
+                    multiline: true
+                });
+                $("#txtSharePublicLinkByEmails").addClass('requiredTxt');
+            }
+
+        });
+
+         /**************this one will fire once user select the page size***************/
+        $(document).on('change', "#ddlShowEntry", function () {
+          var  pageIndex = $('.PageCss.active').attr('id');
+            fnGetMeetings(pageIndex);
+
+        });
+
+
+        /**********once user hit the next button**********/
+        $(document).on('click', '#nextPageCss', function () {
+            var pageIndex = $('.PageCss.active').attr('id');
+            fnGetMeetings(parseInt(pageIndex)+1);
+        });
+        /***********when user hit the previous button************/
+          $(document).on('click', '#prevPageCss', function () {
+              var pageIndex = $('.PageCss.active').attr('id');
+              fnGetMeetings(parseInt(pageIndex) - 1);
+        });
+
+
+        /**************once hit the back of Assign user to meeting modal************/
+            $(document).on('click', '#btnBackToCreateVirtual', function () {
+            fnCreateVirtualClassroom(false);
+                       });
+
+        $(document).on('click', '#btnSearch' ,function () {
+            var pageIndex = $('.PageCss.active').attr('id');
+            fnGetMeetings(pageIndex);
+        });
+
+        $(document).on('click', '#btnBacktoCreate', function () {
+
+                    fnVirtualClass();
+
+        });
+
+        $(document).on('click', '#btnBackToAssignUSser', function () {
+
+                    fnVirtualClass();
+
+         });
+
+        
+         /**************assign selected users to meeting  and also show the summary of meeting with details***************/
+        $(document).on('click', '#btnAssignUser', function () {
+            
+            //$('.UserCss').each(function () {
+            //    if ($(this).is(':checked')) {
+            //        assignAddUsers.push($(this).attr('id'));
+            //    }
+            //    });
+
+            var users = assignAddUsers.toString();
+          
+            if (users === null || users === "" || users === undefined) {
+                notif({
+                    msg: "<b>Warning :</b> Please ensure that you select a user first",
+                    type: "error",
+                         multiline: true
+                });
+
+                return false;
+            }
+
+            var virtualClass = $.get("@Url.Action("AssignDocumentsToUsers", "VirtualMeeting", new { Area = "" })?users=" + users.toString());
+
+        virtualClass.done(function (data) {
+
+            if (data.isPublicAccess) {
+                $('#assignVirtualClassModal').modal('hide');
+                $('#shareRecipientModal').modal('show');
+                var hostname = window.location.origin
+                var url = hostname + "/public/meeting/" + data.documentId;
+                $('#shareVirtualMeetingUrl').text(url);
+                $('#hdnUsers').val(data.users);
+
+            } else {
+   var virtualClassSummary = $.get("@Url.Action("GetVirtualClassroomSummary", "VirtualMeeting", new { Area = "" })?users=" + data.users);
+                virtualClassSummary.done(function (summary) {
+                    $("#divVirtualClassroomSummary").html(summary);
+                    $('#assignVirtualClassModal').modal('hide');
+                    $('#VirtualClassSummaryModal').modal('show');
+                    $('#shareRecipientModal').modal('hide');
+
+                });
+                virtualClassSummary.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+                });
+            }
+
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+                });
+        virtualClass.always(function () {
+                });
+        });
+        /*****************send to summary page if IsPubic is true****************/
+        $(document).on('click', '#btnNextConfirmation', function () {
+            var users = $('#hdnUsers').val();
+            var emails = $('#txtRecipientEmails').val();
+
+            if (ValidateRecipientEmails(emails)) {
+
+            $('#hdnRecipientEmails').val(emails);
+            var virtualClassSummary = $.get("@Url.Action("GetVirtualClassroomSummary", "VirtualMeeting", new { Area = "" })", {
+                users: users
+
+                });
+
+                virtualClassSummary.done(function (summary) {
+                    $("#divVirtualClassroomSummary").html(summary);
+                    $('#assignVirtualClassModal').modal('hide');
+                    $('#VirtualClassSummaryModal').modal('show');
+                    $('#shareRecipientModal').modal('hide');
+
+                });
+                virtualClassSummary.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+                });
+            }
+
+        });
+
+
+    /*************this one is used to send the confirmation email********************/
+        $(document).on('click', '#btnConfirmed', function () {
+
+        if ($('#hdnUserIds').val() === '' || $('#hdnUserIds').val() === null || $('#hdnUserIds').val() === undefined) {
+
+            return false
+        }
+        else {
+
+            var searchText = $('#txtSearch').val();
+          var  pageIndex = $('.PageCss.active').attr('id');
+
+            if (pageIndex === null || pageIndex==undefined) {
+                pageIndex = 1;
+            }
+
+           var pageSize = $("#ddlShowEntry").val();
+           var startPage = $('#hdnStartPage').val();
+            var endPage = $('#hdnEndPage').val();
+            var emails = $('#hdnRecipientEmails').val();
+
+             var confirmationEmail = $.post("@Url.Action("ConfirmationEmail", "VirtualMeeting", new { Area = "" })", {
+                 userIds: $('#hdnUserIds').val(),
+                 searchText: searchText, pageIndex: parseInt(pageIndex), pageSize: pageSize, startPage: startPage, endPage: endPage, emails: emails
+                });
+
+        confirmationEmail.done(function (data) {
+            $('#divMeeting').html(data);
+            $('#VirtualClassSummaryModal').modal('hide');
+
+            notif({ msg: "<b>Success :</b> Virtual Meeting created successfully", type: "success", multiline: true });
+                });
+        confirmationEmail.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        }
+
+    });
+
+    /******************Get the page for create the Virtual classroom page  ************************/
+        $(document).on('click', '#virtualClassRoomId', function () {
+
+        fnCreateVirtualClassroom(true);
+
+    });
+        /***************this for pagination on user hit the page number******************/
+        $(document).on('click', ".PageCss", function () {
+
+            pageIndex = $(this).attr('id');
+           var searchText = $('#txtSearch').val();
+
+            if (pageIndex === null) {
+                pageIndex = 1;
+            }
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+            var meeting = $.get("@Url.Action("FilterMeeting", "VirtualMeeting", new { Area = "" })", {
+                searchText: searchText, pageIndex: parseInt(pageIndex) , pageSize: pageSize, startPage: startPage, endPage: endPage
+
+                });
+
+            meeting.done(function (data) {
+            $('#divMeeting').html(data);
+                });
+            meeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        });
+
+        /****************this one used to Cancel the Meeting*******************/
+        $(document).on('click', '#btnCancelMeeting', function () {
+            var id = $('#hdnDocumentId').val();
+            var additionalMsg = $('#txtAdditionalNote').val();
+
+            var searchText = $('#txtSearch').val();
+            pageIndex = $('.PageCss.active').attr('id');
+            if (pageIndex === null) {
+                pageIndex = 1;
+            }
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+
+            var cancelMeeting = $.post("@Url.Action("CancelMeeting", "VirtualMeeting", new { Area = "" })",{
+                id: id,
+                additionalMsg: additionalMsg,
+                searchText: searchText, pageIndex: parseInt(pageIndex) , pageSize: pageSize, startPage: startPage, endPage: endPage
+            });
+                cancelMeeting.done(function (data) {
+                    $('#divMeeting').html(data);
+                    notif({ msg: "<b>Success :</b> Your Virtual Meeting has been cancelled.", type: "success", multiline: true });
+                });
+                cancelMeeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        });
+
+
+        /******************this one is used to show the cancel the meeting pop up********************/
+        $(document).on('click', '.CancelMeeting', function () {
+
+                var cancelMeeting = $.get("@Url.Action("CancelMeetingModal", "VirtualMeeting", new { Area = "" })/"+ $(this).attr('id'));
+
+                cancelMeeting.done(function (data) {
+
+                    $('#divCancelMeeting').html(data);
+                    $('#CancelMeetingModal').modal('show');
+                });
+                cancelMeeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+
+        });
+
+        /*****************this one used to view participants*****************/
+        $(document).on('click', '.ViewParticipant', function () {
+
+             var viewParticipants = $.get("@Url.Action("ViewParticipants", "VirtualMeeting", new { Area = "" })/"+ $(this).attr('id'));
+
+            viewParticipants.done(function (data) {
+                    $('#divViewParticipants').html(data);
+                    $('#viewParticipantsModal').modal('show');
+
+                });
+            viewParticipants.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        });
+
+    });
+
+    function fnCreateVirtualClassroom(check) {
+
+        var virtualClass = $.get("@Url.Action("CreateOrUpdateVirtualClass", "VirtualMeeting")?check=" + check);
+
+        virtualClass.done(function (data) {
+
+            $("#divVirtualClassroom").html(data);
+            $('#virtualClassRoomModal').modal('show');
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        virtualClass.always(function () {
+
+                });
+    }
+
+</script>

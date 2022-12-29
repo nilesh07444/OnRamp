@@ -1,0 +1,303 @@
+﻿@using AttributeRouting.Helpers
+@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Contracts.Security
+@using Ramp.Security.Authorization
+@using Web.UI.Areas.Categories.Controllers
+@using Web.UI.Areas.CustomerManagement.Controllers
+@using Web.UI.Areas.ManageTrainingGuides.Controllers
+@using Web.UI.Areas.ManageTrainingTest.Controllers
+@using Web.UI.Code.Extensions
+@using Web.UI.Controllers
+@using Web.UI.Areas.Reporting.Controllers;
+@using Web.UI.Helpers
+@using System.Threading
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+
+    var admin_menu_tiles = new[]
+    {
+Html.CanAccess<DocumentController>(a => a.Index(null)),
+Html.CanAccess<SendController>(a => a.Index()),
+Html.CanAccess<HomeController>(m => m.AdminReports())
+}.Count(t => t);
+
+    var tile_col = string.Empty;
+    var tile_offset = string.Empty;
+    switch (admin_menu_tiles) {
+        case 3:
+            tile_col = "col-md-2";
+            tile_offset = "col-md-offset-3";
+            break;
+        case 2:
+            tile_col = "col-md-3";
+            tile_offset = "col-md-offset-3";
+            break;
+        default: // 1
+            tile_col = "col-md-6";
+            tile_offset = "col-md-offset-3";
+            break;
+    }
+
+    var hasHeader = PortalContext.Current != null && PortalContext.Current.UserCompany != null && (PortalContext.Current.UserCompany.DashboardVideoFile != null || PortalContext.Current.UserCompany.ShowCompanyLogoOnDashboard || PortalContext.Current.UserCompany.ShowCompanyNameOnDashboard);
+}
+
+<style>
+    #page-wrapper { padding: 0; }
+
+    .quote-div {
+        background-image: url(@Url.Content("~/Content/images/Layout/OR_pattern_quote.jpg"));
+        -ms-background-repeat: no-repeat;
+        background-repeat: no-repeat;
+        -ms-background-size: cover;
+        background-size: cover;
+        -ms-background-position: center;
+        background-position: center;
+        min-height: 142px;
+        overflow: auto;
+        margin: 0;
+        padding: 3em;
+    }
+
+    .fancybox-inner {
+        overflow: hidden !important;
+    }
+
+    .company-logo { max-width: 100%; }
+
+    @@media (min-width: 992px) {
+        .col-md-5ths {
+            width: 20%;
+            float: left;
+        }
+
+        .menu-row {
+            padding-bottom: @(hasHeader ? 0: 125)px;
+        }
+    }
+
+    .menu-tile:hover {
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        transition: transform .15s ease-in-out;
+        transform: scale(1.1)
+    }
+
+    .play-circle {
+        font-size: 64px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -36px;
+        margin-left: -36px;
+    }
+
+    .play-circle:hover{
+       -ms-transition: transform .15s ease-in-out;
+       -o-transition: transform .15s ease-in-out;
+       -webkit-transition: transform .15s ease-in-out;
+       -ms-transition: transform .15s ease-in-out;
+       -o-transition: transform .15s ease-in-out;
+       -webkit-transition: transform .15s ease-in-out;
+       transition: transform .15s ease-in-out;
+       transform: scale(1.3);
+       cursor: pointer;
+    }
+
+    .video-thumbnail {
+        -moz-filter: opacity(50%);
+        -webkit-filter: opacity(50%);
+        filter: opacity(50%);
+    }
+
+    .header-row {
+        min-height: @(hasHeader ? 250 : 125)px;
+    }
+
+
+
+
+
+.notify-badge{
+    position: absolute;
+    right:125px;
+    background:red;
+    text-align: center;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    padding: 10px;
+    color:white;
+    font-size:14px;
+}
+
+        hr {
+  border: 0;
+  height: 1px;
+  background-image: -webkit-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -moz-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+}
+
+
+</style>
+
+<div class="container">
+    <div class="row header-row">
+        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && (PortalContext.Current.UserCompany.DashboardVideoFile != null || PortalContext.Current.UserCompany.ShowCompanyLogoOnDashboard || PortalContext.Current.UserCompany.ShowCompanyNameOnDashboard)) {
+
+            <div class="col-md-12">
+
+                @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.DashboardVideoFile != null) {
+                    <div class="col-md-5 col-md-offset-1">
+                        <div class="embed-responsive embed-responsive-16by9" style="position: relative; background-color: black;">
+                            <a data-bind="fancybox:{ helpers:{ media:{} }, autoSize: true, fitToView: true, aspectRatio: true }, attr:{ title:''}">
+                                <video class="embed-responsive-item video-thumbnail">
+                                    <source src="@Url.Action("Get", "Upload", new {Area = "", id = PortalContext.Current.UserCompany.DashboardVideoFile.Id, mainContext = true})" type="video/mp4" />
+                                    Your browser does not support the HTML 5 video tag.
+                                </video>
+                                <i class="glyphicon glyphicon-play-circle play-circle"></i>
+                                <div class="content center-block">
+                                    <video controls="controls" style="max-width: 100%; max-height: 100%">
+                                        <source src="@Url.Action("Get", "Upload", new {Area = "", id = PortalContext.Current.UserCompany.DashboardVideoFile.Id, mainContext = true})" type="video/mp4" />
+                                        Your browser does not support the HTML 5 video tag.
+                                    </video>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardVideoTitle)) {
+                            <h1>@PortalContext.Current.UserCompany.DashboardVideoTitle</h1>
+                        }
+                        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardVideoDescription)) {
+                            <p>@PortalContext.Current.UserCompany.DashboardVideoDescription</p>
+                        }
+                    </div>
+                    <div class="col-md-1"></div>
+                } else if (PortalContext.Current.UserCompany.ShowCompanyLogoOnDashboard) {
+                    if (!string.IsNullOrEmpty(PortalContext.Current.LogoFileName)) {
+                        <img src="@(Url.Content("~/LogoImages/CustomerLogo/" + PortalContext.Current.UserCompany.LogoImageUrl))" class="img-responsive company-logo center-block" />
+                    } else if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.CustomerConfigurations.Count > 0
+                               && PortalContext.Current.UserCompany.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value)))) {
+                        var dashboardImage = PortalContext.Current.UserCompany.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault().UploadModel;
+                        <img src="data:image/png;base64,@Convert.ToBase64String(dashboardImage.Data)" class="img-responsive center-block company-logo" />
+                    } else {
+                        <img class="img-responsive center-block company-logo" src="@(Url.Content("~/Content/images/logo.png"))" alt="@AppSettings.CompanyName" />
+                    }
+                } else if (PortalContext.Current.UserCompany.ShowCompanyNameOnDashboard) {
+                    <h3 class="page-header" style="text-align: center; font-size: 34px; margin-top: 10px;">@PortalContext.Current.UserCompany.ClientSystemName</h3>
+                }
+            </div>
+            <div class="col-md-12">
+                <br />
+                <hr style="width: 100%; color: black; height: 1px; background-color: black;" />
+            </div>
+        }
+    </div>
+    <div class="row menu-row">
+
+        @if (Thread.CurrentPrincipal.IsInStandardUserRole() && PortalContext.Current.UserCompany.EnableVirtualClassRoom)
+        {
+
+
+
+            <div class="col-md-12">
+                <div class="col-md-4 col-md-offset-2 menu-tile">
+
+
+                    <a href="@Url.Action("MyDocuments", "Document", new {Area = ""})">
+                        @if (ViewBag.PendingCount != null && ViewBag.PendingCount > 0)
+                        {
+                            //<span class="notify-badge">@ViewBag.PendingCount</span>
+                        }
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MyDocuments], true)" class="img-responsive" />
+                        <h4>My Documents</h4>
+                    </a>
+
+                </div>
+                <div class="col-md-4 menu-tile">
+                    <a href="@Url.Action("MyVirtualMeetings", "Document", new {Area = ""})">
+                        @if (ViewBag.MeetingCount != null && ViewBag.MeetingCount > 0)
+                        {
+                            <span class="notify-badge">@ViewBag.MeetingCount</span>
+                        }
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MyVirtualMeetings], true)" class="img-responsive" />
+                        <h4>My Virtual Meetings</h4>
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+
+            <div class="col-md-12">
+                <div class="col-md-4 col-md-offset-4 menu-tile">
+
+
+                    <a href="@Url.Action("MyDocuments", "Document", new {Area = ""})">
+                        @if (ViewBag.PendingCount != null && ViewBag.PendingCount > 0)
+                        {
+                            <span class="notify-badge">@ViewBag.PendingCount</span>
+                        }
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MyDocuments], true)" class="img-responsive" />
+                        <h4>My Documents</h4>
+                    </a>
+
+                </div>
+             
+            </div>
+        }
+    </div>
+    
+</div>
+
+<div class="quote-div">
+    <div class="col-xs-8 col-md-6 col-lg-4 col-xs-offset-2 col-md-offset-3 col-lg-offset-4 text-center">
+        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardQuoteText)) {
+            <p style="font-style: italic; font-weight: bold">@PortalContext.Current.UserCompany.DashboardQuoteText</p>
+        }
+        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardQuoteAuthor)) {
+            <p style="text-transform: uppercase; margin-bottom: 0">@PortalContext.Current.UserCompany.DashboardQuoteAuthor</p>
+        }
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+       
+        positionQuoteDiv();
+    });
+    $(window).resize(function () { positionQuoteDiv(); });
+    
+    function positionQuoteDiv() {
+        $('.quote-div').css({
+            marginTop: 0
+        });
+        var quoteDivHeight = $('.quote-div').height() + parseInt($('.quote-div').css('paddingTop').replace('px', '')) + parseInt($('.quote-div').css('paddingBottom').replace('px', ''));
+        var quoteDivTop = $('.quote-div').position().top;
+        var footerTop = $('footer').position().top;
+        $('.quote-div').css({
+            marginTop: Math.max(0, footerTop - (quoteDivHeight + quoteDivTop))
+        });
+    }
+
+    var Controller = function () {
+        var self = this;
+        self.trackDropdown = function (data, event) {
+            event.stopPropagation();
+            if ($('#trackDropdown').find('.dropdown-menu').is(':hidden')) {
+                $('#trackDropdown').find('.dropdown-toggle').dropdown('toggle');
+            }
+        };
+    };
+    var vm = new Controller();
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+</script>

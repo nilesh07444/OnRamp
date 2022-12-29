@@ -1,0 +1,106 @@
+﻿@using Web.UI.Code.Extensions
+@using Web.UI.Controllers
+@model Ramp.Contracts.Events.TestManagement.TestCompletedEvent
+
+@{
+    Layout = null;
+    var certificateUrl = Model.TestResultModel.Certificate != null ? AppSettings.Urls.ResolveUrl("~" + Url.ActionLink<UploadController>(a => a.GetFromCompany(Model.TestResultModel.Certificate.Id, Model.CompanyViewModel.Id.ToString()))) : null;
+    var summaryUrl = AppSettings.Urls.ResolveUrl("~" + Url.Action("DownloadPDF", "TestReport", new { Area = "Reporting", ResultId = Model.TestResultModel.Id, CompanyId = Model.CompanyViewModel.Id }), Model.CompanyViewModel);
+    var footerUrl = AppSettings.Urls.ResolveUrl("~images/powered.png", Model.CompanyViewModel);
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath = Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var notificationheader = "#27b899";
+    var notificationfooter = "#27b899";
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany.CustomColours != null) {
+        notificationheader = PortalContext.Current.UserCompany.CustomColours.HeaderColour;
+        notificationfooter = PortalContext.Current.UserCompany.CustomColours.FooterColour;
+    }
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <style>
+
+    .headerstyle {
+     background: @notificationheader;
+     height:40px;
+    }
+    .footerstyle {
+        background: @notificationfooter;
+        height: 40px;
+    }
+
+    </style>
+
+</head>
+<body>
+    <div class="headerstyle"></div>
+    <br />
+    <br />
+    <p> Hi @Model.UserViewModel.FirstName !</p>
+    <p> This is to certify that you have completed : <strong>@Model.TestResultModel.Title</strong></p>
+    <br />
+    <table style="border:2px solid black">
+        <tbody>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Full Name</th>
+                <td style="border:1px solid black">@Model.UserViewModel.FullName</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Email Address</th>
+                <td style="border:1px solid black">@Model.UserViewModel.EmailAddress</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Date Completed</th>
+                <td style="border:1px solid black">@DateTime.Now.ToString()</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Contact Number</th>
+                <td style="border:1px solid black">@Model.UserViewModel.ContactNumber</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">ID Number</th>
+                <td style="border:1px solid black">@Model.UserViewModel.IDNumber</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Score</th>
+                <td style="border:1px solid black">@Model.TestResultModel.Score out of @Model.TestResultModel.Total (@Math.Round(Model.TestResultModel.Percentage, 2) %)</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Answered Correctly</th>
+                <td style="border:1px solid black">@Model.TestResultModel.NumberOfRightAnswers</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Answered Incorrectly </th>
+                <td style="border:1px solid black">@Model.TestResultModel.NumberOfWrongAnswers</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Answers Unattempted</th>
+                <td style="border:1px solid black">@Model.TestResultModel.NumberOfUnattemptedQuestions</td>
+            </tr>
+            <tr>
+                <th style="text-align:left;border:1px solid black">Points Awarded</th>
+                <td style="border:1px solid black">@(Model.TestResultModel.Passed ? Model.TestResultModel.Points.ToString() : "0")</td>
+            </tr>
+            @if (Model.TestResultModel.Certificate != null)
+            {
+                <tr>
+                    <th style="text-align:left;border:1px solid black">Certificate</th>
+                    <td style="border:1px solid black"><a href="@certificateUrl">Download</a></td>
+                </tr>
+            }
+            <tr>
+                <th style="text-align:left;border:1px solid black">Test</th>
+                <td style="border:1px solid black"><a href="@summaryUrl">Download</a></td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+    <br />
+    <div class="footerstyle"></div>
+</body>
+</html>

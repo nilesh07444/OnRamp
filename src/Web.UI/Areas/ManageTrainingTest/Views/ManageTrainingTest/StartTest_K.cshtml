@@ -1,0 +1,283 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Ramp.Security.Authorization;
+@using Common.Web
+@using System.Threading
+@using Web.UI.Code.Extensions
+
+@model TestViewModel
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+<div class="row">
+    <div class="col-sm-12">
+        <h2> Time left : <span class="label" data-bind="text : $root.timer.time,css : $root.timer.critical"></span></h2>
+    </div>
+</div>
+<br />
+<div class="row">
+    <div class="col-sm-12" data-bind="with:details">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <span data-bind="text:TestTitle"></span>
+                <span data-bind="text:ko.unwrap(TestDuration) + ' Minutes'" class="pull-right"></span>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div id="AllQuestions" data-bind="foreach:QuestionsList">
+                            <label class="QuestionLabelButton">
+                                <button type="button" class="btn btn-circle" data-bind="css:{'btn-info' : !ko.unwrap(UnAnswered) && !ko.unwrap(ViewLater),'btn-warning' : ko.unwrap(ViewLater),'btn-danger' : ko.unwrap(UnAnswered) && !ko.unwrap(ViewLater) }, click:$root.wizard.setStep.bind()">
+                                    <span data-bind="text:$root.getIndex($data,$parent.QuestionsList,true)"></span>
+                                </button>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="list-group" data-bind="foreach:QuestionsList">
+                            <div class="wizard-step" data-bind="css:{hidden : !$root.wizard.isCurrentStep($data)}">
+                                <h4 data-bind="text:'Question ' + $root.getIndex($data,$parent.QuestionsList,true) + ':'"></h4>
+                                <blockquote>
+                                    <p data-bind="text:TestQuestion"></p>
+                                    <!-- ko foreach:AnswerList-->
+                                    <!-- ko if:ko.unwrap(Selected)-->
+                                    <footer>Answer: <span data-bind="text:Text"></span></footer>
+                                    <!-- /ko -->
+                                    <!-- /ko -->
+                                </blockquote>
+                                <br />
+                                <div class="col-sm-6">
+                                    <div class="row">
+                                        <div class="well well-sm">
+                                            <div style="max-height:150px;overflow-y:auto !important">
+                                                <div class="list-group" data-bind="foreach:AnswerList">
+                                                    <a href="javascript:void(0)" class="list-group-item" data-bind="click:$parent.setAnswer.bind(),css:{active : ko.unwrap(Selected)}">
+                                                        <p class="list-group-item-text" data-bind="text:Text"></p>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="input-group-sm pull-right">
+                                            <label class="control-label">View Later</label>
+                                            <input type="checkbox" data-bind="checked : ViewLater" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- ko if:ko.unwrap(ImageUrl) -->
+                                    <div class="col-sm-4" data-bind="visible:ko.unwrap(ImageUrl)">
+                                        <a data-bind="fancybox:{ autoSize:true }, attr:{ href:ImageUrl, title:'Image' }" class="fancybox.image">
+                                            <img class="img-responsive center-block" data-bind="attr:{src:ImageUrl,title:'Image'}" style="max-height:150px;" />
+                                        </a>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if:ko.unwrap(VideoUrl) -->
+                                    <div class="col-sm-4">
+                                        <video id="example_video_11" class="video-js vjs-default-skin"
+                                               width="150" height="150"
+                                               controls preload="none"
+                                               poster="@Url.Content("~/Content/images/poster.png")"
+                                               data-setup='{"example_option":true}'>
+                                            <source data-bind="attr:{src : VideoUrl }" type='video/mp4' />
+                                            <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                                        </video>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if:ko.unwrap(AudioUrl) -->
+                                    <div class="col-sm-4">
+                                        <a data-bind="fancybox:{ helpers:{ media:{} }}" class="fancybox.iframe" title="Click To Hear Audio">
+                                            <img class="img-responsive attachment" src="@Url.Content("~/Content/images/OR_AudioIcon_v3.png")" />
+                                            <div class="content center-block">
+                                                <audio controls style="width:100%">
+                                                    <source data-bind="attr:{ src:AudioUrl, type:AudioType }" />
+                                                    Your browser does not support the HTML 5 audio tag.
+                                                </audio>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wizard-step wizard-confirmation" data-bind="visible:ko.unwrap($root.wizard.showFinishTest)">
+                            <h4>Would you like to submit the test?</h4>
+                            <div class="alert alert-info">
+                                * Please review any unattempted questions before submitting. If you are happy to proceed, Click the “Finish Test” button.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 wizard-nav" data-bind="with:$root.wizard">
+                        <input type="button" class="btn btn-sm btn-primary" data-bind="visible:ko.unwrap(hasPrevStep),click:prevStep.bind()" value="<< Previous" />
+                        <input type="button" class="btn btn-sm btn-primary" data-bind="visible : ko.unwrap(hasNextStep),click:nextStep.bind()" value="Next >>" />
+                        <input type="button" data-bind="confirm: {message : 'Are you sure?',delegate : $root.submit,cancellationToken : $root.posting},visible:ko.unwrap(showFinishTest),css:{'disabled' : ko.unwrap($root.posting)}" class="btn btn-sm Submit" value="Finish Test" />
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
+</div>
+<script>
+    function ShowLoading(bool) {
+        var busy = true;
+        if (bool)
+            while (busy) {
+                busy = Busy();
+            }
+        if (bool) {
+            $('#LoadingImageDiv').show();
+        }
+        else {
+            $('#LoadingImageDiv').hide();
+        }
+    }
+    function Busy() {
+        return $('#LoadingImageDiv').css('display') !== 'none';
+    }
+    function timer_init() {
+        vm.timer.time_interval = window.setInterval(function () {
+            $.ajax({
+                url: vm.links.timeLeft,
+                type: 'POST',
+                dataType: 'json',
+                success: vm.timer.update
+            });
+        }, 500);
+    }
+    function timer_update(data) {
+        if (data.timeleft != "ExamEnded") {
+            vm.timer.time(data.timeleft);
+        } else {
+            vm.submit();
+        }
+    }
+    function time_cancel() {
+        window.clearInterval(vm.timer.time_interval);
+    }
+    function wizard_isCurrentStep(question) {
+        return vm.getIndex(question, vm.details.QuestionsList, true) == ko.unwrap(vm.wizard.currentStep);
+    }
+    function wizard_nextStep() {
+        vm.wizard.currentStep(ko.unwrap(vm.wizard.currentStep) + 1);
+    }
+    function wizard_prevStep() {
+        vm.wizard.currentStep(ko.unwrap(vm.wizard.currentStep) - 1);
+    }
+    function wizard_setStep(question) {
+        vm.wizard.currentStep(vm.getIndex(question, vm.details.QuestionsList, true));
+    }
+    function Controller(app, model, links) {
+        var self = this;
+        self.details = ko.mapping.fromJS(model);
+        self.details.IntroductionContent(null);
+        self.posting = ko.observable(false);
+        $.each(ko.unwrap(self.details.QuestionsList), function () {
+            var q = this;
+            q.UnAnswered = ko.observable(true);
+            q.CorrectAnswer(null);
+            q.setAnswer = function (answer) {
+                if (answer != undefined) {
+                    $.each(ko.unwrap(q.AnswerList), function () {
+                        var a = this;
+                        a.Selected(false);
+                    });
+                    answer.Selected(true);
+                    q.CorrectAnswer(ko.unwrap(answer.Value));
+                    q.UnAnswered(false);
+                    q.ViewLater(false);
+                }
+            };
+            q.ViewLater = ko.observable(false);
+        });
+        self.links = links;
+        self.timer = {
+            init: timer_init,
+            update: timer_update,
+            time: ko.observable(),
+            cancel: time_cancel,
+            time_interval: {}
+        }
+        self.submit = function () {
+            if (ko.unwrap(vm.posting))
+                return;
+            if ('@Thread.CurrentPrincipal.IsInStandardUserRole()' == 'False')
+                window.location.href = self.links.index;
+            else {
+                if (links.testEnded.indexOf("http://") < 0 && links.testEnded.indexOf('https://') < 0) {
+                    links.testEnded = window.location.origin + links.testEnded;
+                }
+                vm.posting(true);
+                ShowLoading(true);
+                $.ajax({
+                    method: 'POST',
+                    url: links.testEnded,
+                    data: ko.mapping.toJS(self.details),
+                    success: function (response) {
+                        window.location.href = response.url;
+                    },
+                    error: function () {
+                        ShowLoading(false);
+                        vm.posting(false);
+                    }
+                });
+            }
+        }
+        self.timer.critical = ko.computed(function () {
+            if (ko.unwrap(self.timer.time)) {
+                var time = ko.unwrap(self.timer.time).split(':');
+                if (time.length == 3) {
+                    if (time[0] == '0' || time[0] == '00')
+                        if (time[1] < '10')
+                            return 'label-danger';
+                }
+            }
+            return 'label-info';
+        });
+        self.getIndex = function (entry, array, oneBased) {
+            var index = array.indexOf(entry);
+            if (oneBased)
+                index = index + 1;
+            return index;
+        }
+        self.wizard = {
+            currentStep: ko.observable(1),
+            isCurrentStep: wizard_isCurrentStep,
+            nextStep: wizard_nextStep,
+            prevStep: wizard_prevStep,
+            setStep: wizard_setStep
+        };
+        self.wizard.hasNextStep = ko.computed(function () {
+            return ko.unwrap(self.details.QuestionsList).length  >= ko.unwrap(self.wizard.currentStep);
+        });
+        self.wizard.hasPrevStep = ko.computed(function () {
+            return  ko.unwrap(self.wizard.currentStep) > 1;
+        });
+        self.wizard.showFinishTest = ko.computed(function () {
+            return ko.unwrap(self.wizard.currentStep) == ko.unwrap(self.details.QuestionsList).length + 1;
+        });
+        return self;
+    }
+    var vm = new Controller(app, @Html.ToJson(Model), {
+        timeLeft: '@Url.Action("TimeLeft","ManageTrainingTest",new { Area = "ManageTrainingTest" })',
+        index: '@Url.Action("Index","ManageTrainingTest",new {Area="ManageTrainingTest"})',
+        testEnded : '@Url.Action("TestEnded","ManageTrainingTest",new {Area="ManageTrainingTest"})'
+    });
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    vm.timer.init();
+    var startTest_TestDuration = ko.unwrap(vm.details.TestDuration);
+</script>
+
+
+

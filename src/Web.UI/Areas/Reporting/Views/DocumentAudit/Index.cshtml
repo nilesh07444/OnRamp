@@ -1,0 +1,433 @@
+﻿@using System.Threading
+@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.DocumentAuditReportModel
+@{
+    ViewBag.Title = "Index";
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .requiredsTxt {
+        border: solid red !important;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Document Audit Report</h1>
+        <div class="well well-sm">
+            This report allows you to view and respond to feedback that has been submitted by users on assigned documents.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*<span></b>
+        <br>
+        <div class=" panel panel-info">
+
+            <div class="panel-heading">Filtering Options</div>
+            <div class="panel-body">
+
+                <div class="col-md-10">
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Document Type")
+                            @Html.DropDownListFor(m => m.Id, Model.DocumentType, new {  @id = "ddlDocumentType" })
+                        </div>
+
+                        <div class="form-group">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Document")
+                            <div id="divEmptyDocumentList">
+                                <select id="ddlEmptyDocument" class="form-control"></select>
+                            </div>
+                            <div id="divDocumentList" style="display:none;">
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            @Html.Label("To Date")
+                            <div class="input-group date" id='toDate'>
+                                <input  type='text' id="txtToDate" class="form-control date" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.Label("From Date")
+                            <div class="input-group date" id='FromDate'>
+                                <input  type='text' id="txtFromDate" class="form-control date" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        </div>
+
+                    </div>
+
+                <div class="form-group col-md-2" style="height: 100%">
+                    <br /><br /><br />
+                    <input class="btn btn-primary" id="btnGenerate" disabled type="button" value="Generate" />
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12" id="divDocumentAudit">
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Results
+                <div class="pull-right ">
+                    <a class="exportCss" style="cursor:pointer; color:white;"><b><u>Export </u></b></a>
+                </div>
+            </div>
+            <br />
+
+            <div class="panel-body">
+                <div id="divDocAuditTrack">
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+
+          $('.date').datetimepicker({
+            format: 'MM/DD/YYYY',
+            useCurrent: false
+        });
+
+
+
+
+    $('#liDocumentAuditReport').addClass('active');
+    $('#divDocumentAudit').hide();
+    $('#ddlEmptyDocument').attr("multiple", "multiple").val('');
+    $('#ddlEmptyDocument').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 280,
+        enableFiltering: false,
+        maxHeight: 350
+    });
+
+
+    $('#ddlDocumentType').attr("multiple", "multiple").val('');
+    $('#ddlDocumentType').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 280,
+        enableFiltering: false,
+        maxHeight: 350
+    });
+
+    function fnExportAudits() {
+
+        var documents = $('#ddlDocument').val().toString();
+        var startDate = $('#txtToDate').val();
+        var endDate = $('#txtFromDate').val();
+        if (startDate === "" || startDate === undefined)
+            startDate = null;
+        if (endDate === "" || endDate === undefined)
+            endDate = null;
+
+         var url = '@AppSettings.Urls.ResolveUrl("~" + Url.Action("/ExportDocumentAudit"))' + '?'+ $.param({
+             DocumentList: documents.toString().split(','),
+             StartDate: startDate,
+             EndDate: endDate,
+
+                }, true);
+
+
+
+        callDownload(url, null, 'GET');
+            //    downloadReport(url);
+    }
+
+    function downloadReport(url) {
+        var request = new XMLHttpRequest();
+        request.open("POST", url);
+        request.responseType = 'blob';
+
+        request.onload = function () {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                $("#progressModal").modal('hide');
+            }
+        }
+        request.send();
+
+    };
+
+    function callDownload(url, params, MethodType) {
+        var request = new XMLHttpRequest();
+        request.open(MethodType, url);
+        request.setRequestHeader('Content-type', 'application/json');
+        request.responseType = 'blob';
+        request.onload = function () {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+            }
+        }
+        request.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                $('#LoadingImageDiv').hide();
+                $("#addScheduleReportModal").modal('hide');
+            }
+        };
+        $('#LoadingImageDiv').show();
+        if (MethodType != 'GET') {
+            request.send(JSON.stringify(params));
+        }
+        else {
+            request.send();
+
+
+        }
+    }
+
+    $(function () {
+
+        $(document).on('click', '.exportCss', function () {
+            fnExportAudits();
+        });
+        $(document).on('change', '#ddlDocument', function () {
+
+            var documentType = $('#ddlDocumentType').val();
+            var documents = $('#ddlDocument').val();
+
+            if ((documentType === null || documentType === "" || documentType === undefined) || (documents === null || documents === "" || documents === undefined)) {
+                $('#btnGenerate').attr('disabled', 'disabled');
+
+            } else {
+                $('#btnGenerate').removeAttr('disabled');
+            }
+        });
+
+
+         $('#btnGenerate').click(function () {
+             var documentType = $('#ddlDocumentType').val();
+             var documents = $('#ddlDocument').val();
+             var startDate = $('#txtToDate').val();
+             var endDate = $('#txtFromDate').val();
+
+             if ((documentType === null || documentType === "" || documentType === undefined) || (documents == null || documents == "" || documents==undefined)) {
+
+                notif({
+                    msg: "<b>Error :</b> Please select the document type and documents first.",
+                    type: "error"
+                });
+            } else {
+
+               var audits = $.post("@Url.Action("GetDocumentAudits", "DocumentAudit", new { Area = "Reporting" })", {
+                    documents: documents.toString(), startDate: startDate, endDate: endDate
+
+                });
+
+                 audits.done(function (data) {
+                    if (data != null) {
+                        $('#divDocumentAudit').show();
+                        $('#divDocAuditTrack').html(data);
+                    } else {
+                        $('#divDocumentAudit').hide();
+                    }
+
+                });
+                 audits.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            }
+
+        });
+
+        /*****************this one is used to fill the Document dropdown based on selected documentType*********************/
+        $('#ddlDocumentType').change(function () {
+            var types =  $("#ddlDocumentType").val();
+            if (types === null || types === "" || types === undefined) {
+                $('#divEmptyDocumentList').show();
+                $('#divDocumentList').hide();
+                return false;
+            }
+
+            var document = $.get("@Url.Action("DocumentsByType", "DocumentAudit", new { Area = "Reporting" })", {
+                documentTypes: types.toString()
+                });
+
+            document.done(function (data) {
+                    if (data != null) {
+
+                        $('#divDocumentList').html('');
+                        $('#divDocumentList').append('<select id="ddlDocument" class="form-control"></select>');
+                        $('#ddlDocument').attr("multiple", "multiple").val('');
+                        for (var i = 0; i < data.length; i++) {
+
+                            $('#ddlDocument').append('<option value=' + data[i].Id + '>' + data[i].Title + '</option>');
+
+                        }
+
+                        $('#ddlDocument').multiselect({
+                            includeSelectAllOption: true,
+                            buttonWidth: 280,
+                            enableFiltering: true,
+                            maxHeight: 150
+                        });
+                        $('#divEmptyDocumentList').hide();
+                        $('#divDocumentList').show();
+                    }
+                });
+            document.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        });
+    });
+
+</script>

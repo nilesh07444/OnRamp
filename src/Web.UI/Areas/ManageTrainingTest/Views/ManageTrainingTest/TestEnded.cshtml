@@ -1,0 +1,150 @@
+﻿@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+@using Web.UI.Code.Extensions
+
+@model Ramp.Contracts.ViewModel.TestResultViewModel
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Test Finish</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"><strong>Test</strong> : @Model.TestTitle for <strong>Playbook</strong> :@Model.TrainingGuideTitle</div>
+            <div class="panel-body">
+                <div class="row">
+                    @if (Thread.CurrentPrincipal.IsInAdminRole())
+                    {
+                        <div class="panel-body">
+                            <label>Test Preview completed.</label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="panel-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Result</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 80%">Total marks Scored</td>
+                                        <th>@Model.TotalMarksScored </th>
+                                    </tr>
+                                    <tr>
+                                        <td>Test Status</td>
+                                        @if (Model.TestResult)
+                                        {
+                                            <th>
+                                                <span class="label label-success" style="font-size:1.2em;">Passed</span>
+                                            </th>
+                                        }
+                                        else
+                                        {
+                                            <th>
+                                                <span class="label label-danger" style="font-size:1.2em;">Failed</span>
+                                            </th>
+                                        }
+                                    </tr>
+                                    @if (Model.TestResult)
+                                    {
+                                        <tr>
+                                            <td>
+                                                Congratulations!!  You have been rewarded 
+                                            </td>
+                                            <th>
+                                                @Model.PassPoints Points
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <td>Percentage</td>
+                                            <th>@Math.Round(Model.TestResultPers,2) %</th>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                            <br />
+                            @if (!(Model.TestResult))
+                            {
+                                <div class="form-group">
+                                    <span>
+                                        To recap on the course material, please click
+                                        <a target="_blank" href="@(Url.Action("PreviewByReferenceId", "ManageTrainingGuides", new { Area = "ManageTrainingGuides" }))?id=@(Model.TrainingGuideReferenceId)"> here </a>
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group" style="height: 500px; width: 70%;margin:auto">
+                                    <iframe style="width:100%;height:100%" src="@Model.CertificateUrl"></iframe>
+                                </div>
+                            }
+                            <br />
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Test Summary</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 80%">Number Of Right Answers</td>
+                                        <th>@Model.NumberOfRightAnswers</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Number Of Wrong Answers</td>
+                                        <th>@Model.NumberOfWrongAnswers</th>
+                                    </tr>
+                                    <tr>
+                                        <td>Unattempted Questions</td>
+                                        <th>@Model.NumberOfUnattemptedQuestions</th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br />
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type='text/javascript'>
+
+    var buffer = 20; //scroll bar buffer
+    function pageY(elem) {
+        return elem.offsetParent ? (elem.offsetTop + pageY(elem.offsetParent)) : elem.offsetTop;
+    }
+
+    function resizeIframe() {
+        var height = document.documentElement.clientHeight;
+        height -= pageY(document.getElementById('frm')) + buffer;
+        height = (height < 0) ? 0 : height;
+        document.getElementById('frm').style.height = height + 'px';
+    }
+    $(function () {
+        $(window).on('resize', resizeIframe);
+    });
+</script>

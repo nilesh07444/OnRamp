@@ -1,0 +1,430 @@
+﻿
+@using Common.Web
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@using System.Threading
+@{
+    Layout = null;
+}
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<script src="~/Scripts/knockout.js"></script>
+
+@{
+    var data = ViewBag.AutoAssignWorkFlowData;
+}
+
+@*<form id="aawf">*@
+<div class="modal-body" id="temp">
+    <div class="row">
+        <div class="col-lg-offset-1 col-lg-10">
+            <br />
+            <p>Please enter your workflow details below.</p><br />
+            <div class="form-group">
+                <div class="form-group">
+                    <label class="control-label">WorkFlow Name</label>
+                    <input type="text" class="form-control" data-bind="textInput: vm2.WorkflowName" name="Title" id="Title" />
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label>Groups</label><br />
+
+                <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: availableGroups , selectedOptions: selectedGroups,optionsValue: 'Value', optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+            </div>
+
+            <span class="required"></span>@Html.Label("Send Notification")<br>
+
+            <div>
+                <label class="switch">
+                    <input type="checkbox" data-bind="checked: vm2.SendNotiEnabled" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Enable Workflow</span>
+            </div>
+
+            <span class="required"></span>@Html.Label("Documents")<br>
+            <div class="tree" id="tree"></div>
+           
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <input type="button" data-bind="click: vm2.openConfirmModal, enable:checkValid" id="btnNext" value="Next" class="btn btn-primary" />
+                        <input type="button" id="btnBack" value="Back" class="btn" data-dismiss="modal" />
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*summary popup modal*@
+    <div class="modal fade" id="assignconfirmModal" role="dialog" aria-hidden="true" data-backdrop="static" style="overflow-y:auto">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                @Html.Partial("_AutoAssignEditSummary")
+            </div>
+        </div>
+    </div>
+</div>
+
+@*</form>*@
+
+<script>
+
+    var data = JSON.parse(@Html.Raw(Json.Encode(ViewBag.AutoAssignWorkFlowData)));
+
+    console.log("Groups", @Html.Raw(Json.Encode(ViewBag.Groups)))
+    console.log("AutoAssignWorkFlowData", data)
+    var r = []
+
+    data.DocumentList.forEach((e) => {
+        debugger
+        r.push({
+            id: e.Id,
+            text: e.Title,
+            type: e.Type,
+            order: e.Order
+        })
+    })
+
+    //$(function () {
+        //$('#groups-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#groups-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            nonSelectedText: 'None selected',
+            buttonWidth: 280,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering: true
+        });
+
+
+        function isUnique(node) {
+            var tree = $('.tree').jstree(true);
+            var collection = tree.get_node('#').children_d;
+            $(".tree").jstree(true).load_node('#');
+            collection = $.map(collection,
+                function (id) {
+                    return tree.get_node(id);
+                });
+            for (var i = 0; i < collection.length; i++) {
+                if (node.id === collection[i].id || collection[i].type !== 'default') continue;
+                var current = collection[i].text;
+                current = current.toLowerCase().replace(' ', '').trim();
+                if (current.indexOf('\n') > 0) {
+                    current = current.substring(0, current.indexOf('\n'));
+                }
+                if (node.text.toLowerCase().replace(' ', '').trim() === current) {
+                    return false;
+                }
+            }
+            return true;
+        }
+ 
+      fetchTreeData();
+    function fetchTreeData() {
+        $.ajax({
+            url:'@Url.Action("GetJSTreeDocuments", "Send", new { Area = "" })',
+            type: 'get',
+            success: function (data) {
+
+                self2.geDocumenttTreeData(data);
+
+            }, error: function (err) {
+                //$('#LoadingImageDiv').hide();
+            }
+        });
+    }
+
+        var tree = $('.tree');
+        var selectedDocumentsInJSTree = [];
+        $('#categorySearch').keyup(function () {
+            if (to) {
+                clearTimeout(to);
+            }
+            to = setTimeout(function () {
+                var value = $('#categorySearch').val();
+                tree.jstree(true).search(value);
+            },
+                250);
+        });
+
+        tree.jstree({
+            core: {
+                data: {
+                    url: '@Url.Action("GetJSTreeDocuments", "Send", new { Area = "" })'
+                },
+                check_callback: function (operation, node, node_parent, node_position, more) {
+                    if (operation === 'move_node') {
+                        if (node.text === 'Default') {
+                            return false;
+                        }
+                        if (node.type !== 'default' && node_parent.type === 'default') {
+                            if (node_parent.text === 'Category') {
+                                return false;
+                            }
+                            return true;
+                        }
+                        if (node.type === 'default' && node_parent.type === 'default') {
+                            return true;
+                        }
+                        return false;
+                    } else if (operation === 'delete_node') {
+                        //var descendants = $.map(node.children_d,
+                        //    function (id) {
+                        //        return $('.tree').jstree(true).get_node(id);
+                        //    });
+                        //if (containsDocument(descendants)) {
+                        //    notif({
+                        //        msg: 'Categories that contain documents cannot be deleted.',
+                        //        type: 'error'
+                        //    });
+                        //    return false;
+                        //}
+                        //return true;
+                    }
+                }
+            },
+            contextmenu: {
+
+            },
+            sort: function (a, b) {
+                var n1 = this.get_node(a);
+                var n2 = this.get_node(b);
+
+                if (n1.type === 'default' && n1.type === n2.type) { // folders
+                    return (n1.text > n2.text) ? 1 : -1;
+                } else if (n1.type === 'default' || n2.type === 'default') {
+                    return (n1.type !== 'default') ? 1 : -1; // folder first
+                } else {
+                    return (n1.text > n2.text) ? 1 : -1;
+                }
+            },
+            types: {
+                Memo: {
+                    icon: 'memo-icon'
+                },
+                Policy: {
+                    icon: 'policy-icon'
+                },
+                Test: {
+                    icon: 'test-icon'
+                },
+                TrainingManual: {
+                    icon: 'training-manual-icon'
+                },
+                Checklist: {
+                    icon: 'checklist-icon'
+                },
+                default: {
+                    icon: 'glyphicon glyphicon-plus-sign category-icon'
+                },
+            },
+            checkbox: {
+                "keep_selected_style": false,
+            },
+            //multiple: false, // disables multiple selection if false
+            plugins: ['sort', 'contextmenu', 'types', 'checkbox']
+        });
+
+        $(".tree").bind("changed.jstree",
+            function (e, data) {
+                if (data.selected.length > 0) {                    
+                    if (data.action == "deselect_node") {
+                        if (!(data.node.original.isParentNode)) {
+                            var index = selectedDocumentsInJSTree.findIndex(el => el.id === data.node.id);
+                            if (index != -1) {
+                                selectedDocumentsInJSTree.splice(index, 1);
+                                self2.DocumentsInJSTree.removeAll();
+                                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+
+                                    self2.DocumentsInJSTree.push(item);
+                                });
+                            }
+                        } else {
+                            var childNodesInArr = data.node.children_d;
+                            for (var i = 0; i < childNodesInArr.length; i++) {
+                                var childId = childNodesInArr[i];
+                                for (var j = 0; j < selectedDocumentsInJSTree.length; j++) {
+                                    if (selectedDocumentsInJSTree[j].id == childId) {
+                                        selectedDocumentsInJSTree.splice(j, 1);
+                                    }
+                                }
+                            }
+                            self2.DocumentsInJSTree.removeAll();
+                            ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                self2.DocumentsInJSTree.push(item);
+                            });
+                        }
+                    } else {
+                        if (data.node != undefined) {
+                            if (!(data.node.original.isParentNode)) {
+                                debugger
+                                var obj = {
+                                    id: data.node.id,
+                                    text: data.node.text,
+                                    type: data.node.type,
+                                    order: r.filter(z => z.id == data.node.id)[0].order
+                                }
+                                selectedDocumentsInJSTree.push(obj);
+                                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                    if (obj.id == item.id) {
+                                        self2.DocumentsInJSTree.push(item);
+                                    }
+                                });
+                                self2.DocumentsInJSTree.sort(function (a, b) {
+                                    return a.order - b.order;
+                                });
+                                console.log("self2.DocumentsInJSTree..", ko.unwrap(self2.DocumentsInJSTree));
+
+                            } else {
+                                var child_nodes = data.node.children_d;
+                                var child_node_arr = [];
+                                for (var i = 0; i < child_nodes.length; i++) {
+                                    var childData = vm2.geDocumenttTreeData().filter(z => z.id == data.node.children_d[i])
+                                    if (childData.length > 0) {
+                                        debugger;
+                                        var node = {
+                                            id: data.node.children_d[i],
+                                            text: childData[0].text,
+                                            type: childData[0].type,
+                                            order: r.filter(z => z.id == data.node.children_d[i])[0].order
+                                        }
+                                        selectedDocumentsInJSTree.push(node);
+                                        child_node_arr.push(node)
+                                    }
+                                }
+                                ko.utils.arrayForEach(child_node_arr, function (item) {
+                                    self2.DocumentsInJSTree.push(item);
+                                });
+                                self2.DocumentsInJSTree.sort(function (a, b) {
+                                    return a.order - b.order;
+                                });
+                                console.log("self2.DocumentsInJSTree..child", ko.unwrap(self2.DocumentsInJSTree));
+                                 
+                            }
+                        }
+                    }
+                } else {
+                    selectedDocumentsInJSTree = [];
+                    self2.DocumentsInJSTree.removeAll();
+                }
+            });
+        tree
+            .on('open_node.jstree',
+                function (event, data) {
+                    if (_adjustPageFooter) _adjustPageFooter();
+                });
+
+
+        //$('#groups-multiselect-demo').change(function () {
+        //    self2.selectedGroups($(this).val());
+        //})
+
+
+    //view model creation and binding
+    var vm2 =
+    {
+        Id: '',
+        DocumentsInJSTree: ko.observableArray(),
+        selectedGroups: ko.observableArray(),
+        SendNotiEnabled: ko.observable(false),
+        geDocumenttTreeData: ko.observableArray(),
+        WorkflowName: ko.observable(''),
+       
+
+    };
+
+
+    vm2.checkValid = ko.observable(false);
+
+
+    self2 = vm2;
+
+    console.log("vaialbe groups ", @Html.Raw(Json.Encode(ViewBag.Groups)))
+    self2.availableGroups = ko.observableArray(@Html.Raw(Json.Encode(ViewBag.Groups)));
+     self2.openConfirmModal = () => {
+        //$('#editAutoAssignWorkflowModal').modal('hide');
+        $('#assignconfirmModal').modal('show');
+    }
+
+
+    ko.applyBindings(vm2, document.getElementById("temp"));
+    ko.applyBindingsToNode(vm2, document.getElementById("assignconfirmModal"));
+    //
+
+    //popilating vm
+    vm2.WorkflowName(data.WorkflowName);
+    vm2.SendNotiEnabled(data.SendNotiEnabled);
+    vm2.Id = data.Id;
+    vm2.selectedGroups(data.GroupIds);
+
+    
+
+    self2.WorkflowName.subscribe(() => {
+        // console.log("e ", e)
+        let e = self2.WorkflowName();
+        let title = (e != '' && e != null && e != undefined) ? true : false;
+        let documents = (self2.DocumentsInJSTree().length > 0) ? true : false;
+        let groups = (self2.selectedGroups().length > 0) ? true : false;
+        //checkValidation(title, grps, docs);
+        if (title && groups && documents) {
+            self2.checkValid(true);
+        }
+        else {
+            self2.checkValid(false);
+        }
+    })
+    self2.DocumentsInJSTree.subscribe(() => {
+        console.log("sda")
+        // console.log("e js tree cahnge", e.length)
+        let e = self2.WorkflowName();
+        let title = (e != '' && e != null && e != undefined) ? true : false;
+        let documents = (self2.DocumentsInJSTree().length > 0) ? true : false;
+        let groups = (self2.selectedGroups().length > 0) ? true : false;
+        // checkValidation(title, grps, docs);
+        if (title && groups && documents) {
+            self2.checkValid(true);
+        }
+        else {
+            self2.checkValid(false);
+        }
+    })
+    self2.selectedGroups.subscribe(() => {
+        //console.log("e ", e.length)
+        let e = self2.WorkflowName();
+        let title = (e != '' && e != null && e != undefined) ? true : false;
+        let documents = (self2.DocumentsInJSTree().length > 0) ? true : false;
+        let groups = (self2.selectedGroups().length > 0) ? true : false;
+        //checkValidation(title, grps, docs);
+        if (title && groups && documents) {
+            self2.checkValid(true);
+        }
+        else {
+            self2.checkValid(false);
+        }
+    })
+
+    $('#tree').bind('loaded.jstree', function (e, data) {
+        console.log("after tree loaded fully ", r)
+        console.log("after Data ", data)
+        // invoked after jstree has loaded
+        debugger
+        r.forEach(e => {
+            $('#tree').jstree(true)
+                .select_node(e.id);
+        })
+        })
+
+    //
+</script>
+

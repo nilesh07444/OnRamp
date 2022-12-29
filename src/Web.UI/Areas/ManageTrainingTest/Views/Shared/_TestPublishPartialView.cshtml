@@ -1,0 +1,116 @@
+﻿@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("Index", "ManageTrainingTest", new { area = "ManageTrainingTest" }))
+{
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-header-custom">
+                    <button type="button" class="close" data-dismiss="modal" onclick="CloseButtonClick()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Test Publish</h4>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-default">
+                                @Html.ValidationSummary(true)
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            @Html.ValidationSummary(true)
+                                            <input id="hdUserId" name="UserId" type="hidden" />
+                                            <div class="form-group">
+                                                @Html.Label("Do you want to force people to retake this new test?")
+                                                <input type="checkbox" id="idForcetest" />
+                                                Yes
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="CloseButtonClick()">Close</button>
+                    <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    function CloseButtonClick() {
+      
+        window.location.href = '@Url.Action("Index", "ManageTrainingTest")';
+    }
+    $('#LoadingImageDiv').css('z-index', 10000);
+    $('#btnSave').click(function () {
+        $('#btnSave').prop("disabled", true);
+        //
+        var id = $('#hdUserId').val();
+        checkValidTest(id).then(function () {
+
+            if ($('#idForcetest').is(":checked")) {
+
+                var status = $('#idForcetest').is(":checked");
+                $('#LoadingImageDiv').show();
+                var actionUrl = "@Href("~/ManageTrainingTest/ManageTrainingTest")/ForcePeopletoRetakeTest?trainingTestId=" + id + "&status=" + status + "";
+                $.ajax({
+                    type: "Get",
+                    url: actionUrl,
+                    data: { trainingGuidId: id, status: status },
+                    success: function () {
+                        notify("Published test", 'success');
+                    },
+                    error: function () {
+                        notify("Publish failed", 'error');
+                    },
+                    complete: function () {
+                        $('#LoadingImageDiv').hide();
+                        window.location.href = '@Url.Action("Index", "ManageTrainingTest")';
+                    }
+                });
+            }
+            else {
+                $('#LoadingImageDiv').show();
+                var actionUrl = "@Href("~/ManageTrainingTest/ManageTrainingTest")/ChangeTrainingDraftPublishTest?trainingTestId=" + id;
+                $.ajax({
+                    type: "Post",
+                    url: actionUrl,
+                    data: { trainingGuidId: id },
+                    success: function () {
+                        notify("Published test", 'success');
+                    },
+                    error: function () {
+                        notify("Publish failed", 'error');
+                    },
+                    complete: function () {
+                        $('#LoadingImageDiv').hide();
+                        window.location.href = '@Url.Action("Index", "ManageTrainingTest")';
+                    }
+                });
+            }
+        }, function () {
+            notify("Test Incomplete", 'error');
+            CloseButtonClick();
+        });
+    });
+    function notify(message, type) {
+        if (type.toLowerCase() === 'error') {
+            notif({
+                type: type.toLowerCase(),
+                msg: '<b>' + type + ' - </b>' + message
+            });
+        }
+        if (type.toLowerCase() === 'success') {
+            notif({
+                type: type.toLowerCase(),
+                msg: message
+            });
+        }
+    }
+</script>

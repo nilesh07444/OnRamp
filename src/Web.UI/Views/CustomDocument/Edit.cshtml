@@ -1,0 +1,1554 @@
+﻿@model Ramp.Contracts.ViewModel.CustomDocumentModel
+@using Web.UI.Controllers
+@using Common.Web
+@using Web.UI.Code.Extensions
+@using System.Threading
+
+@using Ramp.Security.Authorization
+@{
+    Layout = "../Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var roles = SessionManager.GetRolesForCurrentlyLoggedInUser().ToList();
+    var contentApprovers = ViewBag.ContentApprovers;
+    var uId = @SessionManager.GetCurrentlyLoggedInUserId().ToString();
+    var DocumentApprovers = ViewBag.DocumentApprovers;
+}
+
+<script src="~/Scripts/app/app.components.js"></script>
+<link href="~/Content/Areas/Document/Edit.css" rel="stylesheet" />
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+    .multiselect1 {
+        width: 100%;
+        height: 40px;
+    }
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    var approverList;
+    $(document).ready(function (){
+     
+    $('.multiselect1').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 250,
+        enableFiltering: true,
+        maxHeight: 350
+        });
+    });
+
+</script>
+
+<script src="~/Scripts/jstree.js"></script>
+
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<div id="blueimp-gallery" class="blueimp-gallery">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header"><span data-bind="text: mode"></span> Custom Document</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class=" panel panel-info">
+            <div class="panel-heading">Custom Document Details</div>
+            <div class="panel-body" data-bind="with:data">
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="well">
+                            <div class="form-group">
+                                <label class="control-label">Title</label>
+                                <input type="text" class="form-control" data-bind="textInput:Title,validatewith:$root.errors" name="Title" />
+                                <input type="hidden" id="docUrl" name="DocumentUrl" data-bind="value: DocumentUrl" />
+
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Description</label>
+                                <textarea name="Description" class="form-control" data-bind="textInput:Description,validatewith:$root.errors" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Points</label>
+                                <input type="number" min="0" class="form-control" data-bind="textInput:Points,validatewith:$root.errors" name="Points" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Tags</label>
+                                <div class="input-group" style="width:100%;max-width:280px">
+
+                                    <select id="label-multiselect-Tags">
+                                        @if (ViewBag.Labels != null)
+                                        {
+                                            foreach (var item in ViewBag.Labels)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom:5px">
+                                <label id="category" class="control-label">Category</label>
+                            </div>
+                            <div class="form-group" data-bind="with:Category">
+                                <button class="btn btn-default" data-bind="click:$root.category.menu.toggle.bind()">Select Category</button>
+                                <!-- ko if:!ko.unwrap($root.category.menu.state.minimized) -->
+                                <div data-bind="jstree:$root.category.menu.options,jstreeOptions:$root.jsTree.options,valueProperty:Id"></div>
+                                <!-- /ko -->
+                            </div>
+                            <div class="form-group" data-bind="with:Category">
+                                <input type="text" class="form-control" autocomplete="off" data-bind="value:Name" disabled />
+                            </div>
+                            <div class="form-group">
+                                <label id="" class="control-label">Document Expires :</label>
+                                <div class="btn-group-sm">
+                                    <button type="button" class="btn btn-default" data-bind="click:function(){$root.test.expires(true);},css : {'btn-primary' : ko.unwrap($root.test.expires)}">Yes</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:function(){$root.test.expires(false);},css : {'btn-primary' : !ko.unwrap($root.test.expires)}">No</button>
+                                </div>
+                            </div>
+                            <div class="form-group" data-bind="visible:ko.unwrap($root.test.expires)">
+                                <label class="control-label">No of days from assignment</label>
+                                <input type="text" class="form-control" autocomplete="off" data-bind="value:TestExpiresNumberDaysFromAssignment" />
+                            </div>
+                            <div class="form-group" data-bind="visible:ko.unwrap($root.test.expires)">
+                                <label class="control-label">Expiry Notification Type</label>
+                                <div class="btn-group-sm">
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.test.notificationInteval.set.bind(0),css : {'btn-primary' : ko.unwrap(NotificationInteval) == 0}">None</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.test.notificationInteval.set.bind(2),css : {'btn-primary' : ko.unwrap(NotificationInteval) == 2}">Daily</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.test.notificationInteval.set.bind(3),css : {'btn-primary' : ko.unwrap(NotificationInteval) == 3}">Custom</button>
+                                </div>
+                            </div>
+                            <div class="form-group" data-bind="visible:ko.unwrap(NotificationInteval) == 3 && ko.unwrap($root.test.expires) ">
+                                <label class="control-label">No of days before expiry</label>
+                                <input type="text" class="form-control" autocomplete="off" data-bind="value:NotificationIntevalDaysBeforeExpiry" />
+                            </div>
+
+
+                            <!--<div>&nbsp;</div>
+                            <div class="form-group" data-bind="with:$root.modals.certificate">
+                                <button class="btn btn-default" data-bind="click:open.bind()">Select Acheivement</button>
+
+                                <button class="btn btn-default" data-bind="visible:$root.data.Certificate,click:function(){$root.data.Certificate(null);}"><span class="fa fa-trash"></span></button>
+                            </div>
+                            <div class="form-group" data-bind="with:Certificate">
+                                <label id="certificate" class="control-label">Acheivement : </label>
+
+                                <div class="thumbnail" style="overflow: hidden; width: 120px">
+                                    <img data-bind="attr: { src: ko.unwrap(ThumbnailUrl) ? ko.unwrap(ThumbnailUrl) : ko.unwrap(Url), alt: Description }" />
+                                </div>
+                            </div>
+                            <div class="form-group" data-bind="ifnot: Certificate">
+                                <label class="control-label">Acheivement : None Selected</label>
+
+                            </div>-->
+                            @*//***************************************** Ended *****************************************@
+
+                            <div class="form-group">
+                                <label class="control-label">View Mode</label>
+                                <div class="btn-group-sm">
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.previewMode.set.bind(0),css : {'btn-primary' : ko.unwrap(PreviewMode) !== 1}">Portrait</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.previewMode.set.bind(1) ,css : {'btn-primary' : ko.unwrap(PreviewMode) === 1}">Storybook</button>
+                                </div>
+                            </div>
+
+
+                            @*//********************* This Block Has Been Added By Softude ********************************@
+
+                            <div class="form-group">
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:IsResourceCentre" name="IsResourceCentre" /> @*data-bind="checked:IsResourceCentre"*@
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Enable resource centre </span>
+                            </div>
+
+                            @******************************************************* Ended *********************************@
+
+                            @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+                            {
+                                <div class="form-group">
+                                    <label class="switch">
+                                        <input type="checkbox" data-bind="checked:IsGlobalAccessed" name="IsGlobalAccessed" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span>Enable global user access</span>
+                                </div>
+                            }
+                            <div class="form-group">
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:IsMannualReview" name="IsMannualReview" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Enable admin review </span>
+                            </div>
+                            <div class="form-group">
+                                <label id="" class="control-label">Downloadable</label>
+                                <div class="btn-group-sm">
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.printable.set.bind(true),css : {'btn-primary' : ko.unwrap(Printable)}">Yes</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.printable.set.bind(false) ,css : {'btn-primary' : !ko.unwrap(Printable)}">No</button>
+                                </div>
+                            </div>
+
+                            @*//********************* This Block Has Been Added By Softude ********************************@
+                            <div class="form-group">
+                                <label class="control-label">Cover Picture</label>
+                                @*<div><img src="~/images/coverpicture.PNG"  style="width: 105px;margin-left: -10px;margin-top: -10px;">*@
+                                @*src="/images/powered.PNG"*@
+                                <!--</div>-->
+                                <div data-bind="with:CoverPicture">
+                                    <img class="img-responsive coverPicture" data-bind="attr:{src:$data.Url()},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                </div><br />
+                                <button id="coverPicture" class="btn btn-default" data-bind="click:function(){ $('.coverPictureUpload').trigger('click');}">Set / Change Cover Picture</button>
+                                <button class="btn btn-default" data-bind="visible:CoverPicture,click:function(){$root.data.CoverPicture(null);}"><span class="fa fa-trash"></span></button>
+                                <input data-bind="fileUpload:CoverPictureUpload,fileuploadOptions:$root.upload.options.coverPicture,valueProperty:CoverPicture" type="file" name="files[]" accept="image/*" class="hidden coverPictureUpload">
+                            </div>
+                            <div class="form-group has-error errorsSpan" data-bind="visible:$root.UploadCoverPictureError">
+                                <span>Error uploading CoverPicture</span>
+                            </div>
+
+
+                            @*<div class="form-group">
+                                    <label class="control-label">Cover Picture</label>
+                                    <div data-bind="with:CoverPicture">
+                                        <img class="img-responsive coverPicture" data-bind="attr:{src:$data.Url()},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                    </div></br>
+                                    <button id="coverPicture" class="btn btn-default" data-bind="click:function(){ $('.coverPictureUpload').trigger('click');}">Set / Change Cover Picture</button>
+                                    <button class="btn btn-default" data-bind="visible:CoverPicture,click:function(){$root.data.CoverPicture(null);}"><span class="fa fa-trash"></span></button>
+                                    <input data-bind="fileUpload:CoverPictureUpload,fileuploadOptions:$root.upload.options.coverPicture,valueProperty:CoverPicture" type="file" name="files[]" accept="image/*" class="hidden coverPictureUpload">
+                                </div>
+                                <div class="form-group has-error errorsSpan" data-bind="visible:$root.UploadCoverPictureError">
+                                    <span>Error uploading CoverPicture</span>
+                                </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div id="stack">
+
+        </div>
+
+        <div class="panel-info">
+            <div class="panel-body" data-bind="with:data">
+
+                @*traing mannual*@
+                @Html.Partial("partial/_TrainingManual")
+
+                @*Test Document*@
+                @Html.Partial("partial/_Test")
+
+                @*Policy Document*@
+                @Html.Partial("partial/_Policy")
+
+                @*Memo Document*@
+                @Html.Partial("partial/_Memo")
+
+                @*Activity Book*@
+                @Html.Partial("partial/_ActivityBook")
+
+                @*AcrobatField Document*@
+                @Html.Partial("partial/_AcrobatFields")
+
+                @*Form Document*@
+                @Html.Partial("partial/_Form")
+
+                <div data-bind="foreach: $root.components,uiSortableList:$root.components,handle:'.handle',callback:$root.content.restore">
+
+                    <div data-bind="component:{name:comName,params:params}"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="custom-build-menu navbar-fixed-bottom" id="buildMenu">
+            @*<button id="addContent" class="btn btn-default">Add Chapter</button>*@
+            <button class="btn btn-default" data-bind="click:$root.addChapter.bind('',1)"><span class="glyphicon glyphicon-align-left"></span> Add Content</button>
+            <button class="btn btn-default" data-bind="click:$root.addChapter.bind('',2)"><span class="	glyphicon glyphicon-tasks"></span> Add Question</button>
+
+            <button class="btn btn-default" data-bind="click:$root.addChapter.bind('',6)"><span class="glyphicon glyphicon-ok"></span> Add Check Box</button>
+            <button class="btn btn-default" data-bind="click:$root.addChapter.bind('',3)"><span class="glyphicon glyphicon-file"></span> Add Call to Action</button>
+            @*<button class="btn btn-default" data-bind="click:$root.addChapter.bind('',7)"><span class="glyphicon glyphicon-file"></span> Add Acrobat Section</button>*@
+
+            <button class="btn btn-default" data-bind="click:$root.addChapter.bind('',9)"><span class="	glyphicon glyphicon-tasks"></span> Add Form Section</button>
+
+
+            <button id="save" class="btn btn-default checkCss" data-bind="click:$root.saveExit.bind(),disable:ko.unwrap($root.saving) || ko.unwrap($root.upload.concurrentUploads).length > 0"><span class="glyphicon glyphicon-floppy-disk"></span> Save And Exit</button>
+
+
+
+            @if (roles.Contains(Ramp.Contracts.Security.Role.Admin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString()))
+           
+                {
+                    <button class="btn btn-default checkCss" id="publish"><span class="glyphicon glyphicon-floppy-saved"></span> Publish</button>
+                }
+                @if (roles.Contains(Ramp.Contracts.Security.Role.ContentCreator.ToString()) &&
+                    (Model.CreatedBy == null || Model.CreatedBy == Thread.CurrentPrincipal.GetId().ToString())
+                    )
+                {
+                    <button class="btn btn-default checkCss" id="approval1">Submit for approval</button>
+                }
+                @if (
+                    (roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString())) &&
+                   (Model.CreatedBy != null && Model.CreatedBy != Thread.CurrentPrincipal.GetId().ToString())
+                    )
+                {
+                    <button class="btn btn-default approve">Approve</button>
+
+                    <button class="btn btn-default decline">Decline</button>
+                }
+            </div>
+    </div>
+</div>
+
+<br />
+
+<div class="modal fade" id="myModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" id="btnCancel2" class="close" data-dismiss="modal" data-bind="click: vm.linkModal.close.bind()">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Enter web page link</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-lg-12">
+
+
+                            <p>Please enter a  link name as well as the URL in the textboxes below, ensure that your link starts with "https://"</p>
+
+                            <p id="invalidURL" style="display: none">Enter your link here</p>
+
+
+                            <br />
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <label>Link Title</label>
+                                    <input type="text" placeholder="Please enter a link title" style="min-width:100%;" class="form-control" id="inputName" name="linkName" /><br />
+                                </div>
+                                <div class="col-lg-12">
+                                    <label>URL</label>
+                                    <input type="text" placeholder="Please enter a URL" style="min-width:100%;" class="form-control" id="inputUrl" name="url" />
+                                </div>
+
+                            </div>
+                            <input type="hidden" id="docChapterId" name="docChapterId" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-center">
+                        <div class="btn-group pull-right">
+
+                            <button class="btn btn-primary" id="btnSaveLink" data-dismiss="modal" data-bind="click: vm.getUrl.docUrl.bind()">Save</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="certificateModal" tabindex="-1" role="dialog" aria-labelledby="certificateModals" aria-hidden="true" data-bind="with:$root.modals.certificate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Certificates</h4>
+            </div>
+            <div class="modal-body" style="max-height:500px;overflow-y:scroll;">
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <!-- ko foreach:data -->
+                        <div class="col-sm-3">
+                            <a data-bind="click:$parent.set.bind()">
+                                <img class="img-responsive center-block" data-bind="attr:{src:ThumbnailUrl},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                <div class="text-center" data-bind="text:(ko.unwrap(Description) || '').substring(0,20)" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"></div>
+                            </a>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="publishModal1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" id="btnCancel4" class="close" data-dismiss="modal" data-bind="click: vm.linkModal.close.bind()">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Submit for Approval</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select an approver for your document and leave an optional message</p><br />
+                <div class="form-group">
+                    <div class="row">
+
+                        <div class="col-lg-12">
+                            <div>
+                                <label>Content Approvers</label><br>
+                                <select required class="multiselect1" id="ca-multiselect" multiple="multiple">
+                                    @foreach (var item in contentApprovers)
+                                    {
+                                        <option value="@item.Id">@item.FirstName&nbsp;@item.LastName</option>
+                                    }
+                                </select>
+                            </div><br />
+                        </div>
+                        <div class="col-lg-12">
+                            <label>Message</label>
+                            <textarea required type="text" id="msgToApprover" placeholder="Please enter a message here" style="min-width:100%;" class="form-control">
+</textarea>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group pull-right">
+
+                        <button class="btn btn-primary" id="btnSaveContentCreator" data-dismiss="modal" data-bind="enable: checkSubmitValidation()">Save</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="feedbackModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" id="btnCancel4" class="close" data-dismiss="modal" data-bind="click: vm.linkModal.close.bind()">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Enter a message for creator</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <label>Message</label>
+                            <textarea type="text" id="msgToCreator" placeholder="Please enter a message here" style="min-width:100%;" class="form-control">
+</textarea>
+
+                        </div>
+                        <input type="hidden" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group pull-right">
+
+                        <button class="btn btn-primary" id="declineCreatorMsg" data-dismiss="modal">Save</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="adminPublish" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button data-bind="click: $root.close('#adminPublish')" type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Approval</h4>
+            </div>
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button>
+                    <div class="bootbox-body">
+                        Document is pending approval <br />@if (Model.CreatedByModel != null)
+                        {<b>Creator: </b>@Model.CreatedByModel.Name <br />
+                        <b>Approvers: </b>@DocumentApprovers}
+                        </b>
+                    </div>
+                </div><div data-bind="click: $root.close('#adminPublish')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.adminPublishConfirm">OK</button></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="docAccept" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button data-bind="click: $root.close('#docAccept')" type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Accept</h4>
+            </div>
+            <div class="modal-content"><div class="modal-body"><button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button><div class="bootbox-body">Do you want to approve document?</b></div></div><div data-bind="click: $root.close('#docAccept')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.documentAccept">OK</button></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="docReject" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button data-bind="click: $root.close('#docReject')" type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Decline</h4>
+            </div>
+            <div class="modal-content"><div class="modal-body"><button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button><div class="bootbox-body">Do you want to decline document?</b></div></div><div data-bind="click: $root.close('#docReject')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.documentReject">OK</button></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="docSubmit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button data-bind="click: $root.close('#docSubmit')" type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Submission</h4>
+            </div>
+            <div class="modal-content"><div class="modal-body"><button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button><div class="bootbox-body">Do you want to submit document for approval?</b></div></div><div data-bind="click: $root.close('#docSubmit')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.docSubmission">OK</button></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newDocumentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" data-bind="click: $root.close('#newDocumentModal')" class="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">What do you want to build today?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+
+                    @if (PortalContext.Current.UserCompany.EnableChecklistDocument)
+                    {
+                        <div class="col-sm-12 text-center text-capitalize">
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',1)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                    Training Manual
+                                </a>
+                            </div>
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',2)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                    Test
+                                </a>
+                            </div>
+
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',9)" class="no-underline">
+                                    @*<img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.FormType], true)" />*@
+                                    Form
+                                </a>
+                            </div>
+
+
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',3)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                    Policy
+                                </a>
+                            </div>
+
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',4)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                    Memo
+                                </a>
+                            </div>
+                            <div class="col-sm-4 hover-zoom pull-left">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',6)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)" />
+                                    @*Checklist*@
+                                    Activity Book
+                                </a>
+                            </div>
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',7)" class="no-underline">
+                                    @*<img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.AcrobatFieldType], true)" />*@
+                                    AcrobatField
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-sm-12 text-center text-capitalize">
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="javascript:void(0);" onclick="ChapterStack('TrainingManual')" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                    Training Manual
+                                </a>
+                            </div>
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="javascript:void(0);" onclick="ChapterStack('Memo')" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                    Memo
+                                </a>
+                            </div>
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="javascript:void(0);" onclick="ChapterStack('AcrobatField')" class="no-underline">
+                                    @*<img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.AcrobatFieldType], true)" />*@
+                                    AcrobatField
+                                </a>
+                            </div>
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.addChapter.bind('',2)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                    Test
+                                </a>
+                            </div>
+
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="javascript:void(0);" data-bind="click:$root.isShowPolicy==!$root.isShowPolicy" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                    Policy
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    
+    var chapterUrls = [];
+
+    var aa = document.getElementById('Test-display-Component');
+
+    console.log('aa',aa);
+
+
+    $('#btnSaveLink').attr('disabled', true);
+
+    $('#inputUrl').on('input', function () {
+        var status = vm.getUrl.validateURL($(this).val());
+        var ele = document.getElementById('invalidURL');
+        if (status) {
+            $('#btnSaveLink').attr('disabled', false);
+            ele.style.display = "none";
+        } else {
+            $('#btnSaveLink').attr('disabled', true);
+            ele.style.color = "red";
+            ele.style.display = "block";
+            ele.style.fontWeight = "bold";
+        }
+    });
+
+    function jsDeleteUrl(event) {
+
+        var ele = $(event).closest('tr');
+        var chapterId = $(ele).attr('id').toString();
+
+        ele.remove();
+
+        $.each(chapterUrls, function (i, el) {
+            if (chapterId == el.ChapterId && $(ele)[0].childNodes[2].innerText == el.Url) {
+                chapterUrls.splice(i, 1);
+                return false;
+            }
+        });
+
+        var contentModels = ko.unwrap(vm.data.ContentModels)
+
+        for (var i = 0; i < contentModels ?.length; i++) {
+            var chapter_doc_links = [];
+            var chapter_doc_names = [];
+            if (ko.unwrap(contentModels[i].Id).toString() == chapterId) {
+                for (var j = 0; j < chapterUrls ?.length; j++) {
+                    if (chapterUrls[j].ChapterId == chapterId) {
+                        chapter_doc_links.push(chapterUrls[j].Url);
+                        chapter_doc_names.push(chapterUrls[j].Name);
+                    }
+                }
+                contentModels[i].ChapterDocLinks = chapter_doc_links.toString();
+                contentModels[i].ChapterDocNames = chapter_doc_names.toString();
+                var checkArrayLen = chapter_doc_links.length;
+                var checkArrayLen1 = chapter_doc_names.length;
+                if (checkArrayLen > 0) {
+                } else {
+                    var headerId = "docLinkHeader_" + i;
+                    document.getElementById(headerId).style.display = "none";
+                }
+                if (checkArrayLen1 > 0) {
+                } else {
+                    var headerId = "docLinkHeader1_" + i;
+                    document.getElementById(headerId).style.display = "none";
+                }
+
+            }
+        }
+    }
+
+    $('#label-multiselect-Tags').attr("multiple", "multiple").val('');
+
+    $('#label-multiselect-Tags').multiselect({
+        includeSelectAllOption: false,
+        buttonWidth: 270,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+
+    });
+
+    @{
+        ((IDictionary<string, string>) ViewBag.Links).Add("print", Url.Action("Print", "CustomDocument", new {Area = ""}));
+    }
+
+    var vm = new app.data.documentController(@Html.ToJson(Model),
+        @Html.ToJson((IDictionary<string,string>)ViewBag.Links),
+        @Html.ToJson((string)ViewBag.Mode),
+        @Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Categories),
+        @Html.ToJson(new Ramp.Contracts.ViewModel.CustomDocumentChapters()),
+        '',
+        [
+            "image:png", "image:jpeg", "image:jpg", "image:gif", "image:bmp", "video:mp4", "document:ppsx", "document:pps", "document:docx", "document:xls", "document:xlsx", "document:ppt", "document:pptx", "document:pdf", "document:csv",
+            "audio:mp3"
+        ],
+        @Html.ToJson(new Ramp.Contracts.ViewModel.FileUploadResultViewModel()),120 * 1000);
+
+    vm.models.questionAnswerModel =  @Html.ToJson(new Ramp.Contracts.ViewModel.TestQuestionAnswerModel());
+
+    vm.models.formFieldModel =  @Html.ToJson(new Ramp.Contracts.ViewModel.FormFieldModel());
+
+    vm.components = ko.observableArray([]);
+
+    vm.content.Loadcomponents();
+
+    vm.isShowPolicy = ko.observable(false);
+
+    vm.showPolicy = function () {
+        vm.isShowPolicy(!vm.isShowPolicy());
+    }
+
+    vm.content.formfield = {
+        add: function () {
+
+            return new Promise(function (resolve, reject) {
+
+                $.get(vm.links.generateId, function (id) {
+
+                    var clone = app.data.utils.observable.clone(vm.models.formFieldModel);
+                    if (ko.isObservable(clone.Id))
+                        clone.Id(id);
+                    resolve(clone);
+
+                });
+
+            });
+        },
+        remove: function (formfield) {
+
+            var formfieldcontent = this;
+            formfieldcontent.FormFields.remove(formfield);
+
+        },
+        addWrapper: function () {
+
+            var formfieldcontent = this;
+
+            vm.content.formfield.add().then(function (formfield) {
+
+                formfieldcontent.FormFields.push(formfield);
+
+            });
+
+        }
+    }
+
+    vm.content.answer = {
+        add: function () {
+
+            return new Promise(function (resolve, reject) {
+
+                $.get(vm.links.generateId, function (id) {
+
+                    var clone = app.data.utils.observable.clone(vm.models.questionAnswerModel);
+                    if (ko.isObservable(clone.Id))
+                        clone.Id(id);
+                    resolve(clone);
+
+                });
+            });
+        },
+        remove: function (answer) {
+
+            var question = this;
+            question.Answers.remove(answer);
+
+
+        },
+        addWrapper: function () {
+
+            var question = this;
+
+            vm.content.answer.add().then(function (answer) {
+
+                question.Answers.push(answer);
+
+            });
+
+        }
+    }
+
+    vm.content.generateTitle = function (model) {
+
+        var collection = ko.unwrap(vm.data.TestContentModels);
+
+        var index = -1;
+        $.each(collection || [], function (i) {
+            if (ko.unwrap(this.Id) == ko.unwrap(model.Id))
+                index = i;
+        });
+
+        vm.count = 'Question' + (parseInt(index) + 1).toString();
+        return 'Question ' + (parseInt(index) + 1).toString();
+
+    };
+
+    vm.upload.options.contentUpload.multiple = false;
+
+    vm.test = {
+        expires: ko.observable(ko.unwrap(vm.data.TestExpiresNumberDaysFromAssignment)),
+        notificationInteval: {
+            set: function () {
+
+                if (this != null && $.isNumeric(this))
+                    vm.data.NotificationInteval(parseInt(this));
+
+            }
+        }
+    };
+
+    vm.modals = {
+        certificate: {
+            open: function () {
+
+                $('#certificateModal').modal('show');
+            },
+            close: function () {
+
+                $('#certificateModal').modal('hide');
+            },
+            data: new ko.observableArray(),
+            initialize: function () {
+
+                $.get(vm.links.certificates, function (certificates) {
+
+                    app.data.utils.array.sync(certificates, vm.modals.certificate.data);
+
+                });
+
+            },
+            set: function (cert) {
+
+                console.log("bbbbbbbbb")
+                vm.data.Certificate(cert);
+                vm.modals.certificate.close();
+
+            }
+        }
+    };
+
+    vm.initialize();
+
+    vm.modals.certificate.initialize();
+
+    if (!ko.isObservable(vm.data.Certificate)) {
+
+        vm.data.Certificate = ko.observable(vm.data.Certificate);
+
+    }
+
+    vm.test.expires.subscribe(function (value) {
+
+        if (!value) {
+
+            vm.data.TestExpiresNumberDaysFromAssignment(null);
+            vm.data.NotificationInteval(0);
+            vm.data.NotificationIntevalDaysBeforeExpiry(null);
+
+        }
+    });
+
+    vm.content.checkAns = function () {
+
+        var count = 1;
+        $(".Question" + count).each(function () {
+
+            val = $(this).val();
+
+            if (val === "" || typeof (val) === "undefined" || val === null) {
+
+                $(this).addClass("errorClass");
+
+            } else {
+
+                $(this).removeClass("errorClass");
+
+            }
+
+            count = parseInt(count) + 1
+
+        });
+
+    };
+
+    vm.close = (data) => {
+
+        //console.log("data", data)
+        $(data).modal('hide');
+        //event.preventDefault();
+    }
+
+    vm.addChapter = (data) => {
+        vm.content.add(data);
+        $("#newDocumentModal").modal('hide');
+
+    }
+
+    vm.adminPublishConfirm = () => {
+        let x = @Html.ToJson(Model)
+        vm.data.PublishStatus(2);
+        vm.publish.delegate();
+        vm.saveExit();
+        feedbackMessage(x, '', false, false, true);
+
+    }
+
+    vm.docSubmission = () => { 
+        vm.data.Approver(approverList.toString());
+        vm.data.PublishStatus(1);      
+        let xi = @Html.ToJson(Model)
+        vm.saveExit();
+        let msg = document.getElementById("msgToApprover");
+        feedbackMessage(vm.data, msg.value, true, false , false);
+    }
+
+    vm.documentReject = () => {
+        $('#feedbackModal').modal('hide');
+        vm.data.PublishStatus(3);      
+        let x = @Html.ToJson(Model)
+        vm.saveExit();      
+        let msg = document.getElementById("msgToCreator");
+        feedbackMessageDecline(vm.data, msg.value, false, true, false, "decline");
+    }
+
+    vm.documentAccept = () => {
+        $('#feedbackModal').modal('hide');
+        vm.data.PublishStatus(2);      
+        vm.publish.delegate();      
+        vm.saveExit();
+        let x = @Html.ToJson(Model);
+        feedbackMessage(x, '', false, true, false, "accept");
+    }
+
+    vm.checkSubmitValidation = ko.observable(false);
+
+    vm.scope = { TrainingActivityLogginEnabled: @Html.ToJson((bool)ViewBag.TrainingActivityLogginEnabled)};
+
+    vm.initialize();
+
+    if (!ko.isObservable(vm.data.CoverPicture)) {
+        vm.data.CoverPicture = ko.observable(vm.data.CoverPicture);
+    }
+
+    vm.changeHandler = {
+        Url: function (data, event) {
+
+            var status = vm.getUrl.validateURL(event.target.value);
+            if (status) {
+                var chapterId = ko.unwrap(data.ChapterId).toString();
+                var doc_updated_arr = [];
+                var eleId = event.target.id.toString();
+                var eles = document.querySelectorAll("#" + eleId);
+                var eles_index = eleId.split("link_")[1].toString();
+                var hideEle = document.querySelectorAll("#show_" + eles_index)
+                for (var i = 0; i < eles.length; i++) {
+                    doc_updated_arr.push(eles[i].value);
+                    if (eles[i].value == event.target.value && eles[i].value) {
+                        hideEle[i].style.display = "none";
+                    }
+                }
+
+                var model;
+                var contentModels = ko.unwrap(vm.data.ContentModels);
+                for (var i = 0; i < contentModels?.length; i++) {
+                    var Id = ko.unwrap(contentModels[i].Id).toString();
+                    if (Id == chapterId) {
+                        model = contentModels[i];
+                        break;
+                    }
+                }
+                //console.log("chapterurls", chapterUrls);
+
+                chapterUrls = chapterUrls.filter(x => x.ChapterId !== chapterId.toString());
+               // console.log("doc_updated_arr", doc_updated_arr);
+                for (var i = 0; i < doc_updated_arr?.length; i++) {
+                    var str = doc_updated_arr[i].toString();
+                    if (!(str.startsWith("https:") || str.startsWith("http:"))) {
+                        str = "http://" + str;
+                    }
+                    doc_updated_arr[i] = str;
+                    chapterUrls.push({
+                        Url: doc_updated_arr[i],
+                        ChapterId: chapterId
+                    });
+                }
+
+                model.ChapterDocLinks = doc_updated_arr.toString();
+            } else {
+                var elemId = event.target.id.toString();
+                var elems = document.querySelectorAll("#" + elemId);
+                var elems_index = elemId.split("link_")[1].toString();
+                for (var i = 0; i < elems.length; i++) {
+                    if (elems[i].value == event.target.value && (!status)) {
+                        var showEle = document.querySelectorAll("#show_" + elems_index)
+                        showEle[i].style.display = "block";
+                    }
+                }
+            }
+        },
+        Name: function (data, event) {
+            var chapterId = ko.unwrap(data.ChapterId).toString();
+            var doc_updated_arr1 = [];
+            var eleId = event.target.id.toString();
+            var eles = document.querySelectorAll("#" + eleId);
+            var eles_index = eleId.split("linkName_")[1].toString();
+            var hideEle = document.querySelectorAll("#show_" + eles_index)
+            for (var i = 0; i < eles.length; i++) {
+                doc_updated_arr1.push(eles[i].value);
+                if (eles[i].value == event.target.value && eles[i].value) {
+                    hideEle[i].style.display = "none";
+                }
+            }
+
+            var model;
+            var contentModels = ko.unwrap(vm.data.ContentModels);
+            for (var i = 0; i < contentModels ?.length; i++) {
+                var Id = ko.unwrap(contentModels[i].Id).toString();
+                if (Id == chapterId) {
+                    model = contentModels[i];
+                    break;
+                }
+            }
+            model.ChapterDocNames = doc_updated_arr1.toString();
+        }
+    }
+
+    vm.linkModal = {
+        open: function (data) {
+            var chapterId = ko.unwrap(data.Id);
+            $('#inputUrl').val('');
+            $('#inputName').val('');
+            $('#btnSaveLink').attr('disabled', true);
+            $('#docChapterId').val(chapterId)
+            $('#myModal').modal('show');
+        },
+        close: function () {
+            $('#inputUrl').val('');
+            $('#inputName').val('');
+            $('#docChapterId').val('');
+            document.getElementById('invalidURL').style.display = "none";
+            $('#btnSaveLink').attr('disabled', true);
+            $('#myModal').modal('hide');
+        }
+    }
+
+    vm.getUrl = {
+        docUrl: function () {
+            var link = $('#inputUrl').val();
+            var linkName = $('#inputName').val();
+            var chapterId = $('#docChapterId').val();
+            var obj = {
+                Url: link,
+                ChapterId: chapterId,
+                Name: linkName
+            }
+            chapterUrls.push(obj)
+
+            var index = -1;
+            var contentModels = ko.unwrap(vm.data.ContentModels);
+            for (var i = 0; i < contentModels ?.length; i++) {
+                var Id = ko.unwrap(contentModels[i].Id).toString();
+                if (Id == chapterId) {
+                    index = i;
+                    var chapter_doc_links = [];
+                    var chapter_doc_links = [];
+                    var chapter_doc_names = [];
+                    for (var j = 0; j < chapterUrls ?.length; j++) {
+                        if (chapterUrls[j].ChapterId == chapterId) {
+                            chapter_doc_links.push(chapterUrls[j].Url);
+                            chapter_doc_names.push(chapterUrls[j].Name);
+                        }
+                    }
+
+                    //console.log("chapter_doc_links", chapter_doc_links);
+                    //console.log("chapter_doc_name", chapter_doc_names);
+
+                    contentModels[i].ChapterDocLinks = chapter_doc_links.toString();
+                    contentModels[i].ChapterDocNames = chapter_doc_names.toString();
+                    var headerId = "docLinkHeader_" + i;
+                    if (document.getElementById(headerId).style.display == "none") {
+                        document.getElementById(headerId).style.display = "block";
+                    }
+                    break;
+                }
+            }
+
+            var linkIndex = "link_" + index;
+            var linkNameIndex = "linkName_" + index;
+            var showIndex = "show_" + index;
+
+            var dr = "<tr id=" + chapterId + ">";
+            dr += "<td style='max-width: 50px'><a class='btn'><span class='glyphicon glyphicon-sort uploadhandle' style='color: black'></span></a>";
+            dr += "</td>";
+            dr += "<td class='upload upload-detail-20'>";
+            dr += "<img class='img-responsive upload-thumbnail' src='@Url.Content("~/Content/images/file/WebFrame.png")' />";
+            dr += "</td>";
+            dr += "<td class='upload upload-detail-40'>";
+            dr += "<input type='text' id=" + linkNameIndex + " value=" + linkName + " class='form-control' readonly='true' style='width: 100%' rows='4'/>";
+            dr += "</td>";
+            dr += "<td class='upload upload-detail-40'>";
+            dr += "<input type='text' id=" + linkIndex + " value=" + link +" class='form-control' readonly='true' style='width: 100%' rows='4'/>";
+            dr += "</td>";
+            dr += "<td class='upload upload-detail-20'>";
+            dr += "<span id="+ showIndex +" style='display: none; padding: 7px; color: red'>Enter a Valid Link</span>";
+            dr += "</td>";
+            dr += "<td class='upload upload-detail-20' style='max-width: 50px'>";
+            dr += "<a href='javascript:void(0)' onclick = 'javascript:jsDeleteUrl(this);'><button class='btn btn-danger upload-action'><i class='glyphicon glyphicon-trash'></i></button></a>";
+            dr += "</td></tr>";
+
+            //$('#chapter_' + index).append(dataRes);
+            $('#chapter_' + index).append(dr);
+        },
+
+        validateURL: function (url) {
+            if (url != null && url != "" && url != undefined) {
+
+                var myVariable = url;
+                if (/^(http|https|ftp):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/i.test(myVariable)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+
+    vm.deleteChapterUrl = function (data, event) {
+        $.each(chapterUrls, function (i, el) {
+            if (ko.unwrap(data.ChapterId) == el.ChapterId &&
+                ko.unwrap(data.Url) == el.Url) {
+                chapterUrls.splice(i, 1);
+                return false;
+            }
+        });
+        var contentModels = ko.unwrap(vm.data.ContentModels);
+
+        for (var i = 0; i < contentModels ?.length; i++) {
+            var Id = ko.unwrap(contentModels[i].Id).toString();
+            if (Id == ko.unwrap(data.ChapterId)) {
+                ko.unwrap(contentModels[i].DocLinks.remove(ko.unwrap(data)));
+                contentModels[i].ChapterDocLinks = null;
+                contentModels[i].ChapterDocNames = null;
+
+                var chapter_doc_links = [];
+                var chapter_doc_names = [];
+                for (var j = 0; j < chapterUrls ?.length; j++) {
+                    if (chapterUrls[j].ChapterId == ko.unwrap(data.ChapterId)) {
+                        chapter_doc_links.push(chapterUrls[j].Url);
+                        chapter_doc_names.push(chapterUrls[j].Name);
+                    }
+                }
+                contentModels[i].ChapterDocLinks = chapter_doc_links.toString();
+                contentModels[i].ChapterDocNames = chapter_doc_names.toString();
+                var checkArrInitLength = chapter_doc_links.length;
+                if (checkArrInitLength > 0) {
+                } else {
+                    var headerId = "docLinkHeader_" + i;
+                    document.getElementById(headerId).style.display = "none";
+                }
+                var checkArrInitLength1 = chapter_doc_names.length;
+                if (checkArrInitLength1 > 0) {
+                } else {
+                    var headerId = "docLinkHeader1_" + i;
+                    document.getElementById(headerId).style.display = "none";
+                }
+                break;
+            }
+        }
+    }
+    
+    var contentLists = ko.unwrap(vm.data.TMContentModels);
+
+    if (ko.unwrap(contentLists[0]) != null && ko.unwrap(contentLists[0]) != undefined) {
+        for (var i = 0; i < contentLists ?.length; i++) {
+            var documentLinks = ko.unwrap(contentLists[i].DocLinks);
+            var chapter_doc_links = [];
+            var chapter_doc_names = [];
+            for (var j = 0; j < documentLinks ?.length; j++) {
+                if (ko.unwrap(documentLinks[j].ChapterId) == ko.unwrap(contentLists[i].Id)) {
+                    chapterUrls.push({
+                        Url: ko.unwrap(documentLinks[j].Url),
+                        ChapterId: ko.unwrap(documentLinks[j].ChapterId),
+                        Name: ko.unwrap(documentLinks[j].Name)
+                    })
+                    chapter_doc_links.push(ko.unwrap(documentLinks[j].Url));
+                    chapter_doc_names.push(ko.unwrap(documentLinks[j].Name));
+                }
+            }
+            contentLists[i].ChapterDocLinks = chapter_doc_links.toString();
+            contentLists[i].ChapterDocNames = chapter_doc_names.toString();
+            var checkArrayInitLength = chapter_doc_links.length;
+            var headerId = "docLinkHeader_" + i;
+            if (checkArrayInitLength > 0 ) {
+                setTimeout(function () {
+                    document.getElementById(headerId).style.display = "block";
+                }, 500);
+            } else {
+                setTimeout(function () {
+                    document.getElementById(headerId).style.display = "none";
+                }, 500);
+            }
+            var checkArrayInitLength1 = chapter_doc_names.length;
+            var headerId1 = "docLinkHeader1_" + i;
+            if (document.getElementById(headerId1) != null) {
+                if (checkArrayInitLength1 > 0) {
+                    setTimeout(function () {
+                        document.getElementById(headerId1).style.display = "block";
+                    }, 500);
+                } else {
+                    setTimeout(function () {
+                        document.getElementById(headerId1).style.display = "none";
+                    }, 500);
+                }
+            }
+        }
+    }
+    else
+    {
+        var docheaderId = "docLinkHeader_0";
+        setTimeout(function () {
+        }, 300);
+    }
+
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+
+    app.data.typeahead.tags.create('#TrainingLabels', '@Url.Content("~/AutoComplete/" + Ramp.Contracts.ViewModel.AutoCompleteSection.Labels.Action)', '@Ramp.Contracts.ViewModel.AutoCompleteSection.Labels.Name', true, vm.data.TrainingLabels);
+
+    $(function () {
+
+        $("#spnMessage").hide();
+
+        $('#label-multiselect-Tags').change(function () {
+            var tags = $("#label-multiselect-Tags option:selected").toArray().map(item => item.text).join();
+            vm.data.TrainingLabels((tags).toString());
+        });
+
+        var nameArr = ko.unwrap(vm.data.LabelIds).split(',');
+
+        $('#label-multiselect-Tags').val(nameArr);
+
+        for (var i in nameArr) {
+            var optionVal = nameArr[i];
+            $("#label-multiselect-Tags").find("option[value='" + optionVal + "']").prop("selected", "selected");
+
+        }
+
+        $("#label-multiselect-Tags").multiselect('refresh');
+
+    });
+
+    $("#publish").click((data) => {
+      
+        let x = @Html.ToJson(Model)
+            if (x.Id == null || x.CreatedBy == null || x.CreatedBy == '@uId') {
+            vm.data.PublishStatus(2);
+            vm.publish.delegate();
+            vm.saveExit();
+            } else {
+                $('#adminPublish').modal('show');
+        }
+    });
+
+    $("#addContent").click((data) => {
+        $("#newDocumentModal").modal("show");
+
+    })
+
+    $("#approval1").on('click', () => {
+      
+        $('#publishModal1').modal('show');
+    });
+
+    $("#btnSaveContentCreator").click((data) => {
+        $('#publishModal1').modal('hide');
+        $('#docSubmit').modal('show');
+    });
+
+    $("#btnCancel4").on('click', () => {
+        $('#feedbackModal').modal('hide');
+    });
+
+    $(".decline").on("click", () => {
+      
+        $("#feedbackModal").modal("show");
+    });
+
+    $(".approve").on("click", () => {
+      
+        $("#docAccept").modal("show");
+    });
+
+    $("#declineCreatorMsg").click((data) => {
+      
+        $('#feedbackModal').modal('hide');
+        $('#docReject').modal('show');
+    });
+
+    $("#btnCancelFeedback1").on("click", () => {
+        $("#feedbackModal").modal("hide");
+    });
+
+    $('.multiselect1').change(function () {
+      
+        approverList = $(this).val();
+        let msg = document.getElementById("msgToApprover");
+        if (approverList != null && msg.value != "") { vm.checkSubmitValidation(true) }
+        else vm.checkSubmitValidation(false)
+    });
+
+    $('#msgToApprover').bind('input propertychange', function () {
+      
+        let msg = document.getElementById("msgToApprover");
+        if (approverList != null && msg.value != "") { vm.checkSubmitValidation(true) }
+        else vm.checkSubmitValidation(false)
+    });
+
+    function feedbackMessage(x, msg, creator, approver, amdin, action = null) {
+      
+        $('#LoadingImageDiv').show();
+      
+        var url = '@Url.Action("DocumentWorkFlowMessageSave")';
+        console.log("URL: " + url);
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                data: {
+                    model: x, message: msg, creator: creator, approver: approver, admin: amdin, approvers: approverList, action: action
+                    }
+                })
+                .done(function (data) {
+                    console.log("Response: " + data);
+                    notif({
+                        msg: 'Your progress has been saved.',
+                        multiline: true,
+                        type: 'success'
+                    });
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+    }
+
+    function feedbackMessageDecline(x, msg, creator, approver, amdin, action = null) {
+        $('#LoadingImageDiv').show();
+        var url = '@Url.Action("DocumentWorkFlowMessageSave")';
+        console.log("URL: " + url);
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                data: {
+                    model: x, message: msg, creator: creator, approver: approver, admin: amdin, action: action
+                    }
+                })
+                .done(function (data) {
+                    console.log("Response: " + data);
+                    notif({
+                        msg: 'Your progress has been saved.',
+                        multiline: true,
+                        type: 'success'
+                    });
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+    }
+
+    function ChapterStack(documentType) {
+
+         $('#LoadingImageDiv').show();
+        var url = "ChapterStack?doc=" + documentType;
+            $.ajax({
+                    method: 'get',
+                    url: url,
+
+                })
+                .done(function (data) {
+                    GenerateNewDiv(data);
+                    //var e = $("#stack").append(data);
+                    //if (e.length)
+                    //    $('html,body').animate({ scrollTop: e.offset().top }, 1000);
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                    vm.close('#newDocumentModal')
+                });
+    }
+
+    function GenerateNewDiv(data) {
+        $.get(vm.links.generateId).then(function (id) {
+            var iDiv = document.createElement('div');
+            iDiv.id = id;
+            iDiv.className = 'block';
+            iDiv.name = id;
+            document.getElementById('stack').appendChild(iDiv);
+            iDiv.innerHTML = data;
+            var e = $('#' + id );
+            if (e.length)
+                $('html,body').animate({ scrollTop: e.offset().top }, 1000);
+
+        });
+    }
+
+</script>

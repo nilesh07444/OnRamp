@@ -1,0 +1,22 @@
+﻿/*Top Bar Solid Colour*/
+.navbar-top-custom {
+    background-color: #27B899;
+}
+/*Survey Modal Header */
+.modal-header-custom{
+    background-color: #27B899;
+    color:white;
+}
+/*Bottom Bar Solid Colour*/
+.navbar-bottom-custom{
+    background-color: #27B899;
+}
+/*Footer Wording Colour*/
+.navbar-bottom-wording-custom{
+    color: #106B64
+}
+/*Top Menu Navigation - Hover Colour */
+.navbar-inner > ul > li >a:hover,.nav .open > a ,.nav .open >a:hover{
+    border-left:1px solid #27B899;
+    border-right:1px solid #27B899;
+}

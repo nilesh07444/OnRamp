@@ -1,0 +1,45 @@
+﻿@*new file added by softude*@
+
+<template id="Form-display-preview-component">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class=" panel panel-info">
+                <div class="panel-heading clearfix" data-bind="foreach:$data">
+                    <div data-bind="attr:{id:Id}"></div>
+                    <div class="heading pull-left">
+
+                        <p class="chapterName" data-bind="text:Title"></p>
+                        <!-- ko if:CheckRequired --> <span style="color:#ff0000">* </span>  <!-- /ko -->
+                    </div>
+
+                    @*<p data-bind="text:Title"></p>*@
+                </div>
+                <div class="panel-body">
+                    <div class="list-group" data-bind="foreach:$data">
+                        <div class="row">
+                            <div class="col-lg-12 chapter-content">
+                                <!-- ko if:Content -->
+                                <div class="content-tools" data-bind="contentTools:{query:'',identifier:'name',value:Content},identifier:ko.unwrap(Id),html:Content" data-editable></div>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="well" data-bind="foreach:FormFields">
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <label class="control-label"><span style="font-size:16px;font-weight:500;" data-bind="text:FormFieldName"></span></label>
+                                    </div>
+
+                                    <div class="col-lg-12">
+                                        <textarea name="Description" id="description" class="form-control checkAnswer" data-bind="textInput:FormFieldDescription" rows="2" placeholder="Enter here" style="max-width:100% !important"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

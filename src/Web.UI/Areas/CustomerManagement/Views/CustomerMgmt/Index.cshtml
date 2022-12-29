@@ -1,0 +1,197 @@
+﻿@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@using System.Threading
+@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.CompanyViewModelLong
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Add/View Companies and Users</h1>
+
+        <br />
+        @Html.Partial("_AddEditCustomerCompany", Model)
+        <br />
+        <div class="panel panel-info">
+            <div class="panel-heading"> Customer Management </div>
+            <div class="panel-body">
+                <div class="">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper table-responsive">
+                        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Company Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Client system Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Provisional Account Link
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Layer Sub-Domain
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Website Address
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Bundle
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Status
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        IsLock
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Options
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (CompanyViewModel item in Model.CompanyList)
+                                {
+                                    <tr class="gradeA odd">
+                                        <td class="">
+                                            @Html.DisplayFor(modelItem => item.CompanyName)
+                                        </td>
+                                        <td class="">
+                                            @Html.DisplayFor(modelItem => item.ClientSystemName)
+                                        </td>
+                                        <td class="">
+                                            @Html.DisplayFor(modelItem => item.ProvisionalAccountName)
+                                        </td>
+                                        <td class="">
+                                            @{
+                                                string subdomain = item.LayerSubDomain + "." + AppSettings.Urls.DomainSuffix;
+                                            }
+                                            @subdomain
+                                        </td>
+                                        <td class="">
+                                            @Html.DisplayFor(modelItem => item.WebsiteAddress)
+                                        </td>
+                                        <td class="">
+                                            @Html.DisplayFor(modelItem => item.BundleName)
+                                        </td>
+                                        @if (Thread.CurrentPrincipal.GetId() == item.CompanyCreatedBy || ( Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole()))
+                                        {
+                                            <td class="">
+                                                @Html.CheckBoxFor(modelItem => item.Status, new { @Id = "item_status_" + item.Id, @class = "CompanyStatus" })
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="disabled">
+                                                @Html.CheckBoxFor(modelItem => item.Status, new { @Id = "item_status_" + item.Id, @class = "CompanyStatus", @disabled = "disabled" })
+                                            </td>
+                                        }
+
+                                        <td class="disabled">
+                                            @Html.CheckBoxFor(modelItem => item.IsLock, new { @Id = "item_status_" + item.Id, @class = "LockStatus" })
+                                        </td>
+
+                                        <td class="tooltip-demo">
+                                            <a href="@(Url.Content("~/CustomerManagement/CustomerMgmt/Index/" + item.Id))"
+                                               class="action" data-toggle="tooltip" data-placement="top" title="Edit">
+                                                <img src="@(Url.Content("~/Content/images/btnEdit.png"))" class="img-circle" />
+                                            </a>
+                                            <a href="javascript:void(0)"
+                                               onclick="confirmDelete(this)" id="@(item.Id)" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                                <img src="@(Url.Content("~/Content/images/btnDelete.png"))" class="img-circle" />
+                                            </a>
+                                            <a href="@(Url.Content("~/CustomerManagement/CustomerMgmt/CustomerCompanyUser?companyId=" + item.Id + "&userId=" + Guid.Empty + "&companyName=" + item.CompanyName))"
+                                               class="action" data-toggle="tooltip" data-placement="top" title="Add Users">
+                                                <img src="@(Url.Content("~/Content/images/btnUser.png"))" class="img-circle" />
+                                            </a>
+                                            <a href="@(Url.Content("~/Configurations/ManageGroups?companyId=" + item.Id))"
+                                               class="action" data-toggle="tooltip" data-placement="top" title="Add Group">
+                                                <img src="@(Url.Content("~/Content/images/btnAddGroup.png"))" class="img-circle" />
+                                            </a>
+                                        </td>
+                                    </tr>
+                                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" language="javascript">
+    $(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+    });
+
+    function confirmDelete(element) {
+        var companyId = $(element).attr('Id');
+        bootbox.confirm("Do you really want to delete this company?", function (result) {
+            var urlToHit = "CustomerMgmt/DeleteCustomerCompany?id=" + companyId;
+            if (result) {
+                $.ajax({
+                    type: "POST",
+                    url: urlToHit,
+                    data: { id: companyId },
+                    success: function (data) {
+                        notif({
+                            msg: "<b>Success :</b> Customer Company deleted.",
+                            type: "success",
+                        });
+                        window.location.href = '@Url.Action("Index", "CustomerMgmt")';
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        });
+    }
+
+    $('.CompanyStatus').click(function () {
+        var id = $(this).attr('id').split('_')[2];
+        var status = $(this).is(":checked");
+        var actionUrl = "CustomerMgmt/ChangeCompanyStatus?companyId=" + id + "&Status=" + status + "";
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: { companyId: id },
+            success: function (data) {
+            },
+            error: function (data) {
+            }
+        });
+    });
+
+
+    $('.LockStatus').click(function () {
+        var id = $(this).attr('id').split('_')[2];
+        var status = $(this).is(":checked");
+        var actionUrl = "CustomerMgmt/ChangeCompanyLockStatus?companyId=" + id + "&status=" + status + "";
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: { companyId: id },
+            success: function (data) {
+            },
+            error: function (data) {
+            }
+        });
+    });
+
+</script>

@@ -1,0 +1,774 @@
+﻿@using Ramp.Contracts.QueryParameter.TrainingActivity
+@using Common.Web
+@using VirtuaCon
+@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Contracts.ViewModel
+@model  TrainingActivityReportModel
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<style>
+    .input-group{
+        max-width:none;
+        width:100%;
+    }
+    .form-control{
+        max-width:none;
+        width:100%;
+    }
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+    .form-horizontal > .form-group >.control-label {
+        text-align: left
+    }
+    .modal .bootstrap-tagsinput .tag [data-role="remove"] { display: none; }
+    .modal .bootstrap-tagsinput input { display: none; }
+    .modal .bootstrap-tagsinput {
+        min-height: 34px !important;
+        padding: 4px 6px !important;
+        margin-bottom: 5px !important;
+        background-color: #eeeeee !important;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <h3>Training Activity Report</h3>
+        <hr />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="form-group">
+            <label class="control-label">Description</label>
+        </div>
+        <div class="well well-sm">
+            The training activity report allows you to view training records captured to OnRamp.<br />
+            You can filter these records based on date ranges and other inputs, and can export this content to Excel and PDF.
+        </div>
+        <hr />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <span>Parameters</span>
+            </div>
+            <div class="panel-body" data-bind="with:$root.query">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label">Date Range</label>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="input-group">
+                                        <input type="text" name="From" class="form-control" autocomplete="off" aria-describedby="calender-addon" data-placement="top" data-bind="datetimepicker:From,validatewith:$root.errors" placeholder="From" />
+                                        <span class="input-group-addon" id="calender-addon"><i class="fa fa-calendar"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="input-group">
+                                        <input type="text" name="To" class="form-control" autocomplete="off" aria-describedby="calender-addon" data-placement="top" data-bind="datetimepicker:To,validatewith:$root.errors" placeholder="To" />
+                                        <span class="input-group-addon" id="calender-addon"><i class="fa fa-calendar"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label">Type</label>
+                                <div class="input-group">
+                                    <select class="selectpicker" multiple data-bind="options:$root.parameters.trainingActivityTypes(),
+                                                                                        optionsValue:'Value',
+                                                                                        optionsText:'Text',
+                                                                                        selectedOptions:TrainingActivityTypes,
+                                                                                        selectPicker:{size:'5',width:'auto',noneSelectedText:'Select Types'}"></select>
+                                </div>
+                            </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Gender</label>
+                                <div class="input-group">
+                                    <select class="selectpicker" multiple data-bind="options:$root.parameters.genders(),
+                                                                                        optionsValue:'Value',
+                                                                                        optionsText:'Text',
+                                                                                        selectedOptions:Genders,
+                                                                                        selectPicker:{size:'5',width:'auto',noneSelectedText:'Select Types'}"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label">Cost Range</label>
+                                <input class="form-control" data-bind="textInput:CostFloor" placeholder="From" />
+                            </div>
+                            <div class="form-group">
+                                <input class="form-control" data-bind="textInput:CostCeiling" placeholder="To" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Select</label>
+                                <div class="btn-group btn-group-justified">
+                                    <div class="btn-group">
+                                        <button class="btn btn-default" data-bind="click : $root.modal.search.groups.open.bind()">Groups</button>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-default" data-bind="click : $root.modal.search.races.open.bind()">Race Codes</button>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-default" data-bind="click : $root.modal.search.users.open.bind()">Users</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Training Labels</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="TrainingLabels" id="TrainingLabels" data-bind="value:TrainingLabels,valueUpdate:['typeahead:selected','change','keyup'], validatewith:$root.errors" style="width:100%;max-width:none;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <button type="submit" class="btn btn-primary" data-bind="click:$root.submit.bind()">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="height: 55px;">
+                <div style="display:inline-block;width:100%">
+                    <div class="pull-left" style="padding-top:7px">
+                        Results
+                    </div>
+                    <div class="dropdown pull-right" style="padding-top:7px">
+                        <span class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Export
+                            <span class="caret"></span>
+                        </span>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                            <li><a data-bind="click:$root.download.excel.bind()">Excel</a></li>
+                            <li><a data-bind="click:$root.download.pdf.bind()">Pdf</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body" data-bind="with:$root">
+                <div class="table-responsive">
+                    <table class="table table-striped" data-bind="with:data">
+                        <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Cost Implication</th>
+                            <th>Reward Points</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Last Edited</th>
+                        </tr>
+                        </thead>
+                        <!-- ko if:ko.unwrap(FilteredResults).length > 0 -->
+                        <tbody data-bind="foreach:FilteredResults">
+                        <tr>
+                            <td class="col-sm-2"><a data-bind="click:vm.modal.preview.open.bind()"><span data-bind="text:Title"></span></a></td>
+                            <td data-bind="text:Description" class="col-sm-3"></td>
+                            <td data-bind="text:$root.trainingActivityType.from.value(TrainingActivityType)" class="col-sm-2"></td>
+                            <td data-bind="text:CostImplication" class="col-sm-1"></td>
+                            <td data-bind="text:RewardPoints" class="col-sm-1"></td>
+                            <td data-bind="text:app.data.utils.date.format(From,'YYYY-MM-DD')" class="col-sm-1"></td>
+                            <td data-bind="text:app.data.utils.date.format(To,'YYYY-MM-DD')" class="col-sm-1"></td>
+                            <td data-bind="text:app.data.utils.date.format(LastEditDate,'YYYY-MM-DD')" class="col-sm-1"></td>
+                        </tr>
+                        </tbody>
+                        <!-- /ko -->
+                        <!-- ko ifnot:ko.unwrap(FilteredResults).length > 0 -->
+                        <tbody>
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                <span><strong>No Results Found</strong></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <!-- /ko -->
+                    </table>
+                </div>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+<div class="modal modal-fade" id="search_modal" data-bind="with:$root.modal.search">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-header-custom">
+                Select <span data-bind="text:header"></span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="form-group" data-bind="visible:ko.unwrap(mode) == 1">
+                        <input type="text" class="form-control" name="Groups" id="Groups" placeholder="Start Typing For Search..." data-bind="value:new ko.observable(), valueUpdate:['typeahead:selected','change','keyup']" style="width:100%;max-width:none" />
+                    </div>
+                    <div class="form-group" data-bind="visible:ko.unwrap(mode) == 2">
+                        <input type="text" class="form-control" name="Races" id="Races" placeholder="Start Typing For Search..." data-bind="value:new ko.observable(), valueUpdate:['typeahead:selected','change','keyup']" style="width:100%;max-width:none" />
+                    </div>
+                    <div class="form-group" data-bind="visible:ko.unwrap(mode) == 3">
+                        <input type="text" class="form-control" name="OnRampUsers" id="OnRampUsers" placeholder="Start Typing For Search..." data-bind="value:new ko.observable(), valueUpdate:['typeahead:selected','change','keyup']" style="width:100%;max-width:none" />
+                    </div>
+                </div>
+                <div class="panel panel-info">
+                    <div class="panel-body">
+                        <div class="table-responsive" data-bind="style:{'max-height': '200px'}">
+                            <table class="table-striped col-sm-12" data-bind="if:ko.unwrap(mode) == 1">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-5">Name</th>
+                                    <th class="col-sm-5">Email</th>
+                                    <th class="col-sm-2">Options</th>
+                                </tr>
+                                </thead>
+                                <!-- ko if:ko.unwrap(temp).length > 0 -->
+                                <tbody data-bind="foreach:temp">
+                                <tr>
+                                    <td class="col-sm-5">
+                                        <span data-bind="text:Title"></span>
+                                    </td>
+                                    <td class="col-sm-5">
+                                        <span data-bind="text:Description"></span>
+                                    </td>
+                                    <td class="col-sm-2">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-default" data-bind="click: $parent.groups.remove.bind()"><span class="glyphicon glyphicon-trash"></span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <!-- /ko -->
+                                <!-- ko ifnot:ko.unwrap(temp).length > 0 -->
+                                <tbody>
+                                <tr class="text-center"><td colspan="3">No <span data-bind="text:header"></span> Selected</td></tr>
+                                </tbody>
+                                <!-- /ko -->
+                            </table>
+                            <table class="table-striped col-sm-12" data-bind="if:ko.unwrap(mode) == 2">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-5">Code</th>
+                                    <th class="col-sm-5">Description</th>
+                                    <th class="col-sm-2">Options</th>
+                                </tr>
+                                </thead>
+                                <!-- ko if:ko.unwrap(temp).length > 0 -->
+                                <tbody data-bind="foreach:temp">
+                                <tr>
+                                    <td class="col-sm-5">
+                                        <span data-bind="text:Code"></span>
+                                    </td>
+                                    <td class="col-sm-5">
+                                        <span data-bind="text:Description"></span>
+                                    </td>
+                                    <td class="col-sm-2">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-default" data-bind="click:$parent.races.remove.bind()"><span class="glyphicon glyphicon-trash"></span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <!-- /ko -->
+                                <!-- ko ifnot:ko.unwrap(temp).length > 0 -->
+                                <tbody>
+                                <tr class="text-center"><td colspan="3">No <span data-bind="text:header"></span> Selected</td></tr>
+                                </tbody>
+                                <!-- /ko -->
+                            </table>
+                            <table class="table-striped col-sm-12" data-bind="if:ko.unwrap(mode) == 3">
+                                <thead>
+                                <tr>
+                                    <th class="col-sm-5">Name</th>
+                                    <th class="col-sm-5">Email</th>
+                                    <th class="col-sm-2">Options</th>
+                                </tr>
+                                </thead>
+                                <!-- ko if:ko.unwrap(temp).length > 0 -->
+                                <tbody data-bind="foreach:temp">
+                                <tr>
+                                    <td class="col-sm-5">
+                                        <span data-bind="text:Name"></span>
+                                    </td>
+                                    <td class="col-sm-5">
+                                        <span data-bind="text:Email"></span>
+                                    </td>
+                                    <td class="col-sm-2">
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-default" data-bind="click:$parent.users.remove.bind()"><span class="glyphicon glyphicon-trash"></span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <!-- /ko -->
+                                <!-- ko ifnot:ko.unwrap(temp).length > 0 -->
+                                <tbody>
+                                <tr class="text-center"><td colspan="3">No <span data-bind="text:header"></span> Selected</td></tr>
+                                </tbody>
+                                <!-- /ko -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bind="click:accept.bind()">Accept</button>
+                    <button type="button" class="btn btn-default" data-bind="click:dismiss.bind()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal modal-fade" id="preview_modal" data-bind="with:$root.modal.preview">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-header-custom" data-bind="with : temp">
+                Title : <span data-bind="text:Title"></span>
+            </div>
+            <div class="modal-body" data-bind="with:temp">
+                <ul class="nav nav-tabs" data-bind="with:$parent">
+                    <li role="presentation" data-bind="click:function(){mode(1);},css:{active : ko.unwrap(mode) == 1}"><a href="#">Details</a></li>
+                    <li role="presentation" data-bind="click:function(){mode(2);},css:{active : ko.unwrap(mode) == 2}"><a href="#">Trainees</a></li>
+                    <li role="presentation" data-bind="click:function(){mode(3);},css:{active : ko.unwrap(mode) == 3}"><a href="#">Trainers</a></li>
+                    <li role="presentation" data-bind="click:function(){mode(4);},css:{active : ko.unwrap(mode) == 4}"><a href="#">Documents</a></li>
+                    <li role="presentation" data-bind="click:function(){mode(5);},css:{active : ko.unwrap(mode) == 5},visible:ko.unwrap(showInvoices())"><a href="#">Invoices</a></li>
+                </ul>
+                <br />
+                <div class="form-horizontal" data-bind="visible:ko.unwrap($parent.mode) == 1">
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Description</label>
+                        <div class="col-sm-9">
+                            <input type="text" readonly class="form-control" data-bind="value:Description" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Date Range</label>
+                        <div class="col-sm-9">
+                            <div class="input-group">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <input type="text" readonly class="form-control" data-bind="value:app.data.utils.date.format(From,'YYYY-MM-DD')" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input type="text" readonly class="form-control" data-bind="value:app.data.utils.date.format(To,'YYYY-MM-DD')" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Type</label>
+                        <div class="col-sm-9">
+                            <input type="text" readonly class="form-control" data-bind="value:$root.trainingActivityType.from.value(TrainingActivityType)" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Cost Implication</label>
+                        <div class="col-sm-9">
+                            <input type="text" readonly class="form-control" data-bind="value:CostImplication" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Venue</label>
+                        <div class="col-sm-9">
+                            <input type="text" readonly class="form-control" data-bind="value:Venue" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Reward Points</label>
+                        <div class="col-sm-9">
+                            <input type="text" readonly class="form-control" data-bind="value:RewardPoints" />
+                        </div>
+                    </div>
+                    <!-- ko with : BursaryTrainingActivityDetail -->
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Bursary Type</label>
+                        <div class="col-sm-9">
+                            <input type="text" readonly class="form-control" data-bind="value:BursaryType" />
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Training Lables</label>
+                        <div class="col-sm-9">
+                            <input type="text" id="modal_preview_trainingLabels" readonly class="form-control" data-bind="text:TrainingLabels" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-3">Additional Info</label>
+                        <div class="col-sm-9">
+                            <textarea readonly class="form-control" data-bind="value:AdditionalInfo" style="max-width: 100%"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-12" data-bind="visible:ko.unwrap($parent.mode) == 2">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="col-sm-4">Name</th>
+                                    <th class="col-sm-8">Email</th>
+                                </tr>
+                            </thead>
+                            <!-- ko if:ko.unwrap(UsersTrained).length > 0 -->
+                            <tbody data-bind="foreach:UsersTrained">
+                                <tr>
+                                    <td data-bind="text:Name"></td>
+                                    <td data-bind="text:Email"></td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                            <!-- ko ifnot:ko.unwrap(UsersTrained).length > 0 -->
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="text-center"><span><strong>No Trainees To Show</strong></span></td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                        </table>
+                    </div>
+                </div>
+                <div class="col-sm-12" data-bind="visible:ko.unwrap($parent.mode) == 3">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr data-bind="ifnot:ko.unwrap(ExternalTrainingActivityDetail)">
+                                    <th class="col-sm-4">Name</th>
+                                    <th class="col-sm-8">Email</th>
+                                </tr>
+                                <tr data-bind="if:ko.unwrap(ExternalTrainingActivityDetail)">
+                                    <th class="col-sm-4">Company Name</th>
+                                    <th class="col-sm-8">Email</th>
+                                </tr>
+                            </thead>
+                            <!-- ko if:ko.unwrap($parent.trainers).length > 0 -->
+                            <tbody data-bind="foreach:$parent.trainers">
+                                <tr>
+                                    <!-- ko if:ko.unwrap($root.modal.preview.temp).ExternalTrainingActivityDetail -->
+                                    <td data-bind="text:CompanyName"></td>
+                                    <td data-bind="text:EmailAddress"></td>
+                                    <!-- /ko -->
+                                    <!-- ko ifnot:ko.unwrap($root.modal.preview.temp).ExternalTrainingActivityDetail-->
+                                    <td data-bind="text:Name"></td>
+                                    <td data-bind="text:Email"></td>
+                                    <!-- /ko -->
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                            <!-- ko ifnot:ko.unwrap($parent.trainers).length > 0 -->
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="text-center"><span><strong>No Training Providers To Show</strong></span></td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                        </table>
+                    </div>
+                </div>
+                <div class="col-sm-12" data-bind="visible:ko.unwrap($parent.mode) == 4">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <!-- ko if:ko.unwrap(Documents).length > 0 -->
+                            <tbody data-bind="foreach:Documents">
+                                <tr class="row">
+                                    <td class="col-sm-2">
+                                        <img class="img-responsive center-block" data-bind="attr:{src: ThumbnailUrl}" style="max-height:50px" />
+                                    </td>
+                                    <td class="col-sm-9"><input class="form-control" type="text" readonly data-bind="value:Description"></td>
+                                    <td class="col-sm-1">
+                                        <a class="btn btn-default" data-bind="attr:{href:Url}" target="_blank"><span class="glyphicon glyphicon-download"></span></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                            <!-- ko ifnot:ko.unwrap(Documents).length > 0 -->
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" class="text-center"><span><strong>No Documents To Show</strong></span></td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                        </table>
+                    </div>
+                </div>
+                <div class="col-sm-12" data-bind="visible:ko.unwrap($parent.mode) == 5">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <!-- ko if:ko.unwrap($parent.invoices).length > 0 -->
+                            <tbody data-bind="foreach:$parent.invoices">
+                            <tr class="row">
+                                <td class="col-sm-2">
+                                    <img class="img-responsive center-block" data-bind="attr:{src: ThumbnailUrl}" style="max-height:50px" />
+                                </td>
+                                <td class="col-sm-9"><input class="form-control" type="text" readonly data-bind="value:Description"></td>
+                                <td class="col-sm-1">
+                                    <a class="btn btn-default" data-bind="attr:{href:Url}" target="_blank"><span class="glyphicon glyphicon-download"></span></a>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <!-- /ko -->
+                            <!-- ko ifnot:ko.unwrap($parent.invoices).length > 0 -->
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" class="text-center"><span><strong>No Invoices To Show</strong></span></td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-bind="click:dismiss.bind()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var vm = new app.data.reportController(@Html.ToJson(Model), @Html.ToJson(ViewBag.Links as IDictionary<string,string>),@Html.ToJson(new TrainingActivityListQuery()));
+    vm.parameters = _parameters();
+    vm.trainingActivityType = _trainingActivityType();
+    vm.modal = _modal();
+    vm.query.CostCeiling.extend({ numeric: 2, preventNegative: true });
+    vm.query.CostFloor.extend({ numeric: 2, preventNegative: true });
+
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    app.data.typeahead.create('#OnRampUsers', '@Url.Content("~/AutoComplete/" + AutoCompleteSection.AllUsers.Action)', '@AutoCompleteSection.AllUsers.Name', null);
+    app.data.typeahead.create('#Groups', '@Url.Content("~/AutoComplete/" + AutoCompleteSection.Groups.Action)', '@AutoCompleteSection.Groups.Name', null);
+    app.data.typeahead.create('#Races', '@Url.Content("~/AutoComplete/" + AutoCompleteSection.Races.Action)', '@AutoCompleteSection.Races.Name', null);
+    app.data.typeahead.tags.create('#TrainingLabels', '@Url.Content("~/AutoComplete/" + AutoCompleteSection.TrainingLabels.Action)', '@AutoCompleteSection.TrainingLabels.Name', null, null);
+
+    $(function () {
+        $('#OnRampUsers').bind('typeahead:select', vm.modal.search.users.add);
+        $('#Groups').bind('typeahead:select', vm.modal.search.groups.add);
+        $('#Races').bind('typeahead:select', vm.modal.search.races.add);
+        document.getElementById('OnRampUsers').addEventListener('keypress', vm.modal.search.stopModalCloseOnEnter);
+        document.getElementById('Groups').addEventListener('keypress', vm.modal.search.stopModalCloseOnEnter);
+        document.getElementById('Races').addEventListener('keypress', vm.modal.search.stopModalCloseOnEnter);
+    });
+
+    function _parameters() {
+        return {
+            trainingActivityTypes: _parameters_trainingActivityTypes,
+            genders : _parameters_genders
+        };
+    }
+    function _parameters_trainingActivityTypes() {
+        return [
+            { Value: @Html.ToJson((int)TrainingActivityType.Bursary), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.Bursary)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.External), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.External)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.Internal), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.Internal)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.MentoringAndCoaching), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.MentoringAndCoaching)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.ToolboxTalk), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.ToolboxTalk)) }
+        ];
+    }
+    function _parameters_genders() {
+        return [
+            { Value: @Html.ToJson((int)GenderEnum.Gender.Male), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<GenderEnum.Gender>(GenderEnum.Gender.Male)) },
+            { Value: @Html.ToJson((int)GenderEnum.Gender.Female), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<GenderEnum.Gender>(GenderEnum.Gender.Female)) },
+            { Value: @Html.ToJson((int)GenderEnum.Gender.NotSpecified), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<GenderEnum.Gender>(GenderEnum.Gender.NotSpecified)) },
+        ];
+     }
+
+    function _trainingActivityType_from_value(value) {
+        var match = app.data.utils.array.find(vm.parameters.trainingActivityTypes(), function (x) { return ko.unwrap(x.Value) === ko.unwrap(value); });
+        return match[0] ? match[0].Text.toString() : null;
+    }
+    function _trainingActivityType() {
+        return {
+            from: {
+                value: _trainingActivityType_from_value
+            }
+        };
+    }
+
+    function _modal_search_users_open(){
+        vm.modal.search.open(function () {
+            vm.modal.search.header('Users');
+            vm.modal.search.mode('3');
+            app.data.utils.array.sync(vm.query.UsersTrained, vm.modal.search.temp);
+        });
+    }
+    function _modal_search_groups_open() {
+        vm.modal.search.open(function () {
+            vm.modal.search.header('Groups');
+            vm.modal.search.mode('1');
+            app.data.utils.array.sync(vm.query.Groups, vm.modal.search.temp);
+        });
+    }
+    function _modal_search_races_open() {
+        vm.modal.search.open(function () {
+            vm.modal.search.header('Race Codes');
+            vm.modal.search.mode('2');
+            app.data.utils.array.sync(vm.query.RaceCodes, vm.modal.search.temp);
+
+        });
+    }
+    function _modal_search_open(delegate) {
+        if (delegate)
+            delegate();
+        $('#search_modal').modal('show');
+    }
+    function _modal_search_dismiss() {
+        vm.modal.search.temp.removeAll();
+        $('#search_modal').modal('hide');
+    }
+    function _modal_search_accept() {
+        if (ko.unwrap(vm.modal.search.mode) == 1)
+            app.data.utils.array.sync(vm.modal.search.temp, vm.query.Groups);
+        if (ko.unwrap(vm.modal.search.mode) == 2)
+            app.data.utils.array.sync(vm.modal.search.temp, vm.query.RaceCodes);
+        if (ko.unwrap(vm.modal.search.mode) == 3)
+            app.data.utils.array.sync(vm.modal.search.temp, vm.query.UsersTrained);
+        vm.modal.search.dismiss();
+    }
+    function _modal_search_stopModalCloseOnEnter(event) {
+        if (event.keyCode == 13) {
+            event.stopImmediatePropagation();
+            event.stopPropagation();
+            event.preventDefault();
+        }
+    }
+    function _modal_search_users_add(ev, suggestion) {
+        if (suggestion) {
+            if (!app.data.utils.array.find(vm.modal.search.temp, function (u) { return ko.unwrap(u.Id) == ko.unwrap(suggestion.Id); }))
+                vm.modal.search.temp.push({ Name: suggestion.Value, Email: suggestion.Extra, Id: suggestion.Id });
+        }
+        $('#' + ev.currentTarget.id).typeahead('val', '');
+    }
+    function _modal_search_users_remove(entry) {
+        app.data.utils.array.remove(entry, vm.modal.search.temp, function (user) { return ko.unwrap(user.Id) == ko.unwrap(entry.Id); });
+    }
+    function _modal_search_groups_add(ev, suggestion) {
+        if (suggestion) {
+            if (!app.data.utils.array.find(vm.modal.search.temp, function (u) { return ko.unwrap(u.Id) == ko.unwrap(suggestion.Id); }))
+                vm.modal.search.temp.push({ Title: suggestion.Value, Description: suggestion.Extra, Id: suggestion.Id });
+        }
+        $('#' + ev.currentTarget.id).typeahead('val', '');
+    }
+    function _modal_search_groups_remove(entry) {
+        app.data.utils.array.remove(entry, vm.modal.search.temp, function (user) { return ko.unwrap(user.Id) == ko.unwrap(entry.Id); });
+    }
+    function _modal_search_races_add(ev, suggestion) {
+        if (suggestion) {
+            if (!app.data.utils.array.find(vm.modal.search.temp, function (u) { return ko.unwrap(u.Id) == ko.unwrap(suggestion.Id); }))
+                vm.modal.search.temp.push({ Code: suggestion.Value, Description: suggestion.Extra, Id: suggestion.Id });
+        }
+        $('#' + ev.currentTarget.id).typeahead('val', '');
+    }
+    function _modal_search_races_remove(entry) {
+        app.data.utils.array.remove(entry, vm.modal.search.temp, function (user) { return ko.unwrap(user.Id) == ko.unwrap(entry.Id); });
+    }
+    function _modal_preview_open(entry) {
+        vm.modal.preview.temp(entry);
+        vm.modal.preview.mode(1);
+        $('#modal_preview_trainingLabels').tagsinput();
+        if (ko.unwrap(vm.modal.preview.temp))
+            if (ko.unwrap(ko.unwrap(vm.modal.preview.temp).TrainingLabels)) {
+                var list = ko.unwrap(ko.unwrap(vm.modal.preview.temp).TrainingLabels);
+                if ($.isArray(list))
+                    $.each(ko.unwrap(ko.unwrap(vm.modal.preview.temp).TrainingLabels),
+                        function() {
+                            $('#modal_preview_trainingLabels').tagsinput('add', this.toString());
+                        });
+                else
+                    $('#modal_preview_trainingLabels').tagsinput('add', list.toString());
+            }
+        vm.modal.preview.getDetails();
+        $('#preview_modal').modal('show');
+    }
+    function _modal_preview_dismiss() {
+        vm.modal.preview.temp(null);
+        vm.modal.preview.mode(1);
+        $('#modal_preview_trainingLabels').tagsinput('destroy');
+        vm.modal.preview.trainers.removeAll();
+        vm.modal.preview.invoices.removeAll();
+        $('#preview_modal').modal('hide');
+    }
+    function _modal_preview_showInvoices() {
+        var t = ko.unwrap(vm.modal.preview.temp);
+        if (!t)
+            return false;
+        return ko.unwrap(t.BursaryTrainingActivityDetail) || ko.unwrap(t.ExternalTrainingActivityDetail);
+    }
+    function _modal_preview_getDetails() {
+        var e = ko.unwrap(vm.modal.preview);
+        if (ko.unwrap(e.temp)) {
+            e = ko.unwrap(e.temp);
+            if (ko.unwrap(e.ExternalTrainingActivityDetail)){
+                app.data.utils.array.sync(ko.unwrap(e.ExternalTrainingActivityDetail.ConductedBy), vm.modal.preview.trainers);
+                app.data.utils.array.sync(ko.unwrap(e.ExternalTrainingActivityDetail.Invoices), vm.modal.preview.invoices);
+                }
+            else if (ko.unwrap(e.ToolboxTalkTrainingActivityDetail)){
+                app.data.utils.array.sync(ko.unwrap(e.ToolboxTalkTrainingActivityDetail.ConductedBy), vm.modal.preview.trainers);
+                }
+            else if (ko.unwrap(e.BursaryTrainingActivityDetail)){
+                app.data.utils.array.sync(ko.unwrap(e.BursaryTrainingActivityDetail.ConductedBy), vm.modal.preview.trainers);
+                app.data.utils.array.sync(ko.unwrap(e.BursaryTrainingActivityDetail.Invoices), vm.modal.preview.invoices);
+                }
+            else if (ko.unwrap(e.InternalTrainingActivityDetail)){
+                app.data.utils.array.sync(ko.unwrap(e.InternalTrainingActivityDetail.ConductedBy), vm.modal.preview.trainers);
+                }
+            else if (ko.unwrap(e.MentoringAndCoachingTrainingActivityDetail)){
+                app.data.utils.array.sync(ko.unwrap(e.MentoringAndCoachingTrainingActivityDetail.ConductedBy), vm.modal.preview.trainers);
+                }
+        }
+    }
+    function _modal() {
+        return {
+            search: {
+                open: _modal_search_open,
+                dismiss: _modal_search_dismiss,
+                stopModalCloseOnEnter: _modal_search_stopModalCloseOnEnter,
+                accept: _modal_search_accept,
+                temp: ko.observableArray(),
+                header: ko.observable(),
+                mode: ko.observable(),
+                users: {
+                    open: _modal_search_users_open,
+                    add: _modal_search_users_add,
+                    remove: _modal_search_users_remove
+                },
+                groups: {
+                    open: _modal_search_groups_open,
+                    add: _modal_search_groups_add,
+                    remove: _modal_search_groups_remove
+                },
+                races: {
+                    open: _modal_search_races_open,
+                    add: _modal_search_races_add,
+                    remove: _modal_search_races_remove
+                }
+            },
+            preview: {
+                open: _modal_preview_open,
+                temp: ko.observable(),
+                dismiss: _modal_preview_dismiss,
+                mode: ko.observable(),
+                showInvoices: _modal_preview_showInvoices,
+                getDetails: _modal_preview_getDetails,
+                trainers: ko.observableArray(),
+                invoices : ko.observableArray()
+    }
+        };
+    }
+</script>

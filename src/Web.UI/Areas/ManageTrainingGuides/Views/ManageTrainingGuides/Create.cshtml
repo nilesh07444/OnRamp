@@ -1,0 +1,313 @@
+﻿@model Ramp.Contracts.ViewModel.TrainingGuideViewModel
+@using Ramp.Contracts.ViewModel
+@using Ramp.Security.Authorization
+@using Common.Web
+@using Web.UI.Code.AreaReferencesManagement
+@using Web.UI.Code.Extensions
+@using System.Threading
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInResellerRole() || Thread.CurrentPrincipal.IsInAdminRole())
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var validatewith = "validatewith:$root.details.validationErrors";
+}
+@Styles.Render(ManageTrainingGuidesStyles.CreateStylesVirtualPath)
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+</style>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<div class="col-lg-12">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header" data-bind="text:details.PageTitle"></h1>
+        </div>
+    </div>
+    <div id="blueimp-gallery" class="blueimp-gallery">
+        <div class="slides"></div>
+        <h3 class="title"></h3>
+        <a class="prev">‹</a>
+        <a class="next">›</a>
+        <a class="close">×</a>
+        <a class="play-pause"></a>
+        <ol class="indicator"></ol>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    Playbook Information
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="well">
+                                <div class="form-group" data-bind="validationElement:details.Title">
+                                    <label class="control-label">Title</label>
+                                    <input id="Title" class="form-control" data-bind="textInput:details.Title,@validatewith" />
+                                </div>
+                                <div class="form-group" data-bind="validationElement:details.Description">
+                                    <label class="control-label">Description</label>
+                                    <textarea id="description" class="form-control" data-bind="value:details.Description,@validatewith" rows="2"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">Training Labels</label>
+                                    <div class="input-group" style="width:100%;max-width:280px">
+                                        <input type="text" class="form-control" name="TrainingLabels" id="TrainingLabels" data-bind="value:details.TrainingLabels,valueUpdate:['typeahead:selected','change','keyup'], validatewith:$root.errors" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label id="category" class="control-label">Category : <span data-bind="text:details.CategoryName"></span></label>
+                                </div>
+
+                                <div class="form-group">
+                                    <button class="btn btn-default" data-bind="click:toggleCategoryMenu.bind()">Select Category</button>
+                                    <div data-bind="jstree:details.TrainingGuideCategoryDropDown,jstreeOptions:vm.jstreeOptions,valueProperty:details.SelectedCategoryId" id="categoryMenu"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label id="" class="control-label">View Mode :</label>
+                                    <div class="btn-group-sm">
+                                        <button type="button" class="btn btn-default" data-bind="click:$root.setPreviewModePortrait.bind(),css : {'btn-primary' : ko.unwrap($root.details.PlaybookPreviewMode) !== 1}">Portrait</button>
+                                        <button type="button" class="btn btn-default" data-bind="click:$root.setPreviewModeLandscape.bind() ,css : {'btn-primary' : ko.unwrap($root.details.PlaybookPreviewMode) === 1}">Storybook</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label id="" class="control-label">Printable :</label>
+                                    <div class="btn-group-sm">
+                                        <button type="button" class="btn btn-default" data-bind="click:$root.setPrintableTrue.bind(),css : {'btn-primary' : ko.unwrap($root.details.Printable)}">Yes</button>
+                                        <button type="button" class="btn btn-default" data-bind="click:$root.setPrintableFalse.bind() ,css : {'btn-primary' : !ko.unwrap($root.details.Printable)}">No</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">Cover Picture</label>
+                                    <div data-bind="if:details.CoverPictureVM">
+                                        <div data-bind="with: details.CoverPictureVM">
+                                            <img class="img-responsive coverPicture" data-bind="attr:{src:$data.Url()},click:addToGallery.bind($data)" />
+                                        </div>
+                                        <br />
+                                    </div>
+                                    <button id="coverPicture" class="btn btn-default" data-bind="click:updateCoverPicture.bind()">Set / Change Cover Picture</button>
+                                    <button class="btn btn-default" data-bind="visible:details.CoverPictureVM,click:function(){vm.details.CoverPictureVM(null);}"><span class="fa fa-trash"></span></button>
+                                    <input data-bind="fileUpload:details.CoverPictureUpload,fileuploadOptions:fileuploadOptionsCoverPicture,valueProperty:details.CoverPictureVM" type="file" name="files[]" accept="image/*" class="hidden coverPictureUpload">
+                                </div>
+                                <div class="form-group has-error errorsSpan" data-bind="visible:$root.UploadCoverPictureError">
+                                    <span>Error uploading CoverPicture</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div data-bind="foreach: details.TraningGuideChapters(),uiSortableList:details.TraningGuideChapters,handle:'.handle'">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading handle" title="Hold and drag to rearrange" data-bind="event:{mousedown:rearrangeChapters.bind()}">
+                                <button type="button" class="glyphicon glyphicon-sort" style="color:black" data-bind="click:toggleChapterContents.bind($data)"></button>
+                                <input type="text" class="form-control chapterName" data-bind="value : ChapterName" />
+                                <label>Link this page to:</label>
+                                <select class="form-control linkedGuide" id="linkPlaybook" data-bind="options:vm.details.TraningGuideDropDownForLinking,
+                                                                                           optionsText:'Text',
+                                                                                           optionsValue:'Value',
+                                                                                           optionsCaption:'Choose a playbook to link to..',
+                                                                                           value:SelectedTraningGuideId"></select>
+                                <button class="close" data-bind="click: removeChapter.bind($data)">&times;</button>
+                            </div>
+                            <div class="panel-body" data-bind="hidden:Minimized()">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="well well-sm" id="chapterContent">
+                                            <div class="row">
+                                                <div class="content-tools col-lg-12" data-bind="contentToolsWithImageUpload:{query:'*[data-editable]',identifier:'name',value:ChapterContent},
+                                                                                    imageuploader:{uploadPathInitial:$root.uploadPathInitial,uploadPathCommit:$root.uploadPathCommit,
+                                                                                    compositeKey:$root.trainingGuideId(),rotateImagePath : $root.rotateImagePath},
+                                                                                    identifier:TraningGuideChapterId(),html:ChapterContent" data-editable>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label id="resources" class="control-label">Choose any of the below to upload</label>
+                                                </div>
+                                                <img class="img-responsive uploadLauncher" src="@Url.Content("~/Content/images/WordDoc.png")" data-bind="click:simulateUploadClick.bind($data)" />
+                                                <img class="img-responsive uploadLauncher" src="@Url.Content("~/Content/images/excelDoc.png")" data-bind="click:simulateUploadClick.bind($data)" />
+                                                <img class="img-responsive uploadLauncher" src="@Url.Content("~/Content/images/OR_AudioIcon_v3.png")" data-bind="click:simulateUploadClick.bind($data)" title="Accepted filetypes: &#013; .MP3" />
+                                                <img class="img-responsive uploadLauncher" src="@Url.Content("~/Content/images/ppDoc.png")" data-bind="click:simulateUploadClick.bind($data)" />
+                                                <img class="img-responsive uploadLauncher" src="@Url.Content("~/Content/images/imgDoc.png")" data-bind="click:simulateUploadClick.bind($data)" title="Accepted filetypes: &#013; .PNG &#013; .JPEG &#013; .JPG &#013; .GIF &#013; .BMP" />
+                                                <img class="img-responsive uploadLauncher" src="@Url.Content("~/Content/images/videoDoc.png")" id="videoUploadId" data-bind="click:simulateUploadClick.bind($data)" />
+                                                <img class="img-responsive uploadLauncher" src="@Url.Content("~/Content/images/otherDoc.png")" data-bind="click:simulateUploadClick.bind($data)" />
+                                                <div id="inputs"></div>
+                                                <div class="form-group" data-bind="visible:AddLink">
+                                                    <label>Insert your <span data-bind="text:LinkType"></span> link:</label>
+                                                    <div class="input-group linkUpload">
+                                                        <input class="form-control" type="url" data-bind="value:Link" />
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-default" data-bind="click:addLink.bind($data)" type="button">Add</button>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <tbody data-bind="foreach:Attachments">
+
+                                                            <tr data-bind="if:!$data.Embeded() && !$data.Error">
+                                                                <td class="upload upload-detail-20">
+                                                                    <a data-bind="attr:{href:$data.Url()},click:setUpClickAction.bind($data)" target="_blank">
+                                                                        <img class="img-responsive upload-thumbnail" data-bind="attr:{src:$data.ThumbnailUrl()}" />
+                                                                    </a>
+                                                                </td>
+                                                                <td class="upload upload-detail-40">
+                                                                    <textarea type="text" class="form-control" data-bind="value:$data.Description" style="width:100%" rows="3"></textarea>
+                                                                </td>
+                                                                <td class="upload upload-detail-20">
+                                                                    <label data-bind="text:getScaledSize($data.Size())"></label>
+                                                                    <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible :$data.InProcess()">
+                                                                        <div class="progress-bar progress-bar-success" data-bind="style:{width:$data.Progress()}"></div>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="upload upload-detail-20">
+                                                                    <div data-bind="if:InProcess">
+                                                                        <button class="btn btn-danger upload-action" data-bind="click:cancelUpload.bind($data,$parent)"><i class="glyphicon glyphicon-ban-circle"></i><span>Cancel</span></button>
+                                                                    </div>
+                                                                    <div data-bind="ifnot:InProcess">
+                                                                        <button class="btn btn-danger upload-action" data-bind="click:deleteUpload.bind($data,$parent)"><i class="glyphicon glyphicon-trash"></i><span>Delete</span></button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>
+                                                                    <iframe data-bind="attr:{src:Url}" class="upload-thumbnail-embeded" frameborder="0" msallowfullscreen="msallowfullscreen" webkitallowfullscreen="webkitallowfullscreen" mozallowfullscreen="mozallowfullscreen" allowfullscreen="allowfullscreen"></iframe>
+                                                                </td>
+                                                                <td colspan="2"><label data-bind="text:toDisplayString(Url(),55)" class="embededLable"></label></td>
+                                                                <td>
+                                                                    <button type="button" class="btn btn-danger upload-action" data-bind="click:removeLink.bind($data,$parent)"><i class="glyphicon glyphicon-trash"></i><span>Delete</span></button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <tbody data-bind="foreach:Errors" class="errors">
+                                                            <tr>
+                                                                <td colspan="2">
+                                                                    <div>
+                                                                        <b>Error uploading file. Please try again.</b>
+                                                                    </div>
+                                                                    <div data-bind="text:toDisplayString($data.Name(),50)"></div>
+                                                                </td>
+                                                                <td>
+                                                                    <button class="btn btn-danger upload-action uploaderror" data-bind="click:clearUpload.bind($data,$parent)"><spand class="glyphicon glyphicon-remove"></spand></button>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label value="Arrange Files" class="success arrangeLable">Arrange Files</label>
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover table-striped arrangeTable">
+                                                        <tbody data-bind="foreach:Attachments,uiSortableList:Attachments,handle:'.a-handle'">
+                                                            <!-- ko if:(!$data.Embeded() && !$data.Error) -->
+                                                            <tr>
+                                                                <td class="a-handle attachment-name arrange60">
+                                                                    <label data-bind="text:toDisplayString($data.Description(),38)"></label>
+                                                                </td>
+                                                                <td class="arrange50">
+                                                                    <img class="img-responsive upload-thumbnail-sort " data-bind="attr:{src:$data.ThumbnailUrl}" />
+                                                                </td>
+                                                            </tr>
+                                                            <!-- /ko -->
+                                                            <!-- ko if:$data.Embeded() -->
+                                                            <tr data-bind="if:$data.Embeded">
+                                                                <td class="a-handle attachment-name arrange60">
+                                                                    <label data-bind="text:toDisplayString($data.Url(),38)"></label>
+                                                                </td>
+                                                                <td class="arrange50">
+                                                                    <!-- ko if:$data.Type() === 'Youtube' -->
+                                                                    <img src="@Url.Content("~/Content/images/youTube.png")" class="img-responsive upload-thumbnail-sort" />
+                                                                    <!-- /ko -->
+                                                                    <!-- ko if:$data.Type() === 'Vimeo' -->
+                                                                    <img src="@Url.Content("~/Content/images/vimeo.png")" class="img-responsive upload-thumbnail-sort" />
+                                                                    <!-- /ko -->
+                                                                </td>
+                                                            </tr>
+                                                            <!-- /ko -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <button class="btn btn-default" id="addChapter" data-bind="click:AddPlaybookChapter">Add Chapter</button>
+                    <button id="save" class="btn btn-default" data-bind="click:Save.bind(),disable:!vm.details.CanSave()()">Save</button>
+                    <button id="save" class="btn btn-default" data-bind="click:print.bind(),disable:!vm.details.CanSave()()">Print</button>
+                </div>
+            </div>
+            <br />
+        </div>
+    </div>
+</div>
+@Scripts.Render(ManageTrainingGuidesScripts.CreateScriptsVirtualPath)
+<script defer="defer">
+    var vm = new Controller(app, { data: @Html.ToJson((object)Model), validation: @Html.JsonKnockoutValidationFor() } ,@Html.ToJson((object)ViewBag),{
+        uploadLink:'@Url.Action("Post","Upload",new { Area = ""})',
+        index: '@Url.Action("Index")',
+        print : '@Url.Action("DownloadPDF", "TrainingGuideExport", new { Area = "Reporting" })',
+        uploadPathInitial : '@Url.Action("PostFromContentToolsInitial", "Upload",new { Area = ""})',
+        uploadPathCommit : '@Url.Action("PostFromContentToolsCommit", "Upload",new { Area = ""})',
+        uploadImagePath : '@Url.Action("RotateImage", "Upload",new { Area = ""})',
+        EditTrainingGuide: '@Url.Action("EditTrainingGuide","ManageTrainingGuides",new { Area = "ManageTrainingGuides"})',
+        getId : '@Url.Action("GetGuid","ManageTrainingTest",new { Area = "ManageTrainingTest"})'
+    });
+
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    app.data.typeahead.tags.create('#TrainingLabels', '@Url.Content("~/AutoComplete/" + AutoCompleteSection.TrainingLabels.Action)', '@AutoCompleteSection.TrainingLabels.Name', null);
+
+    window.vm = vm;
+    for (i = 0; i < 2 - vm.details.TraningGuideChapters().length; i++) {
+        AddPlaybookChapter();
+    }
+    $(function () {
+        //var e = ContentTools.EditorApp.get();
+        //if (e._ignition)
+        //    if (e._ignition._state !== "editing")
+        //        e.ignition()._domEdit.click();
+        $('.content-tools a').on('click', function (event) {
+            window.open($(this).attr('href'), "");
+            return false;
+        });
+    });
+    if(vm.details.CategoryName() == null){
+        var firstCategory = vm.details.TrainingGuideCategoryDropDown()[0];
+        vm.details.CategoryName(firstCategory.text());
+        vm.details.SelectedCategoryId(firstCategory.id());
+    }
+
+    $('#categoryMenu').hide();
+</script>

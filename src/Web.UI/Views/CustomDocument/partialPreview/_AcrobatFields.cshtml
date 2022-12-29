@@ -1,0 +1,268 @@
+﻿<template id="Acrobat-display-preview-component">
+    @*<h1>Acrobat-<span data-bind="text:$index"></span></h1>
+    <span data-bind="text:ko.toJSON($data)"></span>*@
+    <input type="hidden" id="AdobeFieldValues" data-bind="value:ko.toJSON($data.data.AdobeFieldValues)"></input>
+    <!-- ko foreach:$data -->
+    <!-- ko if:$root.paging.shouldShowContent($data)  && !ko.unwrap(IsConditionalLogic) -->
+    <div class="panel panel-info" data-bind="attr:{id:Id}">
+        <div class="panel-heading hidden-xs">
+            <div class="heading pull-left">
+                @*<h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;*@
+                <p class="chapterName" data-bind="text:app.data.utils.string.truncate(Title,90)"></p>
+            </div>
+
+            <div class="btn-group pull-right hidden-sm">
+                <a class="btn btn-default" data-bind="visible:ko.unwrap(DocLinkAndAttachmentCount) > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }">
+                    <span class="glyphicon glyphicon-paperclip"></span>&nbsp;
+                    <span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide Attachments' : 'Show Attachments'"></span>
+                    <span class="badge" data-bind="text:ko.unwrap(DocLinkAndAttachmentCount)"></span>
+                </a>
+            </div>
+            <div class="btn-group pull-right visible-sm">
+                <a class="btn btn-default" data-bind="visible:ko.unwrap(DocLinkAndAttachmentCount) > 0, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }">
+                    <span class="glyphicon glyphicon-paperclip"></span>&nbsp;
+                    <span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(DocLinkAndAttachmentCount)"></span>
+                </a>
+            </div>
+            <span class="clearfix"></span>
+        </div>
+        <div class="panel-heading visible-xs">
+            <div class="heading text-center">
+                @*<h4 class="chapterNumber" data-bind="text:Number() + @numberNorm"></h4>&nbsp;*@
+            </div>
+            <span class="clearfix"></span>
+        </div>
+        <div class="panel-heading visible-xs">
+            <div class="heading">
+                <span class="chapterName" data-bind="text:Title"></span>
+            </div>
+            <span class="clearfix"></span>
+        </div>
+        <div class="panel-heading visible-xs text-center">
+            <div class="btn-group">
+                <a class="btn btn-default" data-bind="visible:ko.unwrap(Attachments).length, click:$root.content.toggleAttachments.bind(), css:{ 'btn-info':state.showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:ko.unwrap(state.showAttachments) ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:ko.unwrap(Attachments).length"></span></a>
+            </div>
+        </div>
+        <div class="" style="position: relative" data-bind="attr:{ id:'attachments_'+ko.unwrap(Id) }">
+            <!-- ko if: ko.unwrap($data.DocLinks)?.length > 0-->
+            <div style="padding: 10px 10px">
+                <strong style="margin-left: 15px">Links:</strong>
+            </div>
+
+            <div class="row col-md-12" style="padding-bottom: 10px" id="docLinks" data-bind="foreach:$data.DocLinks, attr: {id: 'chapter_' + $index() }">
+                <div class="col-md-2">
+                    <a class="iframe" data-bind="attr: {href: Url}">
+                        <img class="img-responsive upload-thumbnail hover-zoom cursor" data-bind="attr:{title:Url}" src="@Url.Content("~/Content/images/file/WebFrame.png")" />
+                        <p class="text-center"> <span data-bind="text: Name"></span></p>
+                    </a>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko if: ko.unwrap($data.Attachments).length > 0-->
+            <div data-bind="foreach:Attachments" style="padding: 5px">
+                <div class="pull-left text-center" style="margin-left: 15px;width: 115px; ">
+                    <div style="height: 100px;">
+                        <!-- ko if:ko.unwrap(Type).indexOf('Image') === 0 -->
+                        <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                            <img class="img-responsive attachment img-thumbnail hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:ko.unwrap(Type).indexOf('Video') === 0 -->
+                        <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                            <img class="img-responsive attachment hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                            <div class="content center-block">
+                                <video controls height="320" width="600">
+                                    <source data-bind="attr:{ src:Url }" type="video/mp4" />
+                                    Your browser does not support the HTML 5 video tag.
+                                </video>
+                            </div>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko if:ko.unwrap(Type).indexOf('Audio') === 0 -->
+                        <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                            <img class="img-responsive attachment hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                            <div class="content center-block">
+                                <audio controls style="width:100%">
+                                    <source data-bind="attr:{ src:Url }" type="audio/mp3" />
+                                    Your browser does not support the HTML 5 audio tag.
+                                </audio>
+                            </div>
+                        </a>
+                        <!-- /ko -->
+                        <!-- ko ifnot:(ko.unwrap(Type).indexOf('Image') === 0 || ko.unwrap(Type).indexOf('Video') === 0 || ko.unwrap(Type).indexOf('Audio') === 0)-->
+                        <img class="img-responsive attachment hover-zoom cursor" data-bind="attr:{src:ThumbnailUrl,title:Description},click:$root.content.previewUpload.bind($data)" />
+                        <!-- /ko -->
+
+
+
+                    </div>
+                    <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                        <small data-bind="text:Description"></small>
+                    </div>
+                </div>
+                <div data-bind="foreach: AcrofieldJson">
+                    <!-- ko if :(ko.unwrap(fields).includes('Text') || ko.unwrap(fields).includes('Check'))-->
+                    <span data-bind="text: fields "></span>
+                    <span data-bind="html: vm.dynamicControl(fields)"></span>
+                    <!-- /ko -->
+                    <br />
+                </div>
+            </div>
+            <!-- /ko -->
+            <div class="clearfix"></div>
+            <hr />
+
+            @*LeaveNotes*@
+
+            <div class="row col-lg-12">
+                @*<textarea cols="500" class="form-control" data-bind="textInput:AcrofieldValue" rows="5"></textarea>*@
+                <!-- ko if:NoteAllow -->
+                <div class="col-lg-5 pull-left">
+                    <div class="form-group">
+                        <label id="resources" class="control-label">Leave additional notes:</label>
+                    </div>
+                    <div class="heading pull-left IssueDiscription">
+
+                        <textarea cols="500" class="form-control" data-bind="textInput:IssueDiscription" rows="5"></textarea>
+                    </div>
+                </div>
+                <!-- /ko -->
+
+                <div class="col-sm-7">
+
+                    <!-- ko if:AttachmentRequired -->
+                    <!-- Below line can be used to outline Attachment area if AttachmentRequired is true -->
+
+                    <div>
+                        <div class="form-group">
+                            <label id="resources" class="control-label">Choose any of the below to upload</label>
+                        </div>
+                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/wordDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data.AcrobatFieldContentModels)" />
+                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/excelDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data.AcrobatFieldContentModels)" />
+                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/otherDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data.AcrobatFieldContentModels)" />
+                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/audDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data.AcrobatFieldContentModels)" title="Accepted filetypes: &#013; .MP3" />
+                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/imgDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data.AcrobatFieldContentModels);" title="Accepted filetypes: &#013; .PNG &#013; .JPEG &#013; .JPG &#013; .GIF &#013; .BMP" />
+                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/videoDoc.png")" id="videoUploadId" data-bind="click:vm.upload.triggerUpload.bind($data.AcrobatFieldContentModels)" title="Accepted filetypes: &#013; .MP4" />
+
+                        <div id="inputs"></div>
+                    </div>
+                    <!-- /ko -->
+
+                </div>
+                <div class="row col-sm-7 pull-right">
+                    <div class="table-responsive">
+
+                        <table class="table table-striped table-condensed" data-bind="visible:ko.unwrap(StandardUserAttachments).length > 0">
+                            <thead>
+                                <tr>
+                                    <th colspan="5" style="padding:0">
+                                        <label class="success arrangeHeader">Arrange Attachments</label>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach:StandardUserAttachments,uiSortableList:Attachments,handle:'.uploadhandle'">
+                                <tr data-bind="if:!ko.unwrap($data.Error)">
+                                    <td style="max-width: 50px">
+                                        <a class="btn"><span class="glyphicon glyphicon-sort uploadhandle" style="color:black"></span></a>
+                                    </td>
+                                    <td class="upload upload-detail-20">
+                                        <a data-bind="attr:{href: ko.unwrap($data.Url)},click:app.data.plugins.blueimpGallary.trigger.bind($data)" target="_blank">
+                                            <img class="img-responsive upload-thumbnail" data-bind="attr:{src:ko.unwrap($data.ThumbnailUrl)}" />
+                                        </a>
+                                    </td>
+                                    <td class="upload upload-detail-40">
+                                        <textarea type="text" class="form-control" data-bind="value:$data.Description" style="width:100%" rows="4"></textarea>
+                                    </td>
+                                    <td class="upload upload-detail-20">
+                                        <label data-bind="text:vm.upload.getScaledSize(ko.unwrap($data.Size))"></label>
+                                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible :ko.unwrap($data.InProcess)">
+                                            <div class="progress-bar progress-bar-success" data-bind="style:{width:ko.unwrap($data.Progress)}"></div>
+                                        </div>
+                                    </td>
+                                    <td class="upload upload-detail-20" style="max-width: 50px">
+                                        <div data-bind="if: ko.unwrap($data.InProcess)">
+                                            <button class="btn btn-danger upload-action" data-bind="click:vm.upload.cancel.bind($data,$parent)"><i class="glyphicon glyphicon-ban-circle"></i></button>
+                                        </div>
+                                        <div data-bind="ifnot: ko.unwrap($data.InProcess)">
+                                            <button class="btn btn-danger upload-action" data-bind="click:deleteAttachment.bind($data,$parent)"><i class="glyphicon glyphicon-trash"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+
+            </div>
+            <!-- ko if: IsSignOff -->
+            <div class="row">
+                <div class="col-md-12">
+                    <canvas class="sig-canvas" data-bind="attr:{id:'sig-canvas-acrobat-'+ $index()}" width="620" height="160">
+                        Get a better browser, bro.
+                    </canvas>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <button class="btn btn-primary sig-submitBtn" data-bind="attr:{id:'sig-submitBtn-acrobat-'+ $index()}">Submit Signature</button>
+                    <button class="btn btn-default sig-clearBtn" data-bind="attr:{id:'sig-clearBtn-acrobat-'+ $index()}">Clear Signature</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <img class="img-responsive upload-thumbnail" data-bind="attr:{src:ko.unwrap(SignatureThumbnail)}" />
+
+                    <img data-bind="attr:{id:'sig-image-acrobat-'+ $index()}" src="" alt="" />
+                    <input type="hidden" class="sig-uploadID" data-documentType="Acrobat" data-bind="value:SignatureUploadId,attr:{id:'sig-uploadID-acrobat-'+ $index(), datasectionID:''+$index()}" />
+                </div>
+            </div>
+            <!-- /ko -->
+        </div>
+
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-lg-12 chapter-content">
+                    <!-- ko if:Content -->
+                    <div class="content-tools" data-bind="contentTools:{query:'',identifier:'name',value:Content},identifier:ko.unwrap(Id),html:Content" data-editable></div>
+                    <!-- /ko -->
+                </div>
+
+            </div>
+        </div>
+     
+        <br />
+        <div class="row">
+            <div class="col-md-12">
+                <img data-bind="attr:{id:'sig-image-acrobat-'+ $index()}" src="" alt="" />
+            </div>
+        </div>
+
+    </div>
+    <!-- /ko -->
+    <!-- /ko -->
+
+
+    <script>
+        $(document).ready(function () {
+            JSON.parse($('#AdobeFieldValues').val()).forEach(aEle => {
+
+                $(".acrofield").each(function () {
+
+                    var acro = $(this).attr('data-Field');
+                    console.log('acro', acro.trim);
+                    console.log('aEle.Field_Name', aEle.Field_Name);
+                    if (acro.trim() == aEle.Field_Name) {
+                        console.log('acro-1', aEle.Field_Value);
+                        $(this).val(aEle.Field_Value);
+                        return false;
+                    }
+
+                });
+
+            });
+        });
+        
+    </script>
+
+</template>

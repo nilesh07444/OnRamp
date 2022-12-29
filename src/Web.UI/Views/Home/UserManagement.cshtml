@@ -1,0 +1,101 @@
+﻿@using Web.UI.Areas.CustomerManagement.Controllers
+@using Web.UI.Areas.ManageTrainingGuides.Controllers
+@using Web.UI.Areas.ManageTrainingTest.Controllers
+@using Web.UI.Code.Extensions
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<div class="row row-centered">
+    <div class="col-md-12 text-center col-centered">
+        <div class="form-group text-center">
+            <h1>USER MANAGEMENT</h1>
+        </div>
+    </div>
+</div>
+@if (Html.CanAccess<CustomerMgmtController>(m => m.ManageOwnCustomerCompanyUser(Guid.Empty, Guid.Empty, null, null))
+     || Html.CanAccess<CustomerMgmtController>(m => m.ManageOwnCustomerCompanyUser(Guid.Empty, Guid.Empty, null, null))
+     || Html.CanAccess<CustomerMgmtController>(m => m.ManageOwnCustomerCompanyUser(Guid.Empty, Guid.Empty, null, null)))
+{
+    <div class="row row-centered menu-row">
+        <div class="col-md-12 col-centered">
+
+            @if (Html.CanAccess<CustomerMgmtController>(m => m.ManageOwnCustomerCompanyUser(Guid.Empty, Guid.Empty, null, null)))
+            {
+                <div class="col-md-4 col-centered menu-tile" id="user-library">
+                    <a href="@(Url.Content("~/CustomerManagement/CustomerMgmt/ManageOwnCustomerCompanyUser?companyId=" +
+                                           PortalContext.Current.UserCompany.Id + "&userId=" + Guid.Empty +
+                                           "&companyName=" + PortalContext.Current.UserCompany.CompanyName))">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.UserManagement], true)" class="img-responsive" id="userGroupId"/>
+                        <h4>
+                            <span class="label label-default shade ">
+                                User Library
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+            @if (Html.CanAccess<CustomerMgmtController>(m => m.ManageOwnCustomerCompanyUser(Guid.Empty, Guid.Empty, null, null)))
+            {
+                <div class="col-md-4 col-centered menu-tile" id="group-management">
+                    <a href="@(Url.Content("~/Configurations/ManageGroups"))">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.GroupManagement], true)" class="img-responsive" id="userGroupId"/>
+                        <h4>
+                            <span class="label label-default shade">
+                                Group Management
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+            @if (Html.CanAccess<CustomerMgmtController>(m => m.CustomerUserSelfSignUpNotApproved()))
+            {
+                <div class="col-md-4 col-centered menu-tile" id="self-signup-management">
+
+                    <a href="@Url.Action("CustomerUserSelfSignUpNotApproved", "CustomerMgmt", new {Area = "CustomerManagement"})">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.SelfSignupManagement], true)" class="img-responsive" id="userGroupId"/>
+                        <h4>
+                            <span class="label label-default shade ">
+                                Self Signup Management
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<script>
+    tour.steps = [
+        {
+            target: 'user-library',
+            placement: 'top',
+            title: 'User Library',
+            content:
+                'Click here to manage user accounts for OnRamp.<br/>You are an Administrator - you can create, edit and remove user accounts from the system.You can also reset passwords for users on this screen.',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: '480'
+        },
+        {
+            target: 'group-management',
+            title: 'Group Management',
+            content:
+                'Click here to manage groups for your users in OnRamp.<br/>You are an Administrator and can create,edit and remove groups from your system.',
+            placement: 'top',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: '480'
+        },
+        {
+            target: 'self-signup-management',
+            placement: 'top',
+            title: 'Self Signup Management',
+            content:
+                'Click here to manage users who have signed up using the "Self Signup" function in OnRamp.You can enable this function under Portal Settings. This self signup section allows you to approve/deny users who have requested access to your OnRamp portal.',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: '480'
+        }
+    ];
+</script>

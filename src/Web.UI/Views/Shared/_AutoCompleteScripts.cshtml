@@ -1,0 +1,64 @@
+﻿@model  Ramp.Contracts.ViewModel.AutoCompleteModel
+
+<script>
+    function MakeAutoCompleteSource(action) {
+        var bh = new Bloodhound({
+            datumTokenizer: function (d) {
+                return d.Tokens;
+            },
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            prefetch: {
+                ttl: 1,
+                url: action
+            },
+
+            limit: 10
+        });
+
+        bh.initialize();
+
+        return bh.ttAdapter();
+    }
+
+    $(document).ready(function () {
+        if ('@Model.Typeahead' == 'True') {
+            $('@Model.Control').typeahead(
+                {
+                    hint: true,
+                    highlight: true,
+                    minLength: 1
+                }
+                @foreach (var ac in Model.Sections)
+                {
+                    <text>
+                , {
+                    name: '@ac.Name.Replace(" ", "")',
+                    displayKey: 'Value',
+                    source: MakeAutoCompleteSource('@ac.Action'),
+                    templates: {
+                        header: '<div class="autocomplete heading">@ac.Name</div>',
+                        suggestion: function (item) { return '<p>' + ((item.Value == item.Extra) ? item.Value : '<strong>' + item.Value + '</strong> (' + item.Extra + ')') + '</p>'; }
+                    }
+                    </text>
+                }
+                });
+            $('@Model.Control').addClass('typeahead');
+        } else if ('@Model.Tags' == 'True') {
+            $('@Model.Control').tagsinput({
+                itemValue:'Value',
+                typeaheadjs: {
+                    name: '@Model.Sections.First().Name.Replace(" ","")',
+                    displayKey: 'Value',
+                    source: MakeAutoCompleteSource('@Model.Sections.First().Action'),
+                    templates: {
+                        header: '<div class="autocomplete heading">@Model.Sections.First().Name</div>',
+                        suggestion: function (item) { return '<p>' + ((item.Value == item.Extra) ? item.Value : '<strong>' + item.Value + '</strong> (' + item.Extra + ')') + '</p>'; }
+                    }
+                }
+            });
+            $('@Model.Control').addClass('typeahead');
+
+        }
+    });
+
+</script>

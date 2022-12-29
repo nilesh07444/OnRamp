@@ -1,0 +1,164 @@
+﻿@using Web.UI.Code.Extensions;
+@model  Ramp.Contracts.ViewModel.MeetingViewModel
+<table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+    <thead>
+        <tr>
+            <th class="">Type </th>
+            <th class="">Title</th>
+            <th class="col-lg-2">Status</th>
+            <th class="col-lg-2">Start Date </th>
+            <th class="col-lg-2">End Date </th>
+            <th class="col-lg-3">Options</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.VirtualClassrooms) {
+            <tr>
+                <td>
+                    <img title="Virtual Classroom" alt="Virtual Classroom" class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.VirtualClassRoom], true)" />
+
+                </td>
+                <td>
+                    @item.VirtualClassRoomName
+                </td>
+                <td><span class="align-middle badge badge-default status @item.StatusClass">@item.Status</span></td>
+                <td>
+                    @item.StartDate
+                </td>
+                <td>
+                    @item.EndDate
+                </td>
+
+                <td>
+
+                    @if (item.Status == "ENDED") {
+                        <div class="btn-group-xs">
+                            @if (DateTime.Now.Date >= Convert.ToDateTime(item.StartDate).Date && DateTime.Now.Date <= Convert.ToDateTime(item.EndDate).Date) {
+                                <button disabled class="btn btn-default btn-option" style="color: #262626; background-color: #f9f9f9">
+                                    <span class="glyphicon glyphicon-log-in"></span> <a style="text-decoration:none;color:#262626;" href='javascript:void(0);' id="@item.Id" class="JoinMeeting"> Join Meeting</a>
+                                </button>
+                            } else {
+                                <button id="jvm" disabled class="btn btn-default btn-option" style="color: #262626; background-color: #f9f9f9">
+                                    <span class="glyphicon glyphicon-log-in"></span> <a style="text-decoration:none;color:#262626;" href='javascript:void(0);' id="@item.Id" class="JoinMeeting"> Join Meeting</a>
+                                </button>
+                            }
+
+                            <button disabled class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-user"></span>  <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class=""> View Participants</a>
+                            </button>
+                            <button disabled class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-remove"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class=""> Cancel Meeting</a>
+                            </button>
+                            @if (item.IsPublicAccess) {
+                                <button disabled class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                    <span class="glyphicon glyphicon-share-alt"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class=""> Share Meeting</a>
+                                </button>
+                            }
+
+                            <button disabled class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-ok-circle"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class=""> Add Participants</a>
+                            </button>
+                            <button disabled class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-remove-circle"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class=""> Remove Participants</a>
+                            </button>
+                        </div>
+                    } else {
+                        <div class="btn-group-xs">
+                            @if (DateTime.Now.Date >= Convert.ToDateTime(item.StartDate).Date && DateTime.Now.Date <= Convert.ToDateTime(item.EndDate).Date) {
+                                <button class="btn btn-default btn-option" style="color: #262626; background-color: #f9f9f9">
+                                    <span class="glyphicon glyphicon-log-in"></span> <a style="text-decoration:none;color:#262626;" href='@Url.Action("VirtualMeeting","Meeting",new { id=item.Id})' id="@item.Id" class="JoinMeeting"> Join Meeting</a>
+                                </button>
+                            } else {
+                                <button disabled class="btn btn-default btn-option" style="color: #262626; background-color: #f9f9f9">
+                                    <span class="glyphicon glyphicon-log-in"></span> <a style="text-decoration:none;color:#262626;" href='javascript:void(0);' id="@item.Id" class="JoinMeeting"> Join Meeting</a>
+                                </button>
+                            }
+
+                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-user"></span>  <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class="ViewParticipant"> View Participants</a>
+                            </button>
+                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-remove"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class="CancelMeeting"> Cancel Meeting</a>
+                            </button>
+                            @if (item.IsPublicAccess) {
+                                <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                    <span class="glyphicon glyphicon-share-alt"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class="ShareMeeting"> Share Meeting</a>
+                                </button>
+                            }
+
+                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-ok-circle"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class="AddParticipants"> Add Participants</a>
+                            </button>
+                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                <span class="glyphicon glyphicon-remove-circle"></span> <a style="text-decoration:none;color:#262626;" href='javasctript:void' id="@item.Id" class="RemoveParticipants"> Remove Participants</a>
+                            </button>
+                        </div>
+                    }
+
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+<script>
+
+
+
+
+
+
+
+
+
+
+
+     $('#hdnIsLastPage').val('@Model.Paginate.IsLastPage')
+    $(function () {
+
+        $('#documents').dataTable({
+            bDeferRender: true,
+            bDestroy: true,
+            bFilter: false,
+            bPaginate: false,
+            dom: 'rt<"bottom"flp><"clear">',
+            initComplete: function () {
+                $(this.api().table().container()).find('input[type="search"]').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+            }
+        });
+        
+    $('#ddlShowEntry').val('@Model.Paginate.PageSize');
+
+    var checkFirstPage ='@Model.Paginate.IsFirstPage';
+    if (checkFirstPage === true || checkFirstPage === 'true' || checkFirstPage==='True') {
+
+        $("#prevPageCss").addClass('disabled');
+    } else {
+
+        $("#prevPageCss").removeClass('disabled');
+    }
+    var checkLastPage ='@Model.Paginate.IsLastPage';
+    if (checkLastPage === true || checkLastPage === 'true' || checkLastPage==='True') {
+
+        $("#nextPageCss").addClass('disabled');
+    } else {
+
+        $("#nextPageCss").removeClass('disabled');
+    }
+
+   
+    $('.PageCss').each(function () {
+       
+        if ($(this).attr('id') == '@Model.Paginate.PageIndex') {
+            $('#' + '@Model.Paginate.PageIndex').addClass('active');
+        } else {
+            $(this).removeClass('active');
+        }
+
+    });
+     
+    $('input[type="search"]').val('');
+
+    });
+</script>

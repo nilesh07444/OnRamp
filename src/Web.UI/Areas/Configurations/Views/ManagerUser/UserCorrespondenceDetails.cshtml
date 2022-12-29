@@ -1,0 +1,406 @@
+﻿@using Domain.Customer.Models
+@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+@using Common.Web
+
+@model Ramp.Contracts.ViewModel.UserActivityStatsViewModel
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Areas/ProvisionalManagement/Views/../../../Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Areas/ProvisionalManagement/Views/../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<style>
+    .requiredTxt {
+        border: solid red;
+    }
+
+    input, select {
+        max-width: 100%;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">User Correspondence Report</h1>
+        <div class="well well-sm">
+            This report allows you to view an audit trail of all system generated correspondence that has been sent to users via SMS and email.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*</span></b>
+        <div class="panel panel-info">
+            <div class="panel-heading">Filtering Options</div>
+            <div class="panel-body">
+                <div class="col-md-10">
+                    @if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+                    {
+                        <div class="form-group">
+                            <label class="radio-inline">
+                                <input id="optProvisionalUsers" type="radio" checked="checked" value="optionProvisionalUsers" name="optionsRadiosInline">
+                                Provisional Users
+                            </label>
+                            <label class="radio-inline">
+                                <input id="optCompanyUsers" type="radio" value="optionCompanyUsers" name="optionsRadiosInline">
+                                Company Users
+                            </label>
+                        </div>
+
+                        <div class="col-md-2" id="divProvisionalCompany">
+                            <div class="form-group">
+                                <label><span style="color:red"><b>*</b></span> Provisional Company</label>
+                                @Html.DropDownListFor(m => m.SelectedProvisionalCompanyId, Model.ProvisionalCompanyDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select User", new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-md-2" id="divCustomerCompany">
+                            <div class="form-group">
+                                <label><span style="color:red"><b>*</b></span> Customer Company</label>
+                                <select id="SelectedCustomerCompanyId" name="SelectedCustomerCompanyId" class="form-control cke_required" data-val="true" data-val-required="Please select customer company"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-2" id="divUser">
+                            <div class="form-group">
+                                <label>User</label>
+                                <select id="SelectedUserId" class="form-control" data-bind="value: selectedUser, options: users, optionsText: 'Name', optionsCaption: 'Select User'"></select>
+                            </div>
+                        </div>
+                    }
+                    else if (Thread.CurrentPrincipal.IsInResellerRole())
+                    {
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><span style="color:red"><b>*</b></span> Customer Company</label>
+                                @Html.DropDownListFor(m => m.SelectedCustomerCompanyId, Model.CustomerCompanyDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select Company", new { @class = "form-control", autocomplete = "off" })
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>User</label>
+                                <select id="SelectedUserId" class="form-control" data-bind="value: selectedUser, options: users, optionsText: 'Name', optionsCaption: 'Select User'"></select>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>User</label>
+                                <select class="form-control " id="SelectedUserId" data-bind="value: selectedUser, options: users, optionsText: 'Name', optionsCaption: 'Select User'"></select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Group</label>
+                                @*<select  class="form-control " id="SelectedGroupId" data-bind="value: selectedGroup, options: groups, optionsText: 'Name', optionsCaption: 'Select Group'"></select>*@
+                                <select name="groupId" id="groups-multiselect-demo" style="width:100%">
+                                    @foreach (var item in ViewBag.Groups)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                </select>
+
+                            </div>
+                        </div>
+                    }
+
+                    <div class="form-group col-md-3">
+                        <div class="input-group date" id='FromDate' data-bind="datepicker: fromDate">
+                            <span style="color:red"><b>* </b></span> @Html.Label(" From Date")
+                            <div class="form-group input-group">
+                                <input type='text' id="inputFromDate" class="form-control cssDatePicker" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        <div class="input-group date" id='ToDate' data-bind="datepicker: toDate">
+                            <span style="color:red"><b>* </b></span> @Html.Label(" To Date")
+                            <div class="form-group input-group">
+                                <input type='text' id="inputToDate" class="form-control cssDatePicker" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <div class="input-group date">
+
+                        <div class="form-group input-group">
+                            <label style="display: block;">&nbsp;</label>
+                            <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="Generate" data-bind="enable: fromDate() && toDate()" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="CorrespondenceDiv">
+            <div class="panel-heading">
+                User Correspondence
+            </div>
+            <div class="panel-body" id="UserCorrespondenceData">
+                <div class="col-lg-12" style="display: none; text-align: center;" id="divNoData">
+                    <label id="lblNoData">No Data Found</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="correspondenceModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-header-custom">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">Correspondence Details</h4>
+            </div>
+            <div class="modal-body" id="CorrespondenceModalBody">
+                hello
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a data-toggle="modal" id="modallink" href="#correspondenceModal"></a>
+<script type="text/javascript">
+
+
+        $(document).ready(function () {
+            var groupId;
+            $('#groups-multiselect-demo').attr("multiple", "multiple").val('');
+            $('#groups-multiselect-demo').multiselect({
+                includeSelectAllOption: true,
+                nonSelectedText: 'None selected',
+                buttonWidth: 280,
+                enableFiltering: true,
+                maxHeight: 350,
+                enableCaseInsensitiveFiltering: true
+            });
+
+            $('#groups-multiselect-demo').change(function () {
+                self.groupId = $(this).val();
+                console.log("value ", $(this).val());
+                console.log("self.groupId ", self.groupId);
+            });
+
+            function showLogModal(url) {
+                $.get(url, function (data) {
+                    $("#CorrespondenceModalBody").html(data);
+                    document.getElementById("modallink").click();
+                });
+            }
+
+            $('body').on("click", '.CorrespondenceDetailsLink', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                showLogModal(url);
+            });
+
+            var forProvisionalUsers = true;
+            $("#divProvisionalCompany").removeClass('hide');
+            $("#divCustomerCompany").addClass('hide');
+            $("#divdivUser").removeClass('hide');
+
+            $("input[name=optionsRadiosInline]").click(function () {
+                //
+                var type = $(this).val();
+                //alert(type);
+                if (type == "optionProvisionalUsers") {
+                    //$('#SelectedProvisionalCompanyId option:eq(0)').attr('selected', 'selected');
+                    $("#SelectedProvisionalCompanyId option").attr("selected", false);
+                    $('#UserCorrespondenceData').empty();
+                    $('#SelectedCustomerCompanyId').empty();
+                    vm.users(null);
+                    $("#divProvisionalCompany").removeClass('hide');
+                    $("#divCustomerCompany").addClass('hide');
+                    $("#divdivUser").removeClass('hide');
+                    forProvisionalUsers = true;
+                } else {
+                    $("#SelectedProvisionalCompanyId option").attr("selected", false);
+                    $('#UserCorrespondenceData').empty();
+                    $('#SelectedCustomerCompanyId').empty();
+                    vm.users(null);
+                    $("#divProvisionalCompany").removeClass('hide');
+                    $("#divCustomerCompany").removeClass('hide');
+                    $("#divdivUser").removeClass('hide');
+                    forProvisionalUsers = false;
+                }
+            });
+
+            var fromSelectedProvisionalCompany;
+
+            $('#SelectedProvisionalCompanyId').change(function () {
+                //
+                fromSelectedProvisionalCompany = $(this).val();
+                $('#LoadingImageDiv').show();
+                $('#SelectedCustomerCompanyId').empty();
+                vm.users([]);
+
+                if (forProvisionalUsers == true) {
+                    //Get the List of 'ProvisionalUsers'
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("ResellersForProvisionalCompany", "ProvisionalMgmt", new {Area = "ProvisionalManagement"})",
+                        data: { companyId: fromSelectedProvisionalCompany },
+                        success: function (data) {
+                            vm.users(data);
+                            if (_adjustPageFooter)
+                                _adjustPageFooter();
+                        }
+                    }).always(function() {
+                        $('#LoadingImageDiv').hide();
+                    });
+                } else {
+                    //Get the List of 'CustomerCompany'
+                    $.ajax({
+                        type: "POST",
+                        url: "@(Url.Action("CustomerCompaniesFromProvisionalCompanyId", "ProvisionalMgmt", new {Area = "ProvisionalManagement"}))",
+                        data: { companyId: fromSelectedProvisionalCompany },
+                        success: function (data) {
+                            $('#SelectedCustomerCompanyId').empty();
+                            $('#SelectedCustomerCompanyId').append(data);
+                            $('#LoadingImageDiv').hide();
+                            if (_adjustPageFooter)
+                                _adjustPageFooter();
+                        },
+                        error: function (data) {
+                            $('#LoadingImageDiv').hide();
+                        }
+                    });
+                }
+            });
+
+
+
+            $('#SelectedCustomerCompanyId').change(function () {
+
+                $('#LoadingImageDiv').show();
+                var selectedId = $(this).val();
+                $.ajax({
+                    type: 'POST',
+                    url: "@(Url.Action("UsersForCompany", "CustomerMgmt", new {Area = "CustomerManagement"}))",
+                    data: { companyId: selectedId },
+                    success: function (data) {
+                        vm.users(data);
+                        if (_adjustPageFooter)
+                            _adjustPageFooter();
+                    }
+                }).always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+            });
+            $("#btnView").click(function () {
+                vm.loadCorrespondence();
+            });
+            $("#btnView, #SelectedUserId, #groupId, #inputFromDate, #inputToDate, #SelectedProvisionalCompanyId, #SelectedCustomerCompanyId,#optCompanyUsers,#optProvisionalUsers").change(function () {
+                vm.loadCorrespondence();
+            });
+        });
+
+        var Controller = function(groups, users) {
+            var self = this;
+
+            self.groups = ko.mapping.fromJS(groups);
+            self.selectedGroup = ko.observable('');
+            self.selectedGroup.subscribe(function() {
+                self.selectedUser('');
+            });
+
+            self.users = ko.mapping.fromJS(users);
+            self.selectedUser = ko.observable('');
+            self.selectedUser.subscribe(function () {
+                self.selectedGroup('');
+            });
+
+            self.fromDate = ko.observable("");
+            self.toDate = ko.observable("");
+            self.fromDate.subscribe(function(newValue) {
+                $('#ToDate').data('DateTimePicker').minDate(new Date(newValue));
+            });
+            self.toDate.subscribe(function(newValue) {
+                $('#FromDate').data('DateTimePicker').maxDate(new Date(newValue));
+            });
+
+            self.loadCorrespondence = function() {
+                var frmDateInstance = self.fromDate() !== '' ? new Date(self.fromDate()) : '';
+                var toDateInstance = self.toDate() !== '' ? new Date(self.toDate()) : '';
+
+                if (frmDateInstance === '' || toDateInstance === '')
+                    return;
+
+                if (frmDateInstance > toDateInstance) {
+                    notif({
+                        msg: "<b>Error :</b> From date cannot be greater than To Date ",
+                        type: "error"
+                    });
+
+                } else {
+                    var selectedOption;
+                    if ($('#optProvisionalUsers').is(':checked'))
+                        selectedOption = "ProvisionalUsers";
+                    else {
+                        selectedOption = "CompanyUsers";
+                    }
+                    $('#LoadingImageDiv').show();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '@(Url.Action("GetUserCorrespondence", "ManagerUser", new {Area = "Configurations"}))',
+                        data: {
+                            groupId: $('#groups-multiselect-demo').val() ? $('#groups-multiselect-demo').val().toString(): '',
+                            userId: self.selectedUser() ? ko.unwrap(self.selectedUser().Id) : '',
+                            fromDate: $('#inputFromDate').val(),
+                            toDate: $('#inputToDate').val(),
+                            companyId: $('#SelectedCustomerCompanyId').val(),
+                            provisionalcompanyId: $('#SelectedProvisionalCompanyId').val(),
+                            selectedOption: selectedOption
+                        },
+                        success: function(data) {
+                            $('#CorrespondenceDiv').hide();
+                            $('#divNoData').hide();
+                            if (data.length == 0) {
+                                $('#CorrespondenceDiv').fadeIn();
+                                $('#divNoData').show();
+                            } else {
+                                $('#CorrespondenceDiv').fadeIn();
+                                $('#UserCorrespondenceData').empty();
+                                $('#UserCorrespondenceData').append(data);
+                            }
+                            if (_adjustPageFooter)
+                                _adjustPageFooter();
+                        }
+                    }).always(function() {
+                        $('#LoadingImageDiv').hide();
+                    });
+                }
+            };
+        };
+        var vm = new Controller(@Html.ToJson(Model.Groups), @Html.ToJson(Model.Users));
+        ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>

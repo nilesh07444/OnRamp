@@ -1,0 +1,55 @@
+﻿@model Ramp.Contracts.Events.VirtualClassroom.CancelVirtualRoomEvent
+@{
+    Layout = null;
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath = Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var notificationheader = "#27b899";
+    var notificationfooter = "#27b899";
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany.CustomColours != null) {
+        notificationheader = PortalContext.Current.UserCompany.CustomColours.HeaderColour;
+        notificationfooter = PortalContext.Current.UserCompany.CustomColours.FooterColour;
+    }
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <style>
+
+    .headerstyle {
+     background: @notificationheader;
+     height:40px;
+    }
+    .footerstyle {
+        background: @notificationfooter;
+        height: 40px;
+    }
+
+    </style>
+
+</head>
+<body>
+    <div class="headerstyle"></div>
+    <br />
+    <br />
+    <p> @Model.UserViewModel.FirstName,</p>
+    <p>
+        <span>Please note that the following Virtual Meeting Room has been cancelled:</span>
+        <br />
+        <br />
+        <span>Virtual Meeting Room:</span> <span>@Model.MeetingName</span><br />
+        <br />
+        <br />
+        @if (Model.AdditionNote != null && Model.AdditionNote != "")
+        {
+            <span>Additional Note:</span> <span>@Model.AdditionNote</span><br />
+        }
+
+    </p>
+    <br />
+    <br />
+    <div class="footerstyle"></div>
+</body>
+</html>

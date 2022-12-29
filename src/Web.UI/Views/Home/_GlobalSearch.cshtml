@@ -1,0 +1,31 @@
+﻿@using Ramp.Security.Authorization
+
+@model List<Ramp.Contracts.ViewModel.GlobalSearchViewModel>
+
+<div class="modal-body">
+    @Html.AntiForgeryToken()
+    <div class="row" id="popBody">
+        <div class="col-lg-12">
+
+            @if (Model.Any())
+            {
+                <label style="color:red"> Search For  : @Model.FirstOrDefault().SearchText</label><br />
+                    <br />
+                foreach (Ramp.Contracts.ViewModel.GlobalSearchViewModel a in Model)
+                {
+
+                    <div class="row">
+                        @*<label> Search For: @a.SearchText</label><br />*@
+                        <label> Search Found in: @a.FoundIn</label><br />
+                        <a href="@Url.Content(a.SearchUrl)" target="_blank">Click Here</a>
+                    </div>
+                        <br />
+                }
+            }
+            else
+            {
+                <label style="color:red">The system did not find any data matching your search query.</label><br />
+            }
+        </div>
+    </div>  
+</div>

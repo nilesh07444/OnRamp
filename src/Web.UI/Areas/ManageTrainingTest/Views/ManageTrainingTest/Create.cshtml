@@ -1,0 +1,356 @@
+﻿@using Web.UI.Code.Extensions
+@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Web.UI.Code.AreaReferencesManagement
+@model TrainingTestViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    var validatewith = "validatewith:app.data.validate";
+    var jsonTrainingGuides = Html.ToJson(Model.TrainingGuideList.ToSelectList(a => a.Value, a => a.Text, a => a.Selected));
+
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header" data-bind="text:details.PageTitle"></h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading" id="games">Training Test Details</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="well">
+                            <div class="form-group" data-bind="validationElement:details.TestTitle">
+                                <label class="control-label">Title</label>
+                                <input type="text" id="TestTitle" name="TestTitle" class="form-control" data-bind="textInput: details.TestTitle,@validatewith" />
+                            </div>
+                            <div class="form-group" data-bind="validationElement:details.PassMarks">
+                                <label class="control-label">Pass Mark %</label>
+                                <input type="number" id="PassMarks" name="PassMarks" class="form-control" data-bind="value:details.PassMarks,@validatewith" />
+                            </div>
+                            <div class="form-group" data-bind="validationElement:details.PassPoints">
+                                <label class="control-label">Points</label>
+                                <input type="number" id="PassPoints" name="PassPoints" class="form-control" data-bind="value:details.PassPoints,@validatewith" />
+                            </div>
+                            <div class="form-group" data-bind="validationElement:details.SelectedTrainingGuideId">
+                                <label class="control-label">Select Playbook to link with this test</label>
+                                <select id="SelectedTrainingGuideId" name="SelectedTrainingGuideId" class="form-control" data-bind="options: details.TrainingGuides,
+                                                                                                                            optionsText:'Text',
+                                                                                                                            optionsValue: 'Value',
+                                                                                                                            value: details.SelectedTrainingGuideId,
+                                                                                                                            optionsCaption: 'Select a playbook',
+                                                                                                                            @validatewith"></select>
+                            </div>
+                            <div class="form-group" data-bind="validationElement:details.TestDuration">
+                                <label class="control-label">Test Duration (Minutes)</label>
+                                <input type="number" id="TestDuration" name="TestDuration" class="form-control" data-bind="value:details.TestDuration,@validatewith" />
+                            </div>
+                            <div class="form-group trophy" data-bind="validationElement:details.TrophyName">
+                                <label class="control-label">Test Trophy</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="TrophyName" name="TrophyName" data-bind="value:details.TrophyName,@validatewith" disabled />
+                                    <span class="input-group-btn"><button type="button" class="btn btn-default" data-bind="click: $root.showTrophyModal.bind($data)">Select Trophy</button></span>
+                                </div>
+                            </div>
+                            <div class="form-group testExpiry" data-bind="validationElement:details.TestExpiryDate,visible: !details.IsTestExpiryDate()">
+                                <label class="control-label">Test Expiry Date</label>
+                                <div class="input-group">
+                                    <input type="text" id="TestExpiryDate" class="form-control" autocomplete="off" aria-describedby="calender-addon" data-bind="datetimepicker:details.TestExpiryDate,@validatewith" />
+                                    <span class="input-group-addon" id="calender-addon"><i class="fa fa-calendar"></i></span>
+                                </div>
+                            </div>
+                            <div class="form-group testExpiry">
+                                <input type="checkbox" id="IsTestExpiry" name="IsTestExpiry" data-bind="checked:details.IsTestExpiryDate" />
+                                <label class="control-label" id="TestExpiry">Test does not expire</label>
+                            </div>
+                            <div class="form-group assignMarks">
+                                <input type="checkbox" id="AssignMarksToQuestions" name="AssignMarksToQuestions" data-bind="checked:details.AssignMarksToQuestions,click:allocateDefaultMarksPerQuestion.bind($data)" />
+                                <label class="control-label">Assign Marks to each Question</label>
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" id="TestReview" name="TestReview" data-bind="checked:details.TestReview" />
+                                <label class="control-label">Allow Test Review</label>
+                            </div>
+                            <div class="form-goup" style="margin-bottom:15px">
+                                <input type="checkbox" id="EnableMaximumTestRewriteFunction" name="EnableMaximumTestRewriteFunction" data-bind="checked:details.EnableMaximumTestRewriteFunction" />
+                                <label class="control-label">Maximum Test Rewrites</label>
+                                <input type="number" id="MaximumRewrites" class="form-control" data-bind="value:details.MaximumRewrites,visible:details.EnableMaximumTestRewriteFunction" />
+                            </div>
+                            <div class="form-goup" style="margin-bottom:15px">
+                                <input type="checkbox" id="DisableQuestionRandomization" name="DisableQuestionRandomization" data-bind="checked:details.DisableQuestionRandomization" />
+                                <label class="control-label">Disable Question Randomization</label>
+                            </div>
+                            <div class="form-goup" style="margin-bottom:15px">
+                                <input type="checkbox" id="EmailSummaryOnCompletion" name="EmailSummaryOnCompletion" data-bind="checked:details.EmailSummaryOnCompletion" />
+                                <label class="control-label">Email Summary On Completion</label>
+                            </div>
+                            <div class="form-goup" data-bind="visible:ko.unwrap(details.EmailSummaryOnCompletion)">
+                                <input type="checkbox" id="HighlightAnswersOnSummary" name="HighlightAnswersOnSummary" data-bind="checked:details.HighlightAnswersOnSummary" />
+                                <label class="control-label">Highlight Answers On Summary</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">Test Introduction</div>
+                        <div class="panel-body">
+                            <div class="col-lg-12 content-tools" data-bind="contentTools:{query:'*[data-editable]',identifier:'name',value:details.IntroductionContent},identifier:'IntroductionContext',html:details.IntroductionContent" data-editable></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12" data-bind="foreach: details.QuestionsList()">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            Question <span data-bind="text:$data.TestQuestionNumber"></span>
+                            <button class="question_remove close" data-bind="click: $root.removeQuestion.bind($data)">&times;</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row question">
+                                <div class="col-lg-12 ">
+                                    <div class="col-lg-3">
+                                        <div class="form-group" data-bind="validationElement:$data.TestQuestion">
+                                            <label class="control-label">Enter your test question here</label>
+                                            <textarea class="form-control" data-bind="textInput:$data.TestQuestion,@validatewith,attr:{id : $data.TestQuestionNumber},click:$root.clearDefaultValueOnClick.bind()" rows="10"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-5">
+                                        <div class="form-group">
+                                            <table class="table table-striped answer">
+                                                <thead>
+                                                    <tr class="answer-header">
+                                                        <th class="control-label possible">Enter Possible answers here</th>
+                                                        <th class="control-label correct"><span class="pull-right">Correct Answer</span></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody data-bind="foreach: $data.TestAnswerList()">
+                                                    <tr>
+                                                        <td><textarea class="form-control" data-bind="textInput: $data.Option,click:$root.clearDefaultValueOnClick.bind($data.Option)"></textarea></td>
+                                                        <td><input type="radio" class="pull-right" data-bind="checkedValue:$data.TestAnswerId , checked: $parent.CorrectAnswerId ,attr:{name:$data.TrainingQuestionId()}" /></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <button class="btn btn-success btn-xs pull-right" data-bind="click : $root.addMoreAnswers.bind($data)">Add more answers</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-1">
+                                        <div class="form-group" data-bind="visible: $root.details.AssignMarksToQuestions">
+                                            <label class="control-label">Marks</label>
+                                            <input class="form-control" type="number" data-bind="value:$data.AnswerWeightage" />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <div class="form-group uploads row">
+                                            <div class="col-xs-12">
+                                                <label class="control-label">Upload multimedia for this question</label>
+                                                <table>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <div class="col-xs-4 img-upload">
+                                                                    <div>
+                                                                        <img class="img-responsive" src="@Url.Content("~/Content/images/imgDoc.png")" data-bind="click:$root.simulateUploadClick.bind($data)" title="Accepted filetypes: &#013; .PNG &#013; .JPEG &#013; .JPG &#013; .GIF &#013; .BMP" />
+                                                                        <input data-bind="fileUpload:$data.ImageUpload,fileuploadOptions:$root.fileuploadOptions,valueProperty:$data.ImageContainer,container:$data" class="hidden" type="file" name="files[]" accept="image/*" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-xs-4 video-upload">
+                                                                    <img class="img-responsive" src="@Url.Content("~/Content/images/videoDoc.png")" data-bind="click:$root.simulateUploadClick.bind($data)" title="Accepted filetypes: &#013; .MP4 &#013; .AVI &#013; .WMV &#013; .MOV &#013; .MPEG" />
+                                                                    <input data-bind="fileUpload:$data.VideoUpload,fileuploadOptions:$root.fileuploadOptions,valueProperty:$data.VideoContainer,container:$data" type="file" class="hidden" name="files[]" accept="video/*" />
+                                                                </div>
+                                                                <div class="col-xs-4 img-upload">
+                                                                    <img class="img-responsive" src="@Url.Content("~/Content/images/OR_AudioIcon_v3.png")" data-bind="click:$root.simulateUploadClick.bind($data)" title="Accepted filetypes: &#013; .MP3" />
+                                                                    <input data-bind="fileUpload:$data.AudioUpload,fileuploadOptions:$root.fileuploadOptions,valueProperty:$data.AudioContainer,container:$data" class="hidden" type="file" name="files[]" accept="audio/*" />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-8">
+                                        <br />
+                                        <table class="table table-striped" data-bind="if: $data.ImageContainer()">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="upload upload-detail-20">
+                                                        <a data-bind="fancybox:{ autoSize:true }, attr:{ href:$data.ImageContainer().ThumbnailUrl(), title:$data.ImageContainer().Name() }" class="fancybox.image">
+                                                            <img class="img-responsive upload-thumbnail" data-bind="attr:{src:$data.ImageContainer().ThumbnailUrl(),title:$data.ImageContainer().Name()}" />
+                                                        </a>
+                                                    </td>
+                                                    <td class="upload upload-detail-40"><label data-bind="text:$data.ImageContainer().Name()"></label></td>
+                                                    <td class="upload upload-detail-20">
+                                                        <label data-bind="text:$root.getScaledSize($data.ImageContainer().Size())"></label>
+                                                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible : $data.ImageContainer().InProcess()">
+                                                            <div class="progress-bar progress-bar-success" data-bind="style:{width:$data.ImageContainer().Progress()}"></div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="upload upload-detail-20">
+                                                        <div data-bind="visible: $data.ImageContainer().InProcess()">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:$root.cancelQuestionUpload.bind($data,'ImageContainer')"><i class="glyphicon glyphicon-ban-circle"></i><span>Cancel</span></button>
+                                                        </div>
+                                                        <div data-bind="visible: !$data.ImageContainer().InProcess()">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:$root.deleteQuestionUpload.bind($data,'ImageContainer')"><i class="glyphicon glyphicon-trash"></i><span>Delete</span></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table class="table" data-bind="if: $data.VideoContainer">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="upload upload-detail-20">
+                                                        <a data-bind="fancybox:{ autoSize:true, helpers:{ media:{} } }, attr:{ title:$data.VideoContainer().Name() }">
+                                                            <img class="img-responsive upload-thumbnail" data-bind="attr:{src:$data.VideoContainer().ThumbnailUrl(),title:$data.VideoContainer().Name()}" />
+                                                            <div class="content" style="">
+                                                                <video controls style="">
+                                                                    <source data-bind="attr:{ src:$data.VideoContainer().Url(), type:$data.VideoContainer().Type() }" />
+                                                                    Your browser does not support the HTML 5 video tag.
+                                                                </video>
+                                                            </div>
+                                                        </a>
+                                                    </td>
+                                                    <td class="upload upload-detail-40"><label data-bind="text:$data.VideoContainer().Name()"></label></td>
+                                                    <td class="upload upload-detail-20">
+                                                        <label data-bind="text: $root.getScaledSize($data.VideoContainer().Size())"></label>
+                                                        <div data-bind="visible :$data.VideoContainer().InProcess()">
+                                                            <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible : $data.VideoContainer().InProcess()">
+                                                                <div class="progress-bar progress-bar-success" data-bind="style:{width:$data.VideoContainer().Progress()}"></div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="upload upload-detail-20">
+                                                        <div data-bind="visible: $data.VideoContainer().InProcess()">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:$root.cancelQuestionUpload.bind($data,'VideoContainer')"><i class="glyphicon glyphicon-ban-circle"></i><span>Cancel</span></button>
+                                                        </div>
+                                                        <div data-bind="visible: !$data.VideoContainer().InProcess()">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:$root.deleteQuestionUpload.bind($data,'VideoContainer')"><i class="glyphicon glyphicon-trash"></i><span>Delete</span></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table class="table table-striped" data-bind="if: $data.AudioContainer()">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="upload upload-detail-20">
+                                                        <a data-bind="fancybox:{ autoSize:true, helpers:{ media:{} } }, attr:{ title:$data.AudioContainer().Name() }">
+                                                            <img class="img-responsive upload-thumbnail" data-bind="attr:{src:$data.AudioContainer().ThumbnailUrl(),title:$data.AudioContainer().Name()}" />
+                                                            <div class="content center-block">
+                                                                <audio controls height="320" width="600">
+                                                                    <source data-bind="attr:{ src:$data.AudioContainer().Url, type:$data.AudioContainer().Type }" />
+                                                                    Your browser does not support the HTML 5 audio tag.
+                                                                </audio>
+                                                            </div>
+                                                        </a>
+                                                    </td>
+                                                    <td class="upload upload-detail-40"><label data-bind="text:$data.AudioContainer().Name()"></label></td>
+                                                    <td class="upload upload-detail-20">
+                                                        <label data-bind="text:$root.getScaledSize($data.AudioContainer().Size())"></label>
+                                                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible : $data.AudioContainer().InProcess()">
+                                                            <div class="progress-bar progress-bar-success" data-bind="style:{width:$data.AudioContainer().Progress()}"></div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="upload upload-detail-20">
+                                                        <div data-bind="visible: $data.AudioContainer().InProcess()">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:$root.cancelQuestionUpload.bind($data,'AudioContainer')"><i class="glyphicon glyphicon-ban-circle"></i><span>Cancel</span></button>
+                                                        </div>
+                                                        <div data-bind="visible: !$data.AudioContainer().InProcess()">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:$root.deleteQuestionUpload.bind($data,'AudioContainer')"><i class="glyphicon glyphicon-trash"></i><span>Delete</span></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <table class="table table-striped">
+                                            <tbody data-bind="foreach: $data.Errors">
+                                                <tr>
+                                                    <td colspan="2">
+                                                        <label data-bind="text:'Error on upload: ' + $root.toDisplayString($data.Name(),50) + ', please try again.'"></label>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-danger upload-action" data-bind="click:$root.clearUpload.bind($data,$parent)"><spand class="glyphicon glyphicon-remove"></spand></button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <button class="btn btn-default" id="AddQuestion" data-bind="click:$root.addQuestion.bind($data)">Add Question</button>
+                        <button class="btn btn-default" id="Save" data-bind="click:$root.Save.bind()">Save</button>
+                        <button class="btn btn-default" id="SaveAndExit" data-bind="click: $root.SaveAndExit.bind($data), disable:!$root.details.CanSave()()">Save and Exit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal" id="TrophyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-header-custom">
+                <button type="button" class="close" data-bind="click: hideTrophyModal.bind($data)"><span aria-hidden="true">&times;</span><span id="closePopUp" class="sr-only">Close</span></button>
+                <h4 class="modal-title">Select Trophy</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div data-bind="foreach: details.TrophyList()">
+                        <div class="col-md-4" style="margin:auto;overflow:hidden">
+                            <div>
+                                <a href="#" data-bind="click: $root.setTrophyName.bind($data)">
+                                    <img data-bind="attr :{ src: 'data:image/jpeg;base64,' + Content,}" class="img-responsive trophy-image" id="standardPlayBooks" />
+                                    <h4><span class="label label-default shade trophy-lable" data-bind="text:FileName"></span></h4>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    @Styles.Render(ManageTrainingTestStyles.CreateStylesVirtualPath)
+    @Scripts.Render(ManageTrainingTestScripts.CreateScriptsVirtualPath)
+<script>
+    var vm = new Controller(app, 
+        {  
+            data: @Html.ToJson((object)Model),
+            validation: @Html.JsonKnockoutValidationFor()
+        },
+        @Html.ToJson((object)ViewBag),
+        @jsonTrainingGuides,
+        {
+            uploadLink:'@Url.Action("Post","Upload",new { Area = ""})',
+            index: '@Url.Action("Index")',
+            Create:'@Url.Action("Create")',
+            EditTrainingTest:'@Url.Action("EditTrainingTest")',
+            AutoSave : '@Url.Action("AutoSave","ManageTrainingTest",new { Area = "ManageTrainingTest"})',
+            trophyLink:'@Url.Action("GetUploadTrophy", "Home",new { Area = ""})',
+            getId : '@Url.Action("GetGuid","ManageTrainingTest",new { Area = "ManageTrainingTest"})'
+        });
+
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    window.vm = vm;
+    $(function(){
+        var e = ContentTools.EditorApp.get();
+        if(e._ignition._state !== "editing")
+            e.ignition()._domEdit.click();
+        $('.content-tools a').on('click',function(event){
+            window.open($(this).attr('href'),"");
+            return false;
+        });
+    });
+</script>
+
+

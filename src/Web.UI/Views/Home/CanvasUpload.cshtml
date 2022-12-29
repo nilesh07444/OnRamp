@@ -1,0 +1,335 @@
+﻿@{
+    Layout = Url.Content("~/Views/Shared/_LayoutStandardUser.cshtml");
+    ViewBag.Title = "Upload Canvas";
+    var aa = ViewBag.Path == null ? "Certificate.jpg" : ViewBag.Path;
+    var path = Url.Content(ViewBag.root +"Content/img/" + aa);
+
+    var img1 = ViewBag.BackImage;
+}
+<style>
+    .AppendUpload {
+  float: left;
+  padding: 10px 4px;
+  width: 20%;
+  height: 120px;
+  overflow: hidden;
+}
+
+.AppendUpload img {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+
+   height:75px; 
+}
+
+.AppendUploadWithOutContent {
+  float: left;
+  padding: 10px 4px;
+  width: 10%;
+  height: 120px;
+  overflow: hidden;
+}
+
+.AppendUploadWithOutContent img {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+
+@@media only screen and (min-width: 320px) and (max-width: 767px){
+    .AppendUploadWithOutContent{
+        width: 20%;
+    }
+
+     .AppendUploadWithOutContent img{
+       height:75px;
+       display:block;
+    }
+}
+
+@@media only screen and (min-width: 320px) and (max-width: 767px){
+    .AppendUpload{
+        width: 20%;
+    }
+
+        .AppendUpload img {
+            height:75px;
+            display : block;
+        }
+}
+
+@@media only screen and (min-width: 768px) and (max-width: 1024px){
+    .AppendUpload{
+        width: 10%;
+    }
+}
+
+  /* Canvas Upload Css responsive*/
+
+  @@media only screen and (min-width: 320px) and (max-width: 480px) {
+
+
+        .image_main > #userName {
+            text-align: center;
+            height: 35px;
+            width:230px;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 32%;
+            border: 1px solid #006B62;
+            background-color: #27B899;
+            font-size: 8px;
+        }
+
+        .image_main > #playbookName {
+            text-align: center;
+            height: 35px;
+            width: 230px;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 40%;
+            border: 1px solid #006B62;
+            background-color: #27B899;
+            font-size: 8px;
+        }
+
+        .image_main > #marksObtain {
+            text-align: center;
+            height: 35px;
+            width: 230px;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 48%;
+            border: 1px solid #006B62;
+            background-color:#27B899;
+            font-size: 8px;
+        }
+
+        .image_main > #AppearedDate {
+            text-align: center;
+            height: 35px;
+            width: 230px;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 54%;
+            border: 1px solid #006B62;
+            background-color:#27B899;
+            font-size: 8px;
+        }
+  }
+
+  /* Canvas Upload Css*/
+
+    .image_main {
+        position: relative;
+    }
+
+         
+
+        .image_main > #userName {
+            text-align: center;
+            height: 5%;
+            width:20%;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 32%;
+            border: 1px solid #006B62;
+            background-color:#27B899;
+        }
+
+        .image_main > #playbookName {
+            text-align: center;
+            height: 5%;
+            width: 20%;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 40%;
+            border: 1px solid #006B62;
+            background-color: #27B899;
+        }
+
+        .image_main > #marksObtain {
+            text-align: center;
+            height: 5%;
+            width: 20%;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 48%;
+            border: 1px solid #006B62;
+            background-color: #27B899;
+        }
+
+        .image_main > #AppearedDate {
+            text-align: center;
+            height: 5%;
+            width: 20%;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 54%;
+            border: 1px solid #006B62;
+            background-color:#27B899;
+        }
+
+        .image_main > #companyLogo {
+            text-align: center;
+            height: 11%;
+            width: 20%;
+            color: black;
+            left: 16%;
+            position: absolute;
+            top: 8%;
+            border: 1px solid #006B62;
+            background-color: #27B899;
+        }
+
+.companyLogo {
+
+    left: 0;
+     position: relative;
+      top: 46px;
+
+}
+
+/*media for css logo*/
+
+@@media only screen and (min-width: 320px) and (max-width: 480px){
+   
+.companyLogo {
+
+    left: 45px;
+     position: relative;
+      top: 0;
+
+}
+
+}
+
+@@media only screen and (min-width: 480px) and (max-width: 640px){
+   
+.companyLogo {
+
+    left: 130px;
+     position: relative;
+      top: 0;
+
+}
+
+}
+@@media only screen and (min-width: 640px) and (max-width: 767px){
+   
+.companyLogo {
+
+    left: 220px;
+     position: relative;
+      top: 0;
+
+}
+
+}
+</style>
+ 
+<script type="text/javascript">
+    $(function () {
+        $("#imgBack").attr('src', "@img1");
+        
+    });
+</script>
+<br />
+
+@Html.ValidationSummary(true)
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+
+            @using (Html.BeginForm("CanvasUpload", "Home", FormMethod.Post, new { @class = "navbar-form navbar-left" , enctype = "multipart/form-data"}))
+            {
+                 <div class="form-group">
+                     &nbsp;<br />
+                     <input type="file" name="file" class="form-control" id="upload" style="height: 40px;" />
+                     <input type="submit" value="Upload" class="btn btn-default" /><br />
+                     &nbsp;
+                </div>
+            
+
+        }
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-12">
+
+
+            <div>
+                <div class="image_main">
+                    <img id="imgBack" style="width:50%;" />
+
+                    <input type="text" id="userName" style="" value="Full Name" />
+                    <input type="text" id="playbookName" value="Playbook Name" />
+                    <input type="text" id="marksObtain" value="Marks Obtained" />
+                    <input type="text" id="AppearedDate" value="Appeared Date" />
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            <input type="button" class="btn btn-success"  id="uploadImage" value="Reset Template" />            
+
+        </div>
+        <div class="col-md-9"></div>
+
+    </div>
+
+</div>
+
+<br />
+<br />
+
+<script type="text/javascript">
+    $('#uploadImage').click(function () {
+
+        bootbox.confirm("Resetting this certificate will set it to the system default, are you sure you want to continue", function (result) {
+            if (result == true) {
+                $.ajax({
+                    url: '@Url.Action("ResetImageCertificate", "Home")',
+                    data: {  },
+                    type: 'POST',
+                    success: function (data) {
+                        notif({
+                            msg: "<b>Success :</b> Certificate reset successfully.",
+                            type: "success",
+                        });
+                        var url = '@Url.Action("CanvasUpload", "Home")';
+                        window.location.href = url;
+                        
+                    },
+                    error: function (data, staus, e) {
+                        notif({
+                            msg: "<b>Error :</b> Error while resetting Certificate.",
+                            type: "error",
+                        });
+                    }
+                });
+            }
+
+        });
+    });
+
+</script>
+
+  

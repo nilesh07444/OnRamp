@@ -1,0 +1,211 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer.Models
+@using Common.Collections
+@model IPaged<TrainingActivityListModel>
+
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Training Activity Logging Management</h1>
+    </div>
+</div>
+<br />
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 32px;">
+                        Training Activities
+                        <a data-bind="click : $root.modal.create.open.bind()" id="btnAddExternalTrainingProvider" style="border-left: solid 1px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer"><i class="glyphicon glyphicon-plus"></i></a>
+                        <div class="pull-right">
+                            <form class="form-inline" data-bind="event:{submit:function(data, event){return $root.paging.submit();}}">
+                                <div class="input-group">
+                                    @*<select class="selectpicker"  multiple data-bind="">
+                                        <optgroup data-bind="attr:{label:title},foreach:options">
+                                            <option data-bind="text:Name"></option>
+                                        </optgroup>
+                                    </select>*@
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Document Search" data-bind="textInput:$root.query.MatchText" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" data-bind="click:$root.paging.submit.bind()"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+
+                    <div class="panel-body table-responsive">
+                        <table id="dataTables-example" class="table table-hover table-fixed">
+                            <thead>
+                                <tr role="row">
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Type&nbsp;</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Cost Implication</th>
+                                    <th>Last Edited</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach:data">
+                                <tr>
+                                    <td data-bind="text:Title"></td>
+                                    <td data-bind="text:Description"></td>
+                                    <td data-bind="text:$root.trainingActivityType.from.value(TrainingActivityType)"></td>
+                                    <td data-bind="text:app.data.utils.date.format(From,'YYYY-MM-DD')"></td>
+                                    <td data-bind="text:app.data.utils.date.format(To,'YYYY-MM-DD')"></td>
+                                    <td data-bind="text:CostImplication"></td>
+                                    <td data-bind="text:app.data.utils.date.format(LastEditDate,'YYYY-MM-DD')"></td>
+                                    <td class="tooltip-demo btn-group">
+                                        <a href="javascript:void(0)" data-bind="click : $root.edit.bind()"
+                                           class="action" data-toggle="tooltip" data-placement="top" title="Edit">
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 3px; padding: 1px 5px; line-height: 1.5; "> <span class="glyphicon glyphicon-edit"></span> Edit</button>
+                                        </a>
+
+                                        <a href="javascript:void(0)" data-bind="confirm : {message : 'Are you sure',delegate : $root.delete,model : $data}" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 3px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-trash"></span> Delete</button>
+                                        </a>
+                                        <a class="dropdown-toggle action" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 3px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-floppy-save"></span> Export</button>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li><a target="_blank" data-bind="attr:{href:$root.links.downloadExcel + '/' + ko.unwrap(Id),download:ko.unwrap(Title) + '.xls'}">Excel</a></li>
+                                            <li><a target="_blank" data-bind="attr:{href:$root.links.downloadPDF + '/' + ko.unwrap(Id),download:ko.unwrap(Title) + '.pdf'}">Pdf</a></li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <div class="modal modal-fade" id="create_modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-header-custom">
+                    <h4>Please select a Training Activity Type</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group" data-bind="with:$root.modal.create.model">
+                        <label class="control-label">Training Activity Type</label>
+                        <select class="form-control" data-bind="options:$root.trainingActivityType.list(),
+                                                        optionsText:'Text',
+                                                        optionsValue:'Value',
+                                                        value:TrainingActivityType"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" data-bind="click:$root.create.bind()">Create</button>
+                    <button class="btn btn-default" data-bind="click:$root.modal.create.cancel.bind()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    @{
+        (ViewBag.Links as IDictionary<string, string>).Add("downloadExcel", Url.Action("ExportEXCEL","TrainingActivityReport",new {Area = "Reporting"}));
+        (ViewBag.Links as IDictionary<string, string>).Add("downloadPDF", Url.Action("ExportPDF","TrainingActivityReport",new {Area = "Reporting"}));
+    }
+    vm = new app.data.listController(@Html.ToJson(Model),@Html.ToJson((IDictionary<string,string>)ViewBag.Links),@Html.ToJson((string)ViewBag.Mode));
+    _init();
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+
+    $(function () {
+        $('#dataTables-example').DataTable({
+            initComplete: function () {
+                this.api().columns().every(function () {
+                    var column = this;
+                    if ($(column.header()).html().trim() === 'Type&nbsp;') {
+                        var select = $('<select><option value=""></option></select>')
+                            .appendTo($(column.header()))
+                            .on('change', function () {
+                                var val = $.fn.dataTable.util.escapeRegex(
+                                    $(this).val()
+                                );
+
+                                column
+                                    .search(val ? '^' + val + '$' : '', true, false)
+                                    .draw();
+                            });
+
+                        column.data().unique().sort().each(function (d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>');
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    function _override_create() {
+        window.location.href = vm.links.edit + '?TrainingActivityType=' + ko.unwrap(vm.modal.create.model.TrainingActivityType);
+    }
+
+    function _modal_create_cancel() {
+        vm.create_model = vm.template_create;
+        vm.create_model.TrainingActivityType(vm.trainingActivityType.from.description('Bursary'));
+        $('#create_modal').modal('hide');
+    }
+    function _modal_create_open() {
+        $('#create_modal').modal('show');
+    }
+
+    function _trainingActivityType_from_value(value) {
+        var match = app.data.utils.array.find(vm.trainingActivityType.list(), function (x) { return ko.unwrap(x.Value) === ko.unwrap(value); });
+        return match ? match[0].Text.toString() : null;
+    }
+    function _trainingActivityType_from_description(desc) {
+        var match = app.data.utils.array.find(vm.trainingActivityType.list(), function (x) { return x.Text === desc });
+        return match ? match[0].Value.toString() : null;
+    }
+    function _trainingActivityType_list() {
+        return [
+            { Value: @Html.ToJson((int)TrainingActivityType.Bursary), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.Bursary)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.External), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.External)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.Internal), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.Internal)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.MentoringAndCoaching), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.MentoringAndCoaching)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.ToolboxTalk), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.ToolboxTalk)) }
+        ];
+    };
+    function _overrides() {
+        return {
+            create : _override_create
+        };
+    }
+    function _modal() {
+        return {
+            create: {
+                cancel: _modal_create_cancel,
+                open: _modal_create_open,
+                model : null
+            }
+        };
+    }
+    function _trainingActivityType() {
+        return {
+            from: {
+                value: _trainingActivityType_from_value,
+                description: _trainingActivityType_from_description
+            },
+            list: _trainingActivityType_list
+        };
+    }
+    function _init() {
+        vm.overrides = _overrides();
+        vm.modal = _modal();
+        vm.trainingActivityType = _trainingActivityType();
+        vm.template_create = ko.mapping.fromJS(@Html.ToJson(new TrainingActivityModel()));
+
+        vm.create = vm.overrides.create;
+        vm.modal.create.model = vm.template_create;
+        vm.modal.create.model.TrainingActivityType(vm.trainingActivityType.from.description('Bursary'));
+    }
+    </script>

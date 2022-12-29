@@ -1,0 +1,1641 @@
+﻿@using Web.UI.Code.Extensions
+@using System.Threading
+@using Common.Web
+@using Ramp.Contracts.ViewModel
+@model UserActivityAndPerformanceViewModel
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole()) {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    } else {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+    var myProgressMode = Thread.CurrentPrincipal.IsInStandardUserRole();
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            @if (myProgressMode) {
+                <span>My Progress</span>
+            } else {
+                <span>User Activity & Performance Report</span>
+            }
+        </h1>
+    </div>
+</div>
+@if (myProgressMode) {
+    <div class="row">
+        <div class="col-md-12">
+            <b>All mandatory filters are marked with <span style="color:red">*<span></b>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    Filtering Options
+                </div>
+                <div class="panel-body">
+                    <div class="form-group col-md-3">
+                        <label>* From Date</label>
+                        <div class="input-group" id='FromDate' data-bind="datepicker: fromDate">
+                            <input type='text' id="inputToDate" class="form-control" style="max-width: none" autocomplete="off" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label>* To Date</label>
+                        <div class="input-group" id='ToDate' data-bind="datepicker: toDate">
+                            <input type='text' id="inputToDate" class="form-control" style="max-width: none" autocomplete="off" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group text-center col-md-2">
+                        <label style="display: block;">&nbsp;</label>
+                        <input class="btn btn-primary" value="Generate" type="button" data-bind="enable: toDate() && fromDate(),click : submit" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<!-- ko with : data -->
+<!-- ko if : UserModel -->
+<div class="panel panel-info">
+    <div class="panel-heading" data-toggle="collapse" data-target="#personalDetails" data-bind="click: $root.toggleCollapse('#personalDetails')">
+        Personal Details <span class="glyphicon" data-bind="css: $root.panelCollapse('#personalDetails')"></span>
+        <a class="pull-right export" style="cursor: pointer"><b><u>Export </u></b></a>
+        @*href="javascript:void(0)"
+        data-bind="click: $root.download"*@
+    </div>
+    <div class="panel-body collapse in" id="personalDetails">
+        <table class="table" data-bind="with:UserModel">
+            <tr>
+                <th class="col-md-3">Name</th>
+                <td class="col-md-3" data-bind="text: Name"></td>
+                <th class="col-md-3">Mobile Number</th>
+                <td class="col-md-3" data-bind="text: ContactNumber"></td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td data-bind="text: Email"></td>
+                <th>ID Number</th>
+                <td data-bind="text: IDNumber"></td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td data-bind="text: Gender"></td>
+                <th>Employee Number</th>
+                <td data-bind="text: EmployeeNumber"></td>
+            </tr>
+            <tr>
+                <!-- ko if: $parent.EnableRaceCode -->
+                <th>Race</th>
+                <td data-bind="text: Race"></td>
+                <!-- /ko -->
+                <th>Group</th>
+                <td data-bind="text: Group"></td>
+            </tr>
+        </table>
+    </div>
+</div>
+<br>
+<div class="panel panel-info" data-bind="visible: $root.showResults">
+    <div class=" panel-heading" data-toggle="collapse" data-target="#documentInteraction" data-bind="click: $root.toggleCollapse('#documentInteraction')">Document Interaction <span class="glyphicon" data-bind="css: $root.panelCollapse('#documentInteraction')"></span></div>
+    <div class="panel-body collapse in" id="documentInteraction">
+        <div class=" panel panel-info">
+            <div class="panel-heading">Memo</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-mtm', data: MemoInteractions }"></div>
+        </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">Training Manual</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-mtm', data: TrainingManualInteractions }">
+
+            </div>
+        </div>
+        <div class=" panel panel-info">
+            <div class="panel-heading">Policy</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-p', data: PolicyInteractions }"></div>
+        </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">Test</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-t', data: TestInteractions }"></div>
+        </div>
+        @if (PortalContext.Current.UserCompany.EnableChecklistDocument)
+        {
+            <div class="panel panel-info">
+                <div class="panel-heading">Activitybook</div>
+                <div class="panel-body" data-bind="template: { name: 'interaction-ch', data: CheckLisInteractions }"></div>
+            </div>
+        }
+        <div class="panel panel-info">
+            <div class="panel-heading">Custom Document</div>
+            <div class="panel-body" data-bind="template: { name: 'customdocument-mtm', data: customDocumentInteractions }">
+
+            </div>
+        </div>
+    </div>
+</div>
+@if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments) {
+<div class="panel panel-info" data-bind="visible: $root.showResults">
+    <div class=" panel-heading" data-toggle="collapse" data-target="#documentGlobalInteraction" data-bind="click: $root.toggleCollapse('#documentGlobalInteraction')">Global Document Interaction <span class="glyphicon" data-bind="css: $root.panelCollapse('#documentInteraction')"></span></div>
+    <div class="panel-body collapse in" id="documentGlobalInteraction">
+        <div class=" panel panel-info">
+            <div class="panel-heading">Memo</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-mtmG', data: MemoGlobalInteractions }"></div>
+        </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">Training Manual</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-mtmG', data: TrainingManualGlobalInteractions }">
+
+            </div>
+        </div>
+        <div class=" panel panel-info">
+            <div class="panel-heading">Policy</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-pG', data: PolicyGlobalInteractions }"></div>
+        </div>
+        <div class="panel panel-info">
+            <div class="panel-heading">Test</div>
+            <div class="panel-body" data-bind="template: { name: 'interaction-tG', data: TestGlobalInteractions }"></div>
+        </div>
+        @if (PortalContext.Current.UserCompany.EnableChecklistDocument)
+        {
+            <div class="panel panel-info">
+                <div class="panel-heading">Activitybook</div>
+                <div class="panel-body" data-bind="template: { name: 'interaction-chG', data: CheckListGlobalInteractions }"></div>
+            </div>
+        }
+        <div class="panel panel-info">
+            <div class="panel-heading">Custom Document</div>
+            <div class="panel-body" data-bind="template: { name: 'customdocument-mtmG', data: customDocumentGlobalInteractions }">
+
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ko if: EnableTrainingActivities -->
+<div class="panel panel-info" data-bind="visible: $root.showResults">
+    <div class="panel-heading" data-toggle="collapse" data-target="#trainingActivities" data-bind="click: $root.toggleCollapse('#trainingActivities')">Other Training Activities <span class="glyphicon" data-bind="css: $root.panelCollapse('#trainingActivities')"></span></div>
+    <div class="panel-body collapse in" id="trainingActivities">
+        <table class="table table-hover table-fixed">
+            <thead>
+                <tr>
+                    <th class="col-md-2">Type</th>
+                    <th>Title</th>
+                    <th>Period</th>
+                    <th class="col-md-2">Cost</th>
+                    @if (!myProgressMode) {
+                        <td></td>
+                    }
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: TrainingActivities">
+                <tr>
+                    <td data-bind="text: Type"></td>
+                    <td data-bind="text: Title"></td>
+                    <td><span data-bind="text: FromDate ? (moment(FromDate).format('D MMM YYYY, h:mm A') + ' - ') : '' "></span><span data-bind="text: ToDate ? moment(ToDate).format('lll') : ''"></span></td>
+                    <td data-bind="text: Cost"></td>
+                    @if (!myProgressMode) {
+                        <td>
+                            <a data-bind="attr: { href: '@Url.Action("Edit", "TrainingActivity", new {Area = ""})/' + ActivityId }" title="View and Edit"><i class="glyphicon glyphicon-link"></i></a>
+                        </td>
+                    }
+                </tr>
+            </tbody>
+            <!-- ko if: ko.unwrap(trainingActivities).length === 0 -->
+            <tbody>
+                <tr>
+                    <td colspan="5" class="text-center">No training activity data</td>
+                </tr>
+            </tbody>
+            <!-- /ko -->
+        </table>
+    </div>
+</div>
+<!-- /ko -->
+<br>
+<div class="panel panel-info" data-bind="visible: $root.showResults">
+    <div class="panel-heading" data-toggle="collapse" data-target="#pointsStatement" data-bind="click: $root.toggleCollapse('#pointsStatement')">Points and Awards <span class="glyphicon" data-bind="css: $root.panelCollapse('#pointsStatement')"></span></div>
+    <div class="panel-body collapse in" id="pointsStatement">
+        <table class="table table-hover table-fixed">
+            <thead>
+                <tr>
+                    <th class="col-md-2">Type</th>
+                    <th>Title</th>
+                    <th class="col-md-2">Date</th>
+                    <th>Access</th>
+                    <th class="col-md-2">Points Awarded</th>
+                    
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: PointsStatement">
+                <tr>
+                    <td data-bind="text: Type"></td>
+                    <td data-bind="text: Title"></td>
+                    <td data-bind="text: moment(Date).format('D MMM YYYY, h:mm A')"></td>
+                    <td data-bind="text: IsGlobalAccess"></td>
+                    <td data-bind="text: Points"></td>
+
+                </tr>
+            </tbody>
+            <!-- ko if: ko.unwrap(PointsStatement).length === 0 -->
+            <tbody>
+                <tr>
+                    <td colspan="4" class="text-center">No points and awards data</td>
+                </tr>
+            </tbody>
+            <!-- /ko -->
+        </table>
+    </div>
+</div>
+<br>
+<div class="panel panel-info" data-bind="visible: $root.showResults">
+    <div class="panel-heading" data-toggle="collapse" data-target="#feedback" data-bind="click: $root.toggleCollapse('#feedback')">Feedback <span class="glyphicon" data-bind="css: $root.panelCollapse('#feedback')"></span></div>
+    <div class="panel-body collapse in" id="feedback">
+        <table class="table table-hover table-fixed">
+            <thead>
+                <tr>
+                    <th class="col-md-2">Document Type</th>
+                    <th>Title</th>
+                    <th class="col-md-2">Date</th>
+                    <th class="col-md-1">Type</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: Feedback">
+                <tr>
+                    <td data-bind="text: DocumentType"></td>
+                    <td data-bind="text: DocumentTitle"></td>
+                    <td data-bind="text: moment(Date).format('D MMM YYYY, h:mm A')"></td>
+                    <td data-bind="text: Type"></td>
+                    <td data-bind="text: Comment"></td>
+                </tr>
+            </tbody>
+            <!-- ko if: ko.unwrap(Feedback).length === 0 -->
+            <tbody>
+                <tr>
+                    <td colspan="5" class="text-center">No feedback data</td>
+                </tr>
+            </tbody>
+            <!-- /ko -->
+        </table>
+    </div>
+</div>
+<!-- /ko -->
+<!-- /ko -->
+<br>
+<script type="text/html" id="interaction-mtm">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Assigned</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th class="col-md-2">Time Taken</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: moment(DateAssigned).format('D MMM YYYY, h:mm A')"></td>
+                <td data-bind="text: DateViewed ? moment(DateViewed).format('D MMM YYYY, h:mm A') : 'Not Available'"></td>
+                <td data-bind="text: TimeTaken ? TimeTaken : 'Not Available'"></td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="5" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
+<script type="text/html" id="customdocument-mtm">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Assigned</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th class="col-md-2">Time Taken</th>
+                <th class="col-md-1">View Submission</th>
+                <th class="col-md-1">Download</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: moment(DateAssigned).format('D MMM YYYY, h:mm A')"></td>
+                <td data-bind="text: DateViewed ? moment(DateViewed).format('D MMM YYYY, h:mm A') : 'Not Available'"></td>
+                <td data-bind="text: TimeTaken ? TimeTaken : 'Not Available'"></td>
+                <td> <a data-bind="attr:{href: $root.viewCustomDocumentSubmissionUrl(Id)}" target="_blank">View</a></td>
+                <td>
+                    <a class="pull-right" style="cursor:pointer" data-bind="click:$root.customdocumentlistResultUrl.bind($data)" target="_blank"><b><u>Download</u></b></a>
+                </td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="5" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+<script type="text/html" id="interaction-p">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Assigned</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th>Time Taken</th>
+                <th>Sign Off Status</th>
+                <th class="col-md-2">Sign Off Date</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: moment(DateAssigned).format('D MMM YYYY, h:mm A')"></td>
+                <td data-bind="text: DateViewed ? moment(DateViewed).format('D MMM YYYY, h:mm A') : 'Not Available'"></td>
+                <td data-bind="text: TimeTaken ? TimeTaken : 'Not Available'"></td>
+                <td data-bind="text: Response ? Response : 'Not Available'"></td>
+                <td data-bind="text: ResponseDate ? moment(ResponseDate).format('D MMM YYYY, h:mm A'): 'Not Available'"></td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="7" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
+<script type="text/html" id="interaction-t">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th class="col-md-3">Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Assigned</th>
+                <th class="col-md-1">Result 1</th>
+                <th class="col-md-1">Result 2</th>
+                <th class="col-md-1">Result 3</th>
+                <th class="col-md-1">Result 4</th>
+                <th class="col-md-1">Result 5</th>
+                <th class="col-md-1">Result 6</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'">Viewed</td>
+                <td data-bind="text: moment(DateAssigned).format('D MMM YYYY, h:mm A')"></td>
+                <td>
+                    <!-- ko if: Result1 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed1, TimeTaken1), href: $root.testResultUrl(ResultId1) }, text: Result1" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result1 =="" || Result1==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result2 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed2, TimeTaken2), href: $root.testResultUrl(ResultId2) }, text: Result2" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result2 =="" || Result2==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result3 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed3, TimeTaken3), href: $root.testResultUrl(ResultId3) }, text: Result3" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result3 =="" || Result3==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result4 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed4, TimeTaken4), href: $root.testResultUrl(ResultId4) }, text: Result4" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result4 =="" || Result4==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result5 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed5, TimeTaken5), href: $root.testResultUrl(ResultId5) }, text: Result5" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result5=="" || Result5==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result6 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed6, TimeTaken6), href: $root.testResultUrl(ResultId6) }, text: Result6" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result6=="" || Result6==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="9" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
+<script type="text/html" id="interaction-ch">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Assigned</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th class="col-md-1">Completed</th>
+                <th class="col-md-1">Checks Completed</th>
+                <th class="col-md-1">View Submission</th>
+                <th class="col-md-1">Download</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: moment(DateAssigned).format('D MMM YYYY, h:mm A')"></td>
+                <td data-bind="text: DateViewed ? moment(DateViewed).format('D MMM YYYY, h:mm A') : 'Not Available'"></td>
+                <td data-bind="text: Completed"></td>
+                <td data-bind="text: ChecksCompleted"></td>
+                <td> <a data-bind="attr:{href: $root.viewSubmissionUrl(Id)}" target="_blank">View</a></td>
+                <td>
+                    <a class="pull-right" style="cursor:pointer" data-bind="click:$root.checklistResultUrl.bind($data)" target="_blank"><b><u>Download</u></b></a>
+                </td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="7" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+<script type="text/html" id="interaction-mtmG">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th class="col-md-2">Time Taken</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: DateViewed ? moment(DateViewed).format('D MMM YYYY, h:mm A') : ''"></td>
+                <td data-bind="text: TimeTaken"></td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="5" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+<script type="text/html" id="customdocument-mtmG">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th class="col-md-2">Time Taken</th>
+                <th class="col-md-1">View Submission</th>
+                <th class="col-md-1">Download</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: DateViewed ? moment(DateViewed).format('D MMM YYYY, h:mm A') : ''"></td>
+                <td data-bind="text: TimeTaken"></td>
+                <td> <a data-bind="attr:{href: $root.viewCustomDocumentSubmissionUrl(Id)}" target="_blank">View</a></td>
+                <td>
+                    <a class="pull-right" style="cursor:pointer" data-bind="click:$root.customdocumentlistResultUrl.bind($data)" target="_blank"><b><u>Download</u></b></a>
+                </td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="5" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+<script type="text/html" id="interaction-pG">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th>Time Taken</th>
+                <th>Sign Off Status</th>
+                <th class="col-md-2">Sign Off Date</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: moment(DateViewed).format('D MMM YYYY, h:mm A')"></td>
+                <td data-bind="text: TimeTaken"></td>
+                <td data-bind="text: Response"></td>
+                <td data-bind="text: ResponseDate ? moment(ResponseDate).format('D MMM YYYY, h:mm A') : ''"></td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="7" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
+<script type="text/html" id="interaction-tG">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th class="col-md-3">Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-1">Result 1</th>
+                <th class="col-md-1">Result 2</th>
+                <th class="col-md-1">Result 3</th>
+                <th class="col-md-1">Result 4</th>
+                <th class="col-md-1">Result 5</th>
+                <th class="col-md-1">Result 6</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'">Viewed</td>
+                <td>
+                    <!-- ko if: Result1 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed1, TimeTaken1), href: $root.testResultUrl(ResultId1) }, text: Result1" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result1 =="" || Result1==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result2 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed2, TimeTaken2), href: $root.testResultUrl(ResultId2) }, text: Result2" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result2 =="" || Result2==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result3 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed3, TimeTaken3), href: $root.testResultUrl(ResultId3) }, text: Result3" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result3 =="" || Result3==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result4 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed4, TimeTaken4), href: $root.testResultUrl(ResultId4) }, text: Result4" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result4 =="" || Result4==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result5 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed5, TimeTaken5), href: $root.testResultUrl(ResultId5) }, text: Result5" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result5=="" || Result5==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <!-- ko if: Result6 -->
+                    <a data-bind="attr: { title: $root.resultTitle(DateViewed6, TimeTaken6), href: $root.testResultUrl(ResultId6) }, text: Result6" target="_blank"></a>
+                    <!-- /ko -->
+                    <!-- ko if: Result6=="" || Result6==null -->
+                    <span>No Result</span>
+                    <!-- /ko -->
+                </td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="9" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
+<script type="text/html" id="interaction-chG">
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Viewed</th>
+                <th class="col-md-2">Date Viewed</th>
+                <th class="col-md-1">Completed</th>
+                <th class="col-md-1">Checks Completed</th>
+                <th class="col-md-1">View Submission</th>
+                <th class="col-md-1">Download</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: $data">
+            <tr>
+                <td data-bind="text: DocumentTitle"></td>
+                <td data-bind="text: Viewed ? 'Yes' : 'No'"></td>
+                <td data-bind="text: moment(DateViewed).format('D MMM YYYY, h:mm A')"></td>
+                <td data-bind="text: Completed"></td>
+                <td data-bind="text: ChecksCompleted"></td>
+                <td> <a data-bind="attr:{href: $root.viewSubmissionUrl(Id)}" target="_blank">View</a></td>
+                <td>
+                    <a class="pull-right" style="cursor:pointer" data-bind="click:$root.checklistResultUrl.bind($data)" target="_blank"><b><u>Download</u></b></a>
+                </td>
+            </tr>
+        </tbody>
+        <tbody data-bind="if: $data.length === 0">
+            <tr>
+                <td colspan="7" class="text-center">No data</td>
+            </tr>
+        </tbody>
+    </table>
+</script>
+
+<div class="modal fade" id="exportModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Export</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select the field you would like to export</p>
+                <form id="test">
+                    <div class="row">
+                        <h3>Personal Details</h3>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    User Properties
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upCode" class="CommonCssValue" checked value="upCode" id="upCode" />
+                                        <span>Employee Code</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upName" value="upName" class="CommonCssValue" checked id="upName" />
+                                        <span>Full Name</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upGender" value="upGender" class="CommonCssValue" id="upGender" />
+                                        <span>Gender</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upId" value="upId" class="CommonCssValue" id="upId" />
+                                        <span>ID Number</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upRace" value="upRace" class="CommonCssValue" id="upRace" />
+                                        <span>Race</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upMobileNumber" value=upMobileNumber" class="CommonCssValue" id="upMobileNumber" />
+                                        <span>Mobile Number</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upEmail" value="upEmail" class="CommonCssValue" id="upEmail" />
+                                        <span>Email</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="upGroup" class="CommonCssValue" value="upGroup" id="upGroup" />
+                                        <span>Group</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @*<div class="col-sm-4">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        Document Usages
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <input type="checkbox" name="Date" value="Date" class="CommonCssValue" checked id="checkViewDate" />
+                            <span>View Date</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" class="CommonCssValue" name="Duration" value="Duration" id="checkDuration" />
+                            <span>Duration</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        Document Properties
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <input type="checkbox" name="Title" value="Title" class="CommonCssValue" checked id="checkTitle" />
+                            <span>Title</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="Document Type" class="CommonCssValue" checked value="Document Type" id="checkType" />
+                            <span>Type</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                            <span>Access</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="Result" class="CommonCssValue" value="Result" checked id="checkResult" />
+                            <span>Result</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="Points" class="CommonCssValue" value="Points" checked id="checkPoints" />
+                            <span>Points</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="checkbox" name="Category" class="CommonCssValue" value="Category" checked id="checkCategory" />
+                            <span>Category</span>
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+                    </div>
+
+
+                    <div class="row">
+                        <h3>Document Interaction</h3>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Memo
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Employee Code" class="CommonCssValue" checked value="Employee Code" id="checkEmployeeCode" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="User" value="User" class="CommonCssValue" checked id="checkFullName" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Gender" value="Gender" class="CommonCssValue" id="checkGender" />
+                                        <span>Date assigned</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="ID Number" value="ID Number" class="CommonCssValue" id="checkIDNumber" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Race" value="Race" class="CommonCssValue" id="checkRace" />
+                                        <span>Time Taken</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Training Manual
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Date" value="Date" class="CommonCssValue" checked id="checkViewDate" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="Duration" value="Duration" id="checkDuration" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Date" value="Date" class="CommonCssValue" checked id="checkViewDate" />
+                                        <span>Date Assigned</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="Duration" value="Duration" id="checkDuration" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Date" value="Date" class="CommonCssValue" checked id="checkViewDate" />
+                                        <span>Time Taken</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Policy
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Title" value="Title" class="CommonCssValue" checked id="checkTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Document Type" class="CommonCssValue" checked value="Document Type" id="checkType" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                                        <span>Date Assigned</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Result" class="CommonCssValue" value="Result" checked id="checkResult" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Points" class="CommonCssValue" value="Points" checked id="checkPoints" />
+                                        <span>Time Taken</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Category" class="CommonCssValue" value="Category" checked id="checkCategory" />
+                                        <span>Sign Off Status</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Title" value="Title" class="CommonCssValue" checked id="checkTitle" />
+                                        <span>Sign Off Date</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Test
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Title" value="Title" class="CommonCssValue" checked id="checkTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Document Type" class="CommonCssValue" checked value="Document Type" id="checkType" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                                        <span>Date Assigned</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Result" class="CommonCssValue" value="Result" checked id="checkResult" />
+                                        <span>Result 1</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Points" class="CommonCssValue" value="Points" checked id="checkPoints" />
+                                        <span>Result 2</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Category" class="CommonCssValue" value="Category" checked id="checkCategory" />
+                                        <span>Result 3</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Result" class="CommonCssValue" value="Result" checked id="checkResult" />
+                                        <span>Result 4</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Points" class="CommonCssValue" value="Points" checked id="checkPoints" />
+                                        <span>Result 5</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Category" class="CommonCssValue" value="Category" checked id="checkCategory" />
+                                        <span>Result 6</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Activitybook
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Title" value="Title" class="CommonCssValue" checked id="checkTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Document Type" class="CommonCssValue" checked value="Document Type" id="checkType" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                                        <span>Date Assigned</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Result" class="CommonCssValue" value="Result" checked id="checkResult" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Points" class="CommonCssValue" value="Points" checked id="checkPoints" />
+                                        <span>Completed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Category" class="CommonCssValue" value="Category" checked id="checkCategory" />
+                                        <span>Checks Completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <h3>Global Document Interaction</h3>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Memo
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name=gdiTitle" class="CommonCssValue" checked value="gdiTitle" id="gdiTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiViewed" value="gdiViewed" class="CommonCssValue" checked id="gdiViewed" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    @*<div class="form-group">
+                            <input type="checkbox" name="Gender" value="Gender" class="CommonCssValue" id="checkGender" />
+                            <span>Date assigned</span>
+                        </div>*@
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiDateViewed" value="gdiDateViewed" class="CommonCssValue" id="gdiDateViewed" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiTimeTaken" value="gdiTimeTaken" class="CommonCssValue" id="gdiTimeTaken" />
+                                        <span>Time Taken</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Training Manual
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="tmTitle" value="tmTitle" class="CommonCssValue" checked id="tmTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="tmViewed" value="tmViewed" id="tmViewed" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    @*<div class="form-group">
+                            <input type="checkbox" name="Date" value="Date" class="CommonCssValue" checked id="checkViewDate" />
+                            <span>Date Assigned</span>
+                        </div>*@
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="tmDateViewed" value="tmDateViewed" id="tmDateViewed" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="tmTimeTaken" value="tmTimeTaken" class="CommonCssValue" checked id="tmTimeTaken" />
+                                        <span>Time Taken</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Policy
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="policyTitle" value="policyTitle" class="CommonCssValue" checked id="policyTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="policyDocumentType" class="CommonCssValue" checked value="policyDocumentType" id="policyDocumentType" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    @*<div class="form-group">
+                            <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                            <span>Date Assigned</span>
+                        </div>*@
+                                    <div class="form-group">
+                                        <input type="checkbox" name="policyDateViewed" class="CommonCssValue" value="policyDateViewed" checked id="policyDateViewed" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="policyPoints" class="CommonCssValue" value="policyPoints" checked id="policyPoints" />
+                                        <span>Time Taken</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="PolicySOS" class="CommonCssValue" value="PolicySOS" checked id="policySOS" />
+                                        <span>Sign Off Status</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="policySOD" value="policySOD" class="CommonCssValue" checked id="policySOD" />
+                                        <span>Sign Off Date</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Test
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testTitle" value="testTitle" class="CommonCssValue" checked id="testTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testDocumentType" class="CommonCssValue" checked value="testDocumentType" id="testDocumentType" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    @*<div class="form-group">
+                            <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                            <span>Date Assigned</span>
+                        </div>*@
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testResult" class="CommonCssValue" value="testResult" checked id="testResult" />
+                                        <span>Result 1</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testPonits" class="CommonCssValue" value="testPonits" checked id="testPonits" />
+                                        <span>Result 2</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testCategory" class="CommonCssValue" value="testCategory" checked id="testCategory" />
+                                        <span>Result 3</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testResult" class="CommonCssValue" value="testResult" checked id="testResult" />
+                                        <span>Result 4</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testPoints" class="CommonCssValue" value="testPoints" checked id="testPoints" />
+                                        <span>Result 5</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="testCategory" class="CommonCssValue" value="testCategory" checked id="testCategory" />
+                                        <span>Result 6</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Activitybook
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Title" value="Title" class="CommonCssValue" checked id="checkTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Document Type" class="CommonCssValue" checked value="Document Type" id="checkType" />
+                                        <span>Viewed</span>
+                                    </div>
+                                    @*<div class="form-group">
+                            <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                            <span>Date Assigned</span>
+                        </div>*@
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Result" class="CommonCssValue" value="Result" checked id="checkResult" />
+                                        <span>Date Viewed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Points" class="CommonCssValue" value="Points" checked id="checkPoints" />
+                                        <span>Completed</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="Category" class="CommonCssValue" value="Category" checked id="checkCategory" />
+                                        <span>Checks Completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <h3>Others</h3>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Other Training Activities
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="otaType" class="CommonCssValue" checked value="otaType" id="otaType" />
+                                        <span>Type</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="otaTitle" value="otaTitle" class="CommonCssValue" checked id="otaTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="otaPeriod" value="otaPeriod" class="CommonCssValue" id="otaPeriod" />
+                                        <span>Period</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="otaCost" value=otaCost" class="CommonCssValue" id="otaCost" />
+                                        <span>Cost</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Point and Rewards
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="prType" value="prType" class="CommonCssValue" checked id="prType" />
+                                        <span>Type</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="prTitle" value="prTitle" id="prTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="prCheckDuration" value="prCheckDuration" id="prCheckDuration" />
+                                        <span>Date</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="prAccess" value="prAccess" id="prAccess" />
+                                        <span>Access</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="prPointAwarded" value="prPointAwarded" id="prPointAwarded" />
+                                        <span>Points Awarded</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Feedback
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="feedbackTitle" value="feedbackTitle" class="CommonCssValue" checked id="feedbackTitle" />
+                                        <span>Document Type</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="feedbackDocumentType" class="CommonCssValue" checked value="feedbackDocumentType" id="feedbackDocumentType" />
+                                        <span>Title</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="feedbackDate" class="CommonCssValue" checked value="feedbackDate" id="feedbackDate" />
+                                        <span>Date</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="feedbackType" class="CommonCssValue" value="feedBackType" checked id="feedBackType" />
+                                        <span>Type</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="feedbackComment" class="CommonCssValue" value="feedbackComment" checked id="feedbackComment" />
+                                        <span>Comment</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button type="button" class="exportReport btn btn-primary" data-exportformid="test">Export</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    var Controller = function (data) {
+        var self = this;
+        self.data = data;
+        self.showResults = ko.computed(function () {
+            return window.location.search.indexOf('FromDate') > -1 && window.location.search.indexOf('ToDate') > -1;
+        });
+        self._collapseObservable = ko.observable();
+        self.fromDate = ko.observable();
+        self.fromDate.subscribe(function (newValue) {
+            $('#ToDate').data('DateTimePicker').minDate(new Date(newValue));
+        });
+        self.toDate = ko.observable();
+        self.toDate.subscribe(function (newValue) {
+            $('#FromDate').data('DateTimePicker').maxDate(new Date(newValue));
+        });
+        self.submit = function () {
+            if (ko.unwrap(self.fromDate) && ko.unwrap(self.toDate)) {
+                window.location.href = window.location.protocol + window.location.pathname + '?' + $.param({
+                    UserId: '@Thread.CurrentPrincipal.GetId()',
+                    FromDate: ko.unwrap(self.fromDate),
+                    ToDate: ko.unwrap(self.toDate)
+                });
+            }
+        }
+        self.download = function () {
+            if (self.data && self.data.UserModel && window.location.search.indexOf('FromDate') > -1 && window.location.search.indexOf('ToDate') > -1) {
+                var url = '@Url.Action("DownloadEXCEL", "UserActivityAndPerformanceReport")' + window.location.search;
+                var request = new XMLHttpRequest();
+                request.open("GET", url);
+                request.responseType = 'blob';
+                request.onload = function () {
+                    var userAgent = window.navigator.userAgent;
+                    var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                    if (!allowBlob) {
+                        window.navigator.msSaveBlob(this.response,
+                            this.getResponseHeader('filename') || "download-" + $.now());
+                    } else {
+                        var url = window.URL.createObjectURL(this.response);
+                        var a = document.createElement("a");
+                        document.body.appendChild(a);
+                        a.href = url;
+                        a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                        a.click();
+                        window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                    }
+                }
+                request.onreadystatechange = function () {
+                    if (this.readyState === 4) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                };
+                $('#LoadingImageDiv').show();
+                request.send();
+            } else {
+                notif({
+                    type: 'error',
+                    msg : 'Please fill in all required fields'
+                })
+            }
+        };
+        self.resultTitle = function(dateViewed, timeTaken) {
+            return (dateViewed ? 'Date Viewed: ' +
+                moment(dateViewed).format('lll') +
+                '\n' : '') +
+                'Time Taken: ' +
+                timeTaken;
+        }
+
+        self.testResultUrl = function(id) {
+            return '@Url.Action("DownloadPDF", "TestReport", new {Area = "Reporting"})/?ResultId=' + id;
+        }
+
+
+        self.checklistResultUrl = function (data) {
+            var id = ko.toJS(data.Id);
+                   var url = '@Url.Action("DownloadPrintPDF", "ActivitybookReport", new {Area = "Reporting"})/?ResultId=' + id + '&UserId=' + '@ViewData["UserId"]';
+                   $("#progressModal").modal('show');
+
+                self.downloadReport(url);
+        }
+        self.viewSubmissionUrl = function (id) {
+
+             return '@Url.Action("ActivitybookPreview", "ActivitybookSubmissionReport", new {Area = "Reporting" })/' + id + "?checkUser=" + '@ViewData["UserId"]';
+        }
+
+         self.viewCustomDocumentSubmissionUrl = function (id, TestQuestionID) {
+            return '/CustomDocument/Preview/' + id ;
+        }
+
+      self.customdocumentlistResultUrl = function (data) {
+          var id = ko.toJS(data.CustomDocumentId);
+                   var url = '@Url.Action("DownloadPrintExcel", "CustomDocumentSubmissionReport", new {Area = "Reporting"})/?ResultId=' + id + '&UserId=' +  '@ViewData["UserId"]';
+                   $("#progressModal").modal('show');
+
+                self.downloadReport(url);
+        }
+
+        self.viewSubmissionUrl = function (id) {
+
+             return '@Url.Action("ActivitybookPreview", "ActivitybookSubmissionReport", new {Area = "Reporting" })/' + id + "?checkUser=" + '@ViewData["UserId"]';
+        }
+        self.downloadReport = function (url) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+
+            //request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //request.setRequestHeader("Content-length", url.length);
+
+            request.onload = function () {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                    $("#progressModal").modal('hide');
+                }
+            }
+            request.send();
+
+        };
+
+        self.toggleCollapse = function (panelBodyId) {
+            $(panelBodyId).collapse('toggle');
+            self._collapseObservable.notifySubscribers();
+        };
+        self.panelCollapse = function (panelBodyId) {
+            return ko.computed(function () {
+                self._collapseObservable();
+                return $(panelBodyId).attr('aria-expanded') !== "false" ? 'glyphicon-triangle-bottom' : 'glyphicon-triangle-top';
+            });
+        };
+    }
+    var vm = new Controller(@Html.ToJson(Model));
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+
+
+  $(function () {
+        $(".export").on('click',
+            function () {
+                //$("#exportModal").modal('show');
+                userId = $(this).attr('id');
+
+                if (userId !== 'All')
+                    $('#UserId').val(userId)
+
+                var filterArray = new Array();
+                //$('.CommonCss').each(function () {
+                //    if ($(this).is(':checked')) {
+                //        filterArray.push($(this).attr('name'));
+                //        $('#ToggleFilter').val(filterArray.join());
+                //    }
+                //});
+
+                $('.CommonCssValue').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+                
+                var formId = $(this).data('exportformid');
+                
+                var form = $('#' + formId);
+                var params = form.serialize();
+                download(params);
+                //if (userId !== 'All')
+                //    $('#UserId').val(userId)
+
+                //var filterArray = new Array();
+                //$('.CommonCss').each(function () {
+                //    if ($(this).is(':checked')) {
+                //        filterArray.push($(this).attr('name'));
+                //        $('#ToggleFilter').val(filterArray.join());
+                //    }
+                //});
+
+                //var formId = $(this).data('exportformid');
+                //var form = $('#' + formId);
+                //var params = form.serialize();
+                //download(params);
+            });
+
+        $(".exportReport").on('click',
+            function () {
+                if (userId !== 'All')
+                    $('#UserId').val(userId)
+
+                var filterArray = new Array();
+                //$('.CommonCss').each(function () {
+                //    if ($(this).is(':checked')) {
+                //        filterArray.push($(this).attr('name'));
+                //        $('#ToggleFilter').val(filterArray.join());
+                //    }
+                //});
+
+                $('.CommonCssValue').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+                
+                var formId = $(this).data('exportformid');
+                
+                var form = $('#' + formId);
+                var params = form.serialize();
+                download(params);
+                $("#exportModal").modal('hide');
+            });
+
+        $(".exportAll").on('click',
+            function () {
+                var id = $(this).attr('id');
+                if (id !== 'All')
+                    $('#UserId').val(id)
+
+                var filterArray = new Array();
+                $('.CommonCss').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+
+                var formId = $(this).data('exportformid');
+                var form = $('#' + formId);
+                var params = form.serialize();
+                download(params);
+            });
+
+        $('#chkEmployeeCode').click(function () {
+            if ($(this).is(":checked")) {
+                $('.EmployeeCodeCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.EmployeeCodeCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+
+
+        $('#chkUser').click(function () {
+            if ($(this).is(":checked")) {
+                $('.UserCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.UserCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkCategory').click(function () {
+            if ($(this).is(":checked")) {
+                $('.CategoryCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.CategoryCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkDocumentType').click(function () {
+            if ($(this).is(":checked")) {
+                $('.DocumentTypeCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.DocumentTypeCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkTitle').click(function () {
+            if ($(this).is(":checked")) {
+                $('.TitleCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.TitleCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkDate').click(function () {
+            if ($(this).is(":checked")) {
+                $('.DateCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.DateCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkAccess').click(function () {
+            if ($(this).is(":checked")) {
+                $('.AccessCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.AccessCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkResult').click(function () {
+            if ($(this).is(":checked")) {
+                $('.ResultCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.ResultCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkPoints').click(function () {
+            if ($(this).is(":checked")) {
+                $('.PointsCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.PointsCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+    });
+
+    function download(params) {
+         //self.data && self.data.UserModel && window.location.search.indexOf('FromDate') > -1 && window.location.search.indexOf('ToDate') > -1
+         if (1) {
+
+             var url = '@Url.Action("DownloadEXCEL", "UserActivityAndPerformanceReport")' + window.location.search
+                var request = new XMLHttpRequest();
+                request.open("GET", url);
+                request.responseType = 'blob';
+                request.onload = function () {
+                    var userAgent = window.navigator.userAgent;
+                    var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                    if (!allowBlob) {
+                        window.navigator.msSaveBlob(this.response,
+                            this.getResponseHeader('filename') || "download-" + $.now());
+                    } else {
+                        var url = window.URL.createObjectURL(this.response);
+                        var a = document.createElement("a");
+                        document.body.appendChild(a);
+                        a.href = url;
+                        a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                        a.click();
+                        window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                    }
+                }
+                request.onreadystatechange = function () {
+                    if (this.readyState === 4) {
+                        $('#LoadingImageDiv').hide();
+                    }
+                };
+                $('#LoadingImageDiv').show();
+                request.send();
+            } else {
+                notif({
+                    type: 'error',
+                    msg : 'Please fill in all required fields'
+                })
+            }
+        };
+</script>

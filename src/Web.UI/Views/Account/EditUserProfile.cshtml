@@ -1,0 +1,81 @@
+﻿@*@model Ramp.Contracts.ViewModel.PackageViewModel*@
+
+@model  Ramp.Contracts.ViewModel.EditUserProfileViewModel
+
+    @{
+        ViewBag.Title = "OnRAMP Online Training Platform";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Edit User Profile</h1>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    @using (Html.BeginForm("EditUserProfile", "Account"))
+    {
+        @* @Html.AntiForgeryToken()*@
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"> Edit your information </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                @Html.ValidationSummary(true)
+                                @Html.HiddenFor(model => model.Id)
+                                <div class="form-group">
+                                    @Html.Label("Full Name")
+                                    @Html.TextBoxFor(model => model.FullName, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.FullName)
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Contact Number")
+                                    @Html.TextBoxFor(model => model.ContactNumber, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.ContactNumber)
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Email Address")
+                                    @Html.TextBoxFor(model => model.EmailAddress, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.EmailAddress)
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Password")
+                                    @Html.PasswordFor(model => model.Password, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.Password)
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Confirm Password")
+                                    @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.ConfirmPassword)
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Mobile Number")
+                                    @Html.TextBoxFor(model => model.MobileNumber, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.MobileNumber)
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Group Allocation")
+                                    @*@Html.DropDownListFor(m => m.CompanyViewModel.SelectedPackage, Model.CompanyViewModel.Packages.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.CompanyViewModel.SelectedPackage)*@
+                                </div>
+
+                                <input type="submit" value="Update" class="btn btn-default" />
+                                @*<input type="submit" value="Clear" class="btn btn-default" />*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }

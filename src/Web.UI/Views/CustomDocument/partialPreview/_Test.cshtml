@@ -1,0 +1,201 @@
+﻿
+
+<template id="Test-display-preview-component">
+
+
+    @*<h1>Test-<span data-bind="text:$index"></span></h1>
+        <span data-bind="text:ko.toJSON($data)"></span>*@
+    <div class="row">
+
+        <div class="col-sm-12">
+
+            <div class=" panel panel-info">                
+                <div class="panel-heading clearfix" style="line-height: 34px;" data-bind="foreach:$data">
+                    <div data-bind="attr:{id:Id}"></div>
+                    <p data-bind="text:Title">
+                        <!-- ko if:CheckRequired --> <span style="color:#ff0000">* </span>  <!-- /ko -->
+                    </p>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group" data-bind="foreach:$data">
+                        <div>
+                            <h4></h4>
+                            <p data-bind="text:Question"></p>
+
+                            <!-- ko foreach:Answers-->
+                            <!--<footer>Answer: <span data-bind="text:Option"></span></footer>-->
+                            <!-- /ko -->
+                            <hr>
+                            <div class="col-sm-6" style="padding-top: 20px;">
+                                <div class="row">
+                                    <div class="well well-sm">
+                                        <div style="max-height:150px;overflow-y:auto !important">
+                                            <div class="list-group" data-bind="foreach:Answers">                                               
+                                                <div data-bind="attr:{'id':Id}">
+                                                    <a href="javascript:void(0)" class="list-group-item" data-bind="click: function () {vm.content.LoadTestData(Option,$parent); return true;}, attr : {'data-option':Option}">
+                                                        <p class="list-group-item-text" data-bind="text:Option"></p>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-sm-6" style="padding-top: 20px;">
+                                <!-- ko foreach:Attachments -->
+                                <div class="col-sm-4" data-bind="if:ko.unwrap(Type).indexOf('Image') == 0">
+                                    <a data-bind="fancybox:{ autoSize:true, aspectRatio: true, fitToView: true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                                        <img class="img-responsive center-block" data-bind="attr:{src:Url,title:Description}" />
+                                    </a>
+                                </div>
+                                <div class="col-sm-4" data-bind="if:ko.unwrap(Type).indexOf('Video') == 0">
+                                    <a data-bind="fancybox:{ helpers:{ media:{} }, autoSize:true, aspectRatio: true, fitToView: true}, attr:{ title:Description }" class="fancybox.iframe">
+                                        <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                        <div class="content center-block">
+                                            <video controls style="max-width: 100%; max-height: 100%">
+                                                <source data-bind="attr:{ src:Url }" type="video/mp4" />
+                                                Your browser does not support the HTML 5 video tag.
+                                            </video>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-sm-4" data-bind="if:ko.unwrap(Type).indexOf('Audio') == 0">
+                                    <a data-bind="fancybox:{ helpers:{ media:{} }}" class="fancybox.iframe" title="Click To Hear Audio">
+                                        <img class="img-responsive attachment" src="@Url.Content("~/Content/images/OR_AudioIcon_v3.png")" />
+                                        <div class="content center-block">
+                                            <audio controls style="width:100%">
+                                                <source data-bind="attr:{ src:Url }" type="audio/mp3" />
+                                                Your browser does not support the HTML 5 audio tag.
+                                            </audio>
+                                        </div>
+                                    </a>
+                                </div>
+                                <!-- /ko -->
+                            </div>
+
+                            <div class="row col-lg-12">
+                                <!-- ko if:NoteAllow -->
+                                <div class="col-lg-5 pull-left">
+                                    <div class="form-group">
+                                        <label id="resources" class="control-label">Leave additional notes:</label>
+                                    </div>
+                                    <div class="heading pull-left IssueDiscription">
+
+                                        <textarea cols="500" class="form-control" data-bind="textInput:IssueDiscription" rows="5"></textarea>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                                @*done changes by softude*@
+                                @*<div class="col-sm-7">*@
+                                <div class="row col-lg-12">
+                                    <!-- ko if:AttachmentRequired -->
+                                    <!-- Below line can be used to outline Attachment area if AttachmentRequired is true -->
+
+                                    <div>
+                                        <div class="form-group">
+                                            @*added * by softude*@
+                                            <label id="resources" class="control-label"><span style="color:#ff0000">* </span>Choose any of the below to upload</label>
+                                        </div>
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/wordDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/excelDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/otherDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/audDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" title="Accepted filetypes: &#013; .MP3" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/imgDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data);" title="Accepted filetypes: &#013; .PNG &#013; .JPEG &#013; .JPG &#013; .GIF &#013; .BMP" />
+                                        <img class="img-responsive uploadLauncher col-lg-2 hover-zoom cursor" src="@Url.Content("~/Content/images/file/videoDoc.png")" id="videoUploadId" data-bind="click:vm.upload.triggerUpload.bind($data)" title="Accepted filetypes: &#013; .MP4" />
+
+                                        <div id="inputs"></div>
+                                    </div>
+                                    <!-- /ko -->
+
+                                </div>
+                                @*done changes by softude*@
+                                @*<div class="row col-sm-5 pull-right">*@
+                                <div class="row col-lg-12">
+                                    <div class="table-responsive">
+
+                                        <table class="table table-striped table-condensed" data-bind="visible:ko.unwrap(StandardUserAttachments).length > 0">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="5" style="padding:0">
+                                                        <label class="success arrangeHeader">Arrange Attachments</label>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody data-bind="foreach:StandardUserAttachments,uiSortableList:Attachments,handle:'.uploadhandle'">
+                                                <tr data-bind="if:!ko.unwrap($data.Error)">
+                                                    <td style="max-width: 50px">
+                                                        <a class="btn"><span class="glyphicon glyphicon-sort uploadhandle" style="color:black"></span></a>
+                                                    </td>
+                                                    <td class="upload upload-detail-20">
+                                                        <a data-bind="attr:{href: ko.unwrap($data.Url)},click:app.data.plugins.blueimpGallary.trigger.bind($data)" target="_blank">
+                                                            <img class="img-responsive upload-thumbnail" data-bind="attr:{src:ko.unwrap($data.ThumbnailUrl)}" />
+                                                        </a>
+                                                    </td>
+                                                    <td class="upload upload-detail-40">
+                                                        <textarea type="text" class="form-control" data-bind="value:$data.Description" style="width:100%" rows="4"></textarea>
+                                                    </td>
+                                                    <td class="upload upload-detail-20">
+                                                        <label data-bind="text:vm.upload.getScaledSize(ko.unwrap($data.Size))"></label>
+                                                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible :ko.unwrap($data.InProcess)">
+                                                            <div class="progress-bar progress-bar-success" data-bind="style:{width:ko.unwrap($data.Progress)}"></div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="upload upload-detail-20" style="max-width: 50px">
+                                                        <div data-bind="if: ko.unwrap($data.InProcess)">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:vm.upload.cancel.bind($data,$parent)"><i class="glyphicon glyphicon-ban-circle"></i></button>
+                                                        </div>
+                                                        <div data-bind="ifnot: ko.unwrap($data.InProcess)">
+                                                            <button class="btn btn-danger upload-action" data-bind="click:deleteAttachment.bind($data,$parent)"><i class="glyphicon glyphicon-trash"></i></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                                <!-- ko if: IsSignOff -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <canvas class="sig-canvas" data-bind="attr:{id:'sig-canvas-test-'+ $index()}" width="310" height="80">
+                                            Get a better browser, bro.
+                                        </canvas>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button class="btn btn-primary sig-submitBtn" data-bind="attr:{id:'sig-submitBtn-test-'+ $index()}">Submit Signature</button>
+                                        <button class="btn btn-default sig-clearBtn" data-bind="attr:{id:'sig-clearBtn-test-'+ $index()}">Clear Signature</button>
+                                    </div>
+                                </div>
+                                <br />
+
+                                @*<div class="row">
+                                        <div class="col-md-12">
+                                            <img class="img-responsive upload-thumbnail" data-bind="attr:{src:ko.unwrap(SignatureThumbnail)}" />
+
+                                            <img data-bind="attr:{id:'sig-image-test-'+ $index()}" src="" alt="" />
+                                            <input type="hidden" class="sig-uploadID" data-documentType="Test" data-bind="value:SignatureUploadId,attr:{id:'sig-uploadID-test-'+ $index(), datasectionID:''+$index()}" />
+                                        </div>
+                                    </div>*@
+
+                                <!-- /ko -->
+                                <div class="clearfix"></div>
+                                <div class="row">
+                                    <div data-bind="foreach: AnswerSelectedCollection">
+                                        <div data-bind="component:{name:compoName,params:parameters}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+</template>

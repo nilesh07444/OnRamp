@@ -1,0 +1,24 @@
+﻿@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.CompanyViewModelLong
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = null;
+}
+@if (Model.CompanyList.Any())
+{
+    foreach (CompanyViewModel company in Model.CompanyList)
+    {
+        <div class="alert alert-success" style="padding: 6px; width: 283px;">
+            <label>@company.CompanyName</label>
+            <label class="checkbox-inline" style="float: right">
+                <input name="selector[]" class="CustomerCompany" type="checkbox" value="@company.Id">
+            </label>
+        </div>
+    }
+}
+else
+{
+    <div id ="NoRecordFoundDiv" class="alert alert-danger" style="padding: 6px; width: 283px;">
+        <label>No customer company found</label>
+    </div>
+}

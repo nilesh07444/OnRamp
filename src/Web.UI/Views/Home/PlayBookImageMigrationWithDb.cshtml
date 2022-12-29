@@ -1,0 +1,84 @@
+﻿@using Web.UI.Helpers;
+@model Ramp.Contracts.ViewModel.PlayBookImageMigrationWithDbModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>OnRAMP Online Training Platform</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/ThemeJs")
+    @Scripts.Render("~/bundles/bootstrap")
+    <style type="text/css">
+        h2, p, h4 {
+            font-family: Calibri;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper" style="padding-left: 5%; padding-right: 5%;">
+        <h2>PlayBook Image Migration With Database</h2>
+        <div>
+            @using (Html.BeginForm("PlayBookImageMigrationWithDb", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <b> @ViewBag.ErrorMessage </b>
+                <br />
+                <b> @ViewBag.Message </b>
+                <br />
+                <br />
+                @Html.Raw("Click here to start the migration of PlayBook Image into database.")
+                <br />
+                <br />
+                <input class="btn btn-lg btn-success btn-block" style="background-color: #1bbc9b; border-color: #1bbc9b;" type="submit" value="Start Migration" />
+                <br />
+                <br />
+                foreach (var company in Model.CustomerCompanies)
+                {
+                    <div style="margin-left:2%">
+                        <strong style="color: red; padding-left: 5%">
+                            @Html.Raw(company.CompanyName)
+                        </strong>
+                        @foreach (var trainingGuide in company.CompanyTrainingGuides)
+                        {
+                            <div style="margin-left:4%">
+                                <strong style="color: blue; padding-left: 10%; font-weight: bold">
+                                    @Html.Raw(trainingGuide.TrainingGuideName)
+                                </strong>
+                                @foreach (var chapters in trainingGuide.CompanyTrainingGuideChapters)
+                                {
+                                    <div style="margin-left:6%">
+                                        <strong style="color: green; padding-left: 15%">@Html.Raw(chapters.ChapterName) </strong>
+                                        @foreach (var uploads in chapters.chapterUploads)
+                                        {
+                                            <div style="color: black; padding-left: 20%">
+                                                @Html.Raw(uploads.DocumentName)
+                                                @{var msgId = "msg" + uploads.UploadId;}
+                                                @Html.Raw(TempData[msgId])
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+        <footer>
+            <p style="position: absolute; ">
+                <a href="@Href("~/")">
+                    <img src="~/images/powered.PNG" style="height: 80px; width: 220px; " />
+                </a>
+            </p>
+            <p class="pull-right" style="color: #106B64; display: inline; margin-top: 5%;">Powered by OnRamp &copy;@DateTime.Now.Year</p>
+        </footer>
+    </div>
+</body>
+</html>

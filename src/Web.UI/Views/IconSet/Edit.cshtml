@@ -1,0 +1,84 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Common.Web
+@model IconSetModel
+@{
+    ViewBag.Title = "IconManagement";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .icon{
+        max-width:200px;
+        max-height:200px;
+    }
+    .icon-list{
+        height:400px;
+        overflow-y:scroll;
+    }
+</style>
+<script src="~/Scripts/Areas/Icon/edit.js"></script>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header" data-bind="text:action"></h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-lg-4">
+            <div class="input-group">
+                <input type="text" placeholder="Set Name" class="form-control" data-bind="textInput:details.Name,disable: details.Master">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" data-bind="click: $root.save.bind()">Save</button>
+                </span>
+            </div>
+            <br />
+            <div class="table-responsive icon-list">
+                <table class="table">
+                    <tbody data-bind="foreach: details.AvailableIcons">
+                        <tr>
+                            <td role="button" data-bind="text:Text,attr:{value : Value},click:$root.changeSelection.bind($data),css:{'active' : $root.selectedIcon() ? $root.selectedIcon().Name() === Text() : false}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <!-- ko ifnot:$root.selectedIcon -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <span>Nothing Selected</span>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko if:$root.selectedIcon -->
+            <div class="panel panel-default">
+                <!-- ko with : $root.selectedIcon -->
+                <div class="panel-heading">
+                    <span data-bind="text:Name"></span>
+                </div>
+                <div class="panel-body">
+                    <img class="img-responsive center-block icon" data-bind="attr:{src: $root.getUrl(UploadModel)}" title="Accepted filetypes: &#013; .PNG &#013; .JPEG &#013; .JPG &#013; .GIF &#013; .BMP"  />
+                    <br />
+                    <div class="text-center">
+                        <button type="button" class="btn btn-default" data-bind="click:$root.simulateUploadClick.bind()">Add/Replace</button>
+                        <!-- ko if:!$root.details.Master() -->
+                        <button type="button" class="btn btn-default" data-bind="click:$root.clearUpload.bind($data)">Clear</button>
+                        <!-- /ko -->
+                    </div>
+                    <input data-bind="fileUpload:Input,fileuploadOptions:$root.fileuploadOptions,valueProperty:UploadModel" class="hidden" type="file" name="files[]" id="uploadInput" accept="image/*" />
+                </div>
+                <!-- /ko -->
+            </div>
+            <!-- /ko -->
+        </div>
+    </div>
+</div>
+<script>
+    var vm = new Controller(app,@Html.ToJson((object)Model),@Html.ToJson((object)ViewBag),{
+        uploadLink : '@Url.Action("Post","Upload",new { mainContext = true})',
+        save : '@Url.Action("Edit","IconSet")',
+        defaultImageUrl : "@Url.Content("~/Content/images/imgDoc.png")",
+        index : "@Url.Action("Manage","IconSet",new { Area = ""})"
+    });
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    window.vm = vm;
+</script>

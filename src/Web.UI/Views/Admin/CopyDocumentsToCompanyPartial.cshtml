@@ -1,0 +1,32 @@
+﻿@using Ramp.Contracts.ViewModel
+@using VirtuaCon
+@model IEnumerable<DocumentListModel>
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = null;
+}
+@if (ViewBag.RemainingDocuments == 0)
+{
+    <label id="NumberOfDocumentRemain" value="@ViewBag.RemainingDocuments" style="color:red;">Your Document limit has been reached.</label>
+}
+else
+{
+    <label id="NumberOfDocumentRemain" value="@ViewBag.RemainingDocuments" style="color:red;">@ViewBag.DocumentAdd</label>
+}
+
+@if (Model.Any())
+{
+    foreach (var item in Model)
+    {
+        <div class="alert alert-success" style="padding: 6px; width: 283px;">
+            <span>@item.DocumentType.ToString():</span> <label style="width:90%;">@item.Title [@item.ReferenceId]</label>
+        </div>
+    }
+}
+else
+{
+    <div id="NoRecordFoundDiv" class="alert alert-danger" style="padding: 6px; width: 283px;">
+        <label>No documents found</label>
+    </div>
+}

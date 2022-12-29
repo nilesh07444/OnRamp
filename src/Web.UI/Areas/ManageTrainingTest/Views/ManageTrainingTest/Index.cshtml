@@ -1,0 +1,467 @@
+﻿@using System.Web.UI.WebControls
+@using Web.UI.Code.Extensions
+@using Web.UI.Areas.Reporting.Controllers
+@using System.Linq
+@model List<Ramp.Contracts.ViewModel.TrainingTestViewModel>
+
+@{
+    Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    ViewBag.HelpContext = "17";
+}
+
+<style type="text/css">
+    div.hopscotch-bubble .hopscotch-bubble-close {
+        top: -2px !important;
+        right: 5px !important;
+    }
+
+    div.hopscotch-bubble .hopscotch-bubble-number {
+        padding: 0px !important;
+    }
+</style>
+<br />
+<div class="pull-left">
+    <input type="button" id="createTestId" class="btn  btn-outline btn-default" value="Create New Training Test" onclick="createTreainingTest()" />
+</div>
+<br />
+<br />
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Training Test List
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 165px;" aria-label="Rendering engine: activate to sort column ascending" id="refId">
+                                        Ref Id
+                                    </th>
+                                    <th class="Sorting" id="Sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Test Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 230px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Playbook
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Create Date
+                                    </th>
+                                    <th class="" tabindex="0" id="publishId" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Active Publish Date
+                                    </th>
+                                    <th class="" tabindex="0" id="activeStatusId" aria-controls=" datatables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Active Version Status
+                                    </th>
+                                    <th class="" id="draftDateId" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Draft Version Date
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 165px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Draft Version Status
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 165px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Version Number
+                                    </th>
+                                    <th class="Options" id="Options" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 245px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Options
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ReferenceId)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.TestTitle)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.TrainingGuideName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.CreateDate)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ActivePublishDate)
+                                        </td>
+                                        <td>
+                                            @if (item.Version == 0)
+                                            {
+                                                @Html.CheckBoxFor(modelItem => item.ActiveStatus, new { @Id = "item_status_" + item.TrainingTestId, @class = "TrainingTestStatus", @disabled = "disabled" })
+
+                                            }
+                                            else
+                                            {
+                                                @Html.CheckBoxFor(modelItem => item.ActiveStatus, new { @Id = "item_status_" + item.TrainingTestId, @class = "TrainingTestStatus" })
+                                            }
+                                            @Html.Label("Published")
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.DraftEditDate)
+                                        </td>
+                                        <td style="text-align:center">
+                                            @if (item.DraftVersionId.HasValue)
+                                            {
+                                                <button type="button" style="background-color:#555555;border:none" class="btn btn-success TrainingTestDraftStatus" name="@item.DraftVersionId" data-toggle="modal" data-target="#myModal" onclick="setUserId('@(item.DraftVersionId)')">Publish Draft</button>
+                                            }
+                                        </td>
+                                        <td style="text-align:center">
+                                            <label>@item.Version</label>
+                                        </td>
+                                        <td class="tooltip-demo">
+                                            <a class="action" href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/EditTrainingTest?trainingTestId=" + item.TrainingTestId))" role="button" data-toggle="tooltip" data-placement="top" title="Edit">
+                                                <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Edit], true)" class="img-circle" />
+                                            </a>
+                                            <a class="action" href="javascript:void(0)" onclick="confirmDelete(this)" id="@(item.TrainingTestId)" data-toggle="tooltip" data-placement="top" title="Delete">
+                                                <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Delete], true)" class="img-circle" />
+                                            </a>
+                                            @if (item.DraftVersionId.HasValue)
+                                            {
+                                                <a class="action" id="view-draft-version" data-id="@item.DraftVersionId" data-href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/TakeTrainingTest?trainingTestId=" + item.DraftVersionId))" href="javascript:void(0)" onclick="previewTest(this)" data-toggle="tooltip" data-placement="top" title="View Draft Version">
+                                                    <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.ViewDraftTest], true)" class="img-circle" />
+                                                </a>
+                                            }
+                                            @if (item.LastPublishedVersionId.HasValue)
+                                            {
+                                                <a class="action" href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/TakeTrainingTest?trainingTestId=" + item.LastPublishedVersionId.Value))" data-toggle="tooltip" data-placement="top" title="View Published Version" id="view-published-version">
+                                                    <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.ViewPublishedTest], true)" class="img-circle" />
+                                                </a>
+                                            }
+                                            @if (item.Version > 0)
+                                            {
+                                                if (item.Feedback.Count() > 0)
+                                                {
+                                                    <a class="action" href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/Feedback?referenceId=" + item.ReferenceId))" data-toggle="tooltip" data-placement="top" title="Feedback @(item.UnreadFeedback > 0 ? " (" + item.UnreadFeedback.ToString() + ")" : "")" id="feedbackButtonId">
+                                                        <img src="@(Url.Content((item.UnreadFeedback == 0) ? (item.Feedback.Count() > 0 ? Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Feedback], true) : "~/Content/images/btnfeedback.png") : Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.FeedbackUnread], true)))" class="img-circle" />
+                                                    </a>
+                                                }
+                                            }
+                                            <a class="action b_print" href="javascript:void(0)" name="@item.TrainingTestId" onclick="printActivate(this)"  data-toggle="tooltip" data-placement="top" title="Print" id="print">
+                                                <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Print],true)" class="img-circle" />
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="print-modal" class="modal fade" tabindex="-1" role="dialog" name="">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header modal-header-custom">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Export</h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        Criteria
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-6" style="text-align:left">Highlight Correct Answer</label>
+                                <div class="col-sm-6">
+                                    <input type="checkbox" class="checkbox" id="print_highlight_correct_answer" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" id="print-modal-submit" class="btn btn-primary">Print</button>
+                <button type="button" id="download-modal-submit" class="btn btn-primary">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+@Html.Partial("_TestPublishPartialView")
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+        $('#print-modal-submit').on('click', print);
+        $('#download-modal-submit').on('click', zip);
+        $('#print-modal').on('hide.bs.modal', function () {
+            $('#print-modal').attr('name', '');
+            $('#print_highlight_correct_answer').prop('checked', false);
+        });
+    });
+    function printActivate(target) {
+        $('#print-modal').attr('name', target.name);
+        $('#print-modal').modal('show');
+    }
+    function ShowLoading(bool) {
+        if (bool) {
+            $('#LoadingImageDiv').show();
+        }
+        else {
+            $('#LoadingImageDiv').hide();
+        }
+    }
+    function print() {
+        var url = '@Url.Action("DownloadPDF", "TrainingTestReport", new { Area = "Reporting" })';
+        var query = {
+            TestId: $('#print-modal').attr('name'),
+            HighlightCorrectAnswer: $('#print_highlight_correct_answer').prop('checked')
+        };
+        if (!query.TestId) {
+            notif({
+                msg: 'Something Went Wrong, please try again',
+                type: 'error'
+            });
+            return;
+        }
+        url = url + '?' + $.param(query);
+        downloadReport(url);
+    }
+     function zip() {
+        var url = '@Url.Action("Zip", "TrainingTestReport", new { Area = "Reporting" })';
+        var query = {
+            TestId: $('#print-modal').attr('name'),
+            HighlightCorrectAnswer: $('#print_highlight_correct_answer').prop('checked')
+        };
+        if (!query.TestId) {
+            notif({
+                msg: 'Something Went Wrong, please try again',
+                type: 'error'
+            });
+            return;
+        }
+        url = url + '?' + $.param(query);
+        downloadReport(url);
+    }
+     function downloadReport(url) {
+         ShowLoading(true);
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = 'blob';
+        request.onload = function () {
+            ShowLoading(false);
+            $('#print-modal').modal('hide');
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+            }
+        }
+        request.send();
+    }
+    function previewTest(element) {
+        checkValidTest($(element).attr('data-id')).then(function () {
+            window.location.href = element.attributes['data-href'].nodeValue;
+        },
+        function () {
+            notif({
+                msg: 'Test Is Incomplete',
+                type: 'error'
+            });
+        });
+        return true;
+    }
+    function checkValidTest(id) {
+        var actionUrl = '@Url.Action("IsTestValid","ManageTrainingTest",new { Area = "ManageTrainingTest", trainingTestId = "{0}"})'.replace('%7B0%7D', id);
+        var promise = $.ajax({
+            type: 'GET',
+            url: actionUrl,
+        });
+        return promise;
+    }
+    function setUserId(id) {
+        document.getElementById('hdUserId').value = id;
+    }
+
+    function confirmDelete(element) {
+        var row = $(element).parent().parent().parent();
+        var page = $('#dataTables-example').DataTable().page();
+        var testId = $(element).attr('Id');
+        bootbox.confirm("Do you really want to delete this Test?", function (result) {
+            var urlToHit = "Delete?id=" + testId;
+            if (result) {
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("Delete", "ManageTrainingTest", new { Area = "ManageTrainingTest" }))",
+                    data: { id: testId },
+                    success: function (data) {
+                        $('#dataTables-example').DataTable().rows(row).remove();
+                        if (page <= $('#dataTables-example').DataTable().page.info().pages - 1) {
+                            $('#dataTables-example').DataTable().page(page).draw(false)
+                        } else {
+                            $('#dataTables-example').DataTable().draw();
+                        }
+                        notif({
+                            msg: "<b>Success :</b> Test deleted.",
+                            type: "success",
+                        });
+                        window.setTimeout(function () {
+                            window.location.href = '@Url.Action("Index","ManageTrainingTest",new { Area = "ManageTrainingTest" })';
+                        }, 1500);
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        });
+    }
+
+    function createTreainingTest() {
+        window.location.href = '@Url.Action("Create", "ManageTrainingTest")';
+    }
+
+    $('.TrainingTestStatus').click(function () {
+     
+        var id = $(this).attr('id').split('_')[2];
+        var status = $(this).is(":checked");
+        var actionUrl = '@Url.Action("ChangeTrainingTestStatus", "ManageTrainingTest", new { Area = "ManageTrainingTest", trainingTestId = "{0}", status = "{1}" })';
+        actionUrl = actionUrl.replace('%7B0%7D', id).replace('%7B1%7D', status);
+        $.ajax({
+                type: "POST",
+            url: actionUrl,
+            data: { trainingGuidId: id, status: status },
+            success: function (data) {
+                },
+            error: function (data) {
+                }
+            });
+        });
+</script>
+
+<script type="text/javascript">
+
+    tour.steps = [
+          {
+              target: 'createTestId',
+              title: 'Create New Playbook Test',
+              content: 'Click here to create a test.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: 220
+          },
+          {
+              target: 'refId',
+              title: 'Ref ID',
+              content: 'Each Test has a Reference ID so make it unique to other Tests.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: 200
+          },
+          {
+              target: 'publishId',
+              title: 'Active Publish Date',
+              content: 'This is the date that the currently active test was published.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+          },
+
+          {
+              target: 'activeStatusId',
+              title: 'Active Status',
+              content: 'This checkbox allows you to publish a test to your users. Click her to send your test to your users when you are satisfied with the content.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+          },
+          {
+              target: 'draftDateId',
+              title: 'Draft Edit Date ',
+              content: 'This is the date that your draft test was last edited.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+          },
+          {
+              target: 'statusId',
+              title: 'Publish Draft',
+              content: 'To publish your draft version, click the checkbox below.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+          },
+
+          {
+              target: 'Sorting',
+              placement: 'top',
+              title: 'Record Sorting',
+              content: 'Click the column header to sort the records.',
+              xOffset: 'center',
+              arrowOffset: 'center'
+          },
+          {
+              target: 'sb_tb',
+              placement: 'top',
+              title: 'Search Box',
+              content: 'Click here to search for keywords in your Playbook titles and descriptions to quickly locate specific content.',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              multiLine: true,
+              width: 200
+          },
+          {
+              target: 'Options',
+              placement: 'top',
+              title: 'Options',
+              content: 'Options for Update, Delete, Preview Test.',
+              arrowOffset: 100,
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: 240
+          },
+          {
+              target: 'view-draft-version',
+              placement: 'top',
+              title: 'View draft version',
+              content: 'Click here to view the current draft version of this Test.',
+              arrowOffset: 100,
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: 240
+          },
+          {
+              target: 'view-published-version',
+              placement: 'top',
+              title: 'View published version.',
+              content: 'Click here to view the published version of this test.',
+              arrowOffset: 100,
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: 240
+          },
+          {
+              target: 'print',
+              placement: 'top',
+              title: 'Print',
+              content: 'Click here to download and print this Test.',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              multiLine: true,
+              width: 200
+          }
+    ];
+</script>

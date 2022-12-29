@@ -1,0 +1,786 @@
+﻿@using Common.Web
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Domain.Customer
+@using Common.Enums
+@using Common.Web
+@using Web.UI.Code.AreaReferencesManagement
+@using Common.Web
+@using Common.Web
+@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+
+
+
+
+@{
+
+    Layout = null;
+}
+
+
+
+<script src="~/Scripts/knockout.js"></script>
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+
+
+<form>
+    <div class="modal-body" id="divScheduleReportContainer">
+        <div class="row" id="AdminRoles">
+            <div class="col-lg-offset-1 col-lg-10">
+                <br />
+                <p>Please enter your schedule details below.</p><br />
+                <div class="form-group">
+                    <span class="required">* </span>@Html.Label("Schedule Name"):<br>
+                    @*@Html.TextBoxFor(m => m.AddCustomUserRole.RoleName, new { @class = "form-control requiredClass ", @id = "inp", tabindex = 1 })*@
+                    <input id="inp_Name" class="form-control" type="text"  />
+
+                </div>
+                <div class="form-group">
+                    <span class="required">* </span>@Html.Label("Recipients"):<br>
+
+                    <input id="inp_recepients" class="form-control" type="text" />
+
+                </div>
+
+                <span class="required"></span>@Html.Label("Report")<br>
+                <div id="ReportType" class="form-group">
+                    <select id="ddlReorts" class="form-control">
+                        <option value="1"> Document Feedback Report</option>
+                        <option value="2">Focus Area Report</option>
+                        <option value="3"> Interaction Report</option>
+                        <option value="4"> Points Statement Report </option>
+                        <option value="5"> User Activity & Performance Report </option>
+                        <option value="6">Activity Book Submission Report</option>
+                        <option value="7">User Correspondence Report</option>
+                        <option value="8">User Login Report</option>
+                        <option value="9">Virtual Meeting Attendance Report</option>
+                        <option value="10">Document Audit Report</option>
+                        <option value="11">Training Activity Report</option>
+
+                    </select>
+                </div>
+
+
+
+                <div class="form-group">
+                    <span> @Html.Label("Report Parameter"):</span><br>
+
+                    <div id="Document_Report" data-bind="if: vm1.selectedReport() == 1">
+
+                        <div class="form-group">
+                            <div class="control-label query">
+                                <span style="color:red"><b>*</b></span>
+                                @Html.Label("Document Type")
+                            </div>
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.documentTypes ,optionsValue: 'id', selectedOptions: vm1.selectedDocumentTypes, optionsText: 'name',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="control-label query">
+                                @Html.Label("Document")
+                            </div>
+                            <select class="form-control" id="ddlDocument" multiple title="Documents" data-bind="options: vm1.documents ,optionsValue: 'Id', optionsText: 'Title', vm1.selectedOptions: selectedDocuments, multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+
+                    </div>
+
+                    <div class="form-group" id="Area_Report" data-bind="if: vm1.selectedReport() == 2">
+                        <div class="control-label query">
+                            <label><b><span style="color:red">*</span></b> Test :</label>
+                        </div>
+                        <select class="form-control query" data-bind="options: vm1.testDropDown,
+                                               optionsText: 'Text',
+                                               optionsValue:'Value',
+                                               optionsCaption: 'Select',
+                                               value: vm1.selectedTest"></select>
+
+
+                    </div>
+
+                    <div id="Interaction_Report" data-bind="if: vm1.selectedReport() == 3">
+                        <div class="form-group">
+                            <div class="control-label query">
+                                <label>Groups</label>
+                            </div>
+                            <br />
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.groupsDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedGroups, optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+                        </div>
+
+                        <div class="form-group">
+                            <div class="control-label query">
+                                <label>Categories</label>
+                            </div>
+                            <br />
+
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.categoryDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedCategories, optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+                        </div>
+
+                    </div>
+
+                    <div id="Points_Report" data-bind="if: vm1.selectedReport() == 4">
+
+                        <div class="form-group">
+                            <span style="color:red">*</span>    @Html.Label("User")<br />
+                            <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vm1.users ,optionsValue: 'Id', selectedOptions: vm1.selectedUsers, optionsText: 'FullName',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="control-label query">
+                                <label>Groups</label>
+                            </div>
+                            <br />
+                            <select class="form-control" id="ddlGroups" multiple title="Document Types" data-bind="options: vm1.groupsDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedGroups, optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            @Html.Label("Tags")<br />
+                            @* Html.DropDownList("TrainingLabels", new SelectList(Model.TrainingLabelDict, "Key", "Value", Model.SelectedTrainingLabels), new { @id = "trainingLables-multiselect" })*@
+                            <div class="input-group">
+                                @*@Html.DropDownList("ddlTrainingLabel", Model.TrainingLabelList, new { @class = "form-control " })*@
+                                <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.TrainingLabelListDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedTrainingLabelList, optionsText: 'Text', multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Category")<br />
+                            @*@Html.DropDownList("CategoryId", Model.Categories.ToSelectList(c => c.Id.ToString(), c => c.Title), "Select Category", new { @class = "form-control" })*@
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.categoryDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedCategories, optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Document Type")<br />
+
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.documentTypes ,optionsValue: 'id', selectedOptions: vm1.selectedDocumentTypes, optionsText: 'name',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Global Access")<br />
+                            @*@Html.DropDownList("GlobalAccess", new SelectList(Model.GlobalAccessDict, "Key", "Value", Model.SelectedGlobalAccess), new { @id = "globalaccess-multiselect-demo" })*@
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.GlobalAccess ,optionsValue: 'Value', selectedOptions: vm1.selectedGlobalAccess, optionsText: 'Key',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+                    </div>
+
+                    <div id="UserActivity_Report" data-bind="if: vm1.selectedReport() == 5">
+                        <div class="form-group">
+                            <span style="color:red">*</span>    @Html.Label("User")<br />
+                            <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vm1.users ,optionsValue: 'Id', selectedOptions: vm1.selectedUsers, optionsText: 'FullName',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="control-label query">
+                                <label>Groups</label>
+                            </div>
+                            <br />
+                            <select class="form-control" id="ddlGroups" multiple title="Document Types" data-bind="options: vm1.groupsDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedGroups, optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            @Html.Label("Tags")<br />
+                            @* Html.DropDownList("TrainingLabels", new SelectList(Model.TrainingLabelDict, "Key", "Value", Model.SelectedTrainingLabels), new { @id = "trainingLables-multiselect" })*@
+                            <div class="input-group">
+                                @*@Html.DropDownList("ddlTrainingLabel", Model.TrainingLabelList, new { @class = "form-control " })*@
+                                <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.TrainingLabelListDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedTrainingLabelList, optionsText: 'Text', multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div id="ActivityBookSubmission_Report" data-bind="if: vm1.selectedReport() == 6">
+                        <div class="form-group">
+                            <label><span style="color:red">*</span> Activity Book</label><br />
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.TrainingActivityChecklistDropDown ,optionsValue: 'Id', selectedOptions: vm1.selectedTrainingActivityChecklist, optionsText: 'Value', multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label>Status</label> <br />
+                            <select id="status-multiselect-demo">
+                                @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(ChecklistSubmissionStatus)))
+                                {
+                                    <option value="@item.Key">@item.Value</option>
+                                }
+                            </select>
+
+
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Access") <br />
+                            <select id="status-multiselect-access">
+                                @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(GlobalAccess)))
+                                {
+                                    <option value="@item.Key">@item.Value</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="UserCorrospondance_Report" data-bind="if: vm1.selectedReport() == 7">
+                        <div class="form-group">
+                            <span style="color:red">*</span>    @Html.Label("User")<br />
+                            <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vm1.users ,optionsValue: 'Id', selectedOptions: vm1.selectedUsers, optionsText: 'FullName',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="control-label query">
+                                <label>Groups</label>
+                            </div>
+                            <br />
+                            <select class="form-control" id="ddlGroups" multiple title="Document Types" data-bind="options: vm1.groupsDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedGroups, optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+                        </div>
+
+                    </div>
+
+                    <div id="UserLogin_Report" data-bind="if: vm1.selectedReport() == 8">
+                        <div class="form-group">
+                            <span style="color:red">*</span>    @Html.Label("User")<br />
+                            <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vm1.users ,optionsValue: 'Id', selectedOptions: vm1.selectedUsers, optionsText: 'FullName',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+                    </div>
+
+                    <div id="VirtualMeeting_Report" data-bind="if: vm1.selectedReport() == 9">
+                        <div class="form-group">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Meeting Room")<br>
+
+                            @*@Html.DropDownListFor(m => m.Id, Model.MeetingRoom, new { @class = "form-control", @id = "ddlMeetingRoom" })*@
+
+                            <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vm1.VitualMeetingDropDown ,optionsValue: 'Id', selectedOptions: vm1.selectedVitualMeeting, optionsText: 'VirtualClassRoomName',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+
+                        </div>
+
+                        <div class="form-group">
+                            @Html.Label("Attendance Status")<br>
+
+
+                            <select id="ddlAttendanceStatus" class="form-control">
+
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div id="DocumentAudit_Report" data-bind="if: vm1.selectedReport() == 10">
+                        <div class="form-group">
+                            <div class="control-label query">
+                                <span style="color:red"><b>*</b></span>
+                                @Html.Label("Document Type")
+                            </div>
+                            <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.documentTypes ,optionsValue: 'id', selectedOptions: vm1.selectedDocumentTypes, optionsText: 'name',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="control-label query">
+                                @Html.Label("Document")
+                            </div>
+                            <select class="form-control" id="ddlDocument" multiple title="Documents" data-bind="options: vm1.documents ,optionsValue: 'Id', optionsText: 'Title', vm1.selectedOptions: selectedDocuments, multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                        </div>
+                    </div>
+
+                    <div id="TrainingActivity_Report" data-bind="if: vm1.selectedReport() == 11">
+
+                        <div class="form-group">
+                            <span>Trainers</span>
+                            <div class="input-group">
+                                @*@Html.DropDownList("ddlExternalTrainingProvider", Model.ExternalTrainingProviderList, new { @class = "form-control" })*@
+                                <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vm1.users ,optionsValue: 'Id', selectedOptions: vm1.selectedUsers, optionsText: 'FullName',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Trainees </label>
+                            <div class="input-group">
+                                @*@Html.DropDownList("ddlTrainees", Model.TraineesList, new { @class = "form-control" })*@
+                                <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vm1.users ,optionsValue: 'Id', selectedOptions: vm1.selectedUsers, optionsText: 'FullName',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="required">*</span>
+                            <label>Type: </label>
+                            <div class="input-group">
+                                @*@Html.DropDownListFor(m => m.TrainingActivityType, Model.TrainingActivityTypeList, new { @class = "form-control requiredClass", style = "width: 65%" })*@
+                                <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.TrainingActivityTypeDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedTrainingActivityType, optionsText: 'Text',multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label> Training Labels</label>
+                            <div class="input-group">
+                                @*@Html.DropDownList("ddlTrainingLabel", Model.TrainingLabelList, new { @class = "form-control " })*@
+                                <select class="form-control" id="ddlDocumentType" multiple title="Document Types" data-bind="options: vm1.TrainingLabelListDropDown ,optionsValue: 'Value', selectedOptions: vm1.selectedTrainingLabelList, optionsText: 'Text', multiselect: {
+    includeSelectAllOption: true,
+  buttonWidth: 300,
+            enableFiltering: false,
+            maxHeight: 300
+  }"></select>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+                <div class="form-group">
+                    <span class="required"></span>@Html.Label("Occurance")<br>
+                    <span>
+                        <input id="Occurance" type="radio" name="Group1" value="Daily" /> Daily
+                    </span>
+                    <span>
+                        <input id="Occurance" type="radio" name="Group1" value="Monthly" /> Monthly
+                    </span><br>
+
+
+
+
+
+
+
+
+
+                </div>
+
+                <div class="form-group">
+                    <label><span style="color:red"><b>*</b></span>Time</label>
+                    @*<div class="input-group date" id='StartDate'>
+                            <input data-date-format="mm/dd/yyyy" type='text' id="txtStartDate" class="form-control datepicker" style="max-width: none" autocomplete="off" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>*@
+                    <div id="toDate" class="input-group" data-bind="datepicker: fromDate">
+                        <input id="txtStartDate" type="text" class="form-control cssDatePicker" style="max-width: none" autocomplete="off" />
+                        <span class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </span>
+                    </div>
+
+
+
+                </div>
+                @*</div>*@
+
+
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+
+                            <input type="button" id="btnSave1" value="Save" class="btn btn-primary" />
+                            <input type="button" id="btnCancel1" value="Cancel" class="btn" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<script>
+
+
+
+
+    function checkDataValidation() {
+        debugger
+        var x = document.getElementById("inp_Name");
+        var y = document.getElementById("inp_recepients");
+        if (x.value == '' || x.value == null || x.value == undefined || x.value.length == 0 ) {
+            x.classList.add('requiredTxt');
+
+            Data_Valid = false;
+        } else {
+            x.classList.remove('requiredTxt');
+
+            Data_Valid = true;
+        }
+
+
+    }
+
+    $("#btnSave1").click((data) => {
+        debugger
+        checkDataValidation()
+        // checkCBValidation();
+        var model1 = {
+            "Id": data.Id,
+            "ScheduleName": null,
+            "RecipientsList": null,
+            "ReportAssignedId" : null,
+            "Occurences" : null,
+            "ScheduleTime": null,
+            "IsDeleted": false
+        };
+        model1.ScheduleName = document.getElementById("inp_Name").value;
+        model1.RecipientsList = document.getElementById("inp_recepients").value;
+        model1.ScheduleTime = document.getElementById("txtStartDate").value;
+       // model1.Occurences = self1.Occurences();
+        model1.ReportAssignedId = self1.selectedReport();
+
+
+
+
+        console.log("save clicked ", model1);
+        if (Data_Valid) {
+            $.post("/CustomerManagement/CustomerMgmt/AddEditScheduleReport",
+                {
+                    data: JSON.stringify(model1)
+                }
+            )
+                .done((data) => {
+                    console.log("data 1 ", data);
+                    if (data.success) {
+                        notif({
+                            msg: "<b>Success :</b> Schedule Added Scuccessfully.",
+                            type: "success",
+                        });
+                        $("#addScheduleReportModal").modal("hide");
+                        setTimeout(() => { location.reload(); }, 500)
+                    } else {
+                        notif({
+                            msg: 'Some error Occured',
+                            type: 'error'
+                        });
+                    }
+                })
+                .fail((data) => {
+                    console.log("data 2 ", data)
+                    notif({
+                        msg: 'Some error Occured',
+                        type: 'error'
+                    });
+                })
+
+        }
+        else {
+            console.log("Validation fails ", Data_Valid);
+            //console.log("cbCheck ", cbCheck);
+        }
+
+
+    })
+
+    $("#btnCancel1").click(() => {
+        $("#addScheduleReportModal").modal("hide");
+    })
+
+    $('#txtStartDate').datetimepicker();
+
+
+    //$('.date').datetimepicker();
+    var vm1 = {}
+    var self1 = vm1;
+
+    self1.enums = {
+            documentType: @Html.ToJson(PortalContext.Current.UserCompany.EnableChecklistDocument? EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)) : EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType))),
+            feedbackType: @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(UserFeedbackContentType)))
+        };
+
+    self1.documentTypes = $.map(self1.enums.documentType,
+        function (i, index) {
+            if (index != 0 && index != 5 && index != 2) {
+                return {
+                    id: index,
+                    name: i
+                };
+            }
+        }).reverse();
+
+    //self1.selectedScheduleName(@Html.Raw(Json.Encode(ViewBag.EditScheduleReport)))
+
+    self1.documents = ko.observableArray([]);
+
+    self1.selectedDocuments = ko.observableArray([]);
+
+    self1.selectedDocumentTypes = ko.observableArray([]);
+
+    self1.selectedDocumentTypes.subscribe(function(changes) {
+            var docTypes = [];
+            $.each(ko.unwrap(self1.selectedDocumentTypes), function (key, value) {
+                docTypes.push(value);
+            });
+
+            if (docTypes !== []) {
+                $.ajax({
+                    method: 'POST',
+                    url: '@Url.Action("DocumentsByType", "Document", new {Area = ""})',
+                    data: {
+                        documentTypes: docTypes
+                    }
+                }).done(function (data) {
+                    self1.documents(data);
+                    console.log(ko.unwrap(self1.documents));
+                });
+            }
+        }, null, 'arrayChange');
+
+    self1.selectedReport = ko.observable(1);
+
+    //Focus Area report
+    self1.testDropDown = ko.observableArray([]);
+    self1.selectedTest = ko.observableArray([]);
+
+    console.log("ViewBag.TestDropDown ", @Html.Raw(Json.Encode(ViewBag.TestDropDown)));
+    self1.testDropDown(@Html.Raw(Json.Encode(ViewBag.TestDropDown)));
+
+    $('#ddlReorts').change(function () {
+        let data = $(this).val()
+        console.log('change ', data);
+        if (data == 1) {
+            self1.selectedReport(1);
+        }
+        else if(data == 2){
+            self1.selectedReport(2);
+        }
+        else if (data == 3) {
+            self1.selectedReport(3);
+        }
+        else if (data == 4) {
+            self1.selectedReport(4);
+        }
+        else if (data == 5) {
+            self1.selectedReport(5);
+        }
+        else if (data == 6) {
+            self1.selectedReport(6);
+        }
+        else if (data == 7) {
+            self1.selectedReport(7);
+        }
+        else if (data == 8) {
+            self1.selectedReport(8);
+        }
+        else if (data == 9) {
+            self1.selectedReport(9);
+        }
+        else if (data == 10) {
+            self1.selectedReport(10);
+        }
+        else if (data == 11) {
+            self1.selectedReport(11);
+        }
+        else  {
+            self1.selectedReport(0);
+        }
+    });
+
+
+    self1.groupsDropDown = ko.observableArray([]);
+    self1.selectedGroups = ko.observableArray();
+
+    self1.categoryDropDown = ko.observableArray([]);
+    self1.selectedCategories = ko.observableArray();
+
+    self1.groupsDropDown(@Html.Raw(Json.Encode(ViewBag.Groups)));
+    self1.categoryDropDown(@Html.Raw(Json.Encode(ViewBag.Categories)));
+
+    self1.users = ko.observableArray([]);
+    self1.selectedUsers = ko.observableArray([]);
+
+    self1.PointReportData = ko.observable();
+
+    self1.PointReportData(JSON.parse(@Html.Raw(Json.Encode(ViewBag.PointReportData))));
+
+    console.log("PointReportData ",self1.PointReportData())
+
+    self1.users(self1.PointReportData().Users);
+
+    self1.Tags = ko.observableArray([]);
+    self1.selectedTags = ko.observableArray([]);
+
+    self1.Tags(self1.PointReportData().TrainingLabelDict);
+
+    self1.GlobalAccess = ko.observableArray([]);
+    self1.selectedGlobalAccess = ko.observableArray([]);
+    self1.GlobalAccess(self1.PointReportData().GlobalAccessDict)
+
+    self1.VitualMeetingDropDown = ko.observableArray([]);
+    self1.selectedVitualMeeting = ko.observableArray();
+
+    self1.VitualMeetingDropDown(@Html.Raw(Json.Encode(ViewBag.VirtualMeetings)));
+
+    self1.TrainingLabelListDropDown = ko.observableArray([]);
+    self1.selectedTrainingLabelList = ko.observableArray();
+
+    self1.TrainingLabelListDropDown(@Html.Raw(Json.Encode(ViewBag.TrainingLabelList)));
+
+    self1.TrainingActivityTypeDropDown = ko.observableArray([]);
+    self1.selectedTrainingActivityType = ko.observableArray();
+
+    self1.TrainingActivityTypeDropDown(@Html.Raw(Json.Encode(ViewBag.TrainingActivityTypeList)));
+
+    self1.TrainingActivityChecklistDropDown = ko.observableArray([]);
+    self1.selectedTrainingActivityChecklist = ko.observableArray();
+
+    self1.TrainingActivityChecklistDropDown(@Html.Raw(Json.Encode(ViewBag.ActivityCheckLists)));
+
+    self1.fromDate = ko.observable();
+    self1.fromDate.subscribe(function (newValue) {
+        $('#toDate').data('DateTimePicker').minDate(new Date(newValue));
+        self.hasData(false);
+    });
+
+
+
+
+
+
+    ko.applyBindingsToNode(vm1, document.getElementById('divScheduleReportContainer'));
+
+
+
+    function checkValidation() {
+        debugger
+        var x = document.getElementById("inp_Name");
+        var y = document.getElementById("inp_recepients");
+        if (x.value === '' || x.value === null || x.value === undefined || x.value.length == 0 || y.value === '' || y.value === null || y.value === undefined || y.value.length == 0) {
+            x.classList.add('requiredTxt');
+            y.classList.add('requiredTxt');
+            Data_Valid = false;
+        } else {
+            x.classList.remove('requiredTxt');
+            y.classList.remove('requiredTxt');
+            Data_Valid = true;
+        }
+
+        // return check;
+    }
+
+</script>
+

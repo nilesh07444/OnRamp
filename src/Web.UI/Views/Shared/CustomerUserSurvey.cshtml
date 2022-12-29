@@ -1,0 +1,198 @@
+﻿@using Common.Web
+@using Domain.Customer
+@using Common.Enums
+@model Ramp.Contracts.ViewModel.CustomerSurveyDetailViewModel
+@{
+    Layout = null; //"~/Views/Shared/_LayoutStandardUser.cshtml";
+    var categories = EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(UserFeedbackCategories));
+}
+<style>
+    .required {
+        color: red;
+    }
+
+    .requiredTxt { 
+        border: solid red;
+    }
+</style>
+
+<div>
+    @*@using (Html.BeginForm(new { area = "CustomerManagement", controller = "CustomerMgmt", action = "CustomerSurvey" })) {*@
+        <div>
+
+            <div class="form">
+                <div class="form-group">
+                    <span>
+                        Talk to us! Got a question or suggestion, we would love to hear from you.<br />
+                    </span>
+                </div>
+                <div class="form-group" hidden>
+                    <label class="control-label">Rating</label>
+                    <input id="Rating" class="rating form-control" name="Rating" data-min="0" data-max="5" data-step="1" data-size="xs" style="display: none;" value="1">
+                </div>
+                <div class="form-group">
+                    <span style="color:red">* </span><label for="categories"> Type</label>
+                    <select class="form-control" id="ddlCategories" title="Categories">
+                        <option value="">Select a Type</option>
+                        @foreach (var item in categories) {
+                            @:<option id="@item.Value">@item.Value</option>
+                        }
+
+                    </select>
+                </div>
+                @Html.HiddenFor(m => m.Category)
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Message</label>
+                    @Html.TextAreaFor(m => m.Comment, new { @class = "form-control", @placeholder = "Enter your message", @rows = "3" })
+                </div>
+            </div>
+            <img src="~/images/powered.PNG" />
+        </div>
+        <div class="modal-footer">
+            <intput type="button" data-dismiss="" class="btn btn-default" onclick="javascript: closeFeedbackModal()">Close</intput>
+            <input type="button" id="btnFeedbackSubmit" onclick="fncheckValidation();" class="btn btn-primary" value="Submit" />
+        </div>
+
+        @Html.HiddenFor(m => m.Browser)
+    @*}*@
+</div>
+
+<script type="text/javascript">
+
+
+    function fncheckValidation() {
+        var type = $('#ddlCategories').val();
+        if (type == "" || type == null) {
+
+            $('#ddlCategories').addClass('requiredTxt');
+            notif({
+                msg: "<b>Error :</b> Whoops. Please select a Type.",
+                type: "error"
+            });
+           
+        } else {
+          var  comment = $('#Comment').val();
+            var rating = $('#Rating').val();
+            var browser = $('#Browser').val();
+            
+            var promise = $.post("@Url.Action("CustomerSurvey", "CustomerMgmt", new { area= "CustomerManagement" })", {
+                comment: comment, rating: rating, browser: browser, category: type
+
+            });
+
+            promise.done(function (data) {
+                if (data === true || data === 'True' || data === 'true') {
+                    $('#feedbackModal').modal('hide');
+                    notif({
+                        msg: "<b>Success :</b> Feedback sent successfully.",
+                        type: "success"
+                    });
+                }
+            });
+            promise.fail(function (jqXHR, textStatus, errorThrown) {
+                console.error(errorThrown);
+            });
+            promise.always(function () {
+
+            });
+
+        }
+    }
+
+
+    var feedbackCategories = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(UserFeedbackCategories)));
+    var selectedCategory = ko.observable();
+    var feedbackCategoryTypes = $.map(feedbackCategories,
+        function (i, index) {
+            if (index != 0) {
+                return {
+                    id: index,
+                    name: i
+                };
+            }
+        });
+
+    $(function () {
+
+        $("#ddlCategories").change(function () {
+            var category = $(this).val();
+            if (category == "" || category == null) {
+
+                $(this).addClass('requiredTxt');
+            } else {
+                $(this).removeClass('requiredTxt');
+                $("#Category").val(category);
+            }
+                      
+        });
+        
+        $('#customModal1').modal('show');
+        $("#Rating").rating();
+
+        var nVer = navigator.appVersion;
+        var nAgt = navigator.userAgent;
+        var browserName = navigator.appName;
+        var fullVersion = '' + parseFloat(navigator.appVersion);
+        var majorVersion = parseInt(navigator.appVersion, 10);
+        var nameOffset, verOffset, ix;
+
+        // In Opera 15+, the true version is after "OPR/"
+        if ((verOffset = nAgt.indexOf("OPR/")) != -1) {
+            browserName = "Opera";
+            fullVersion = nAgt.substring(verOffset + 4);
+        }
+            // In older Opera, the true version is after "Opera" or after "Version"
+        else if ((verOffset = nAgt.indexOf("Opera")) != -1) {
+            browserName = "Opera";
+            fullVersion = nAgt.substring(verOffset + 6);
+            if ((verOffset = nAgt.indexOf("Version")) != -1)
+                fullVersion = nAgt.substring(verOffset + 8);
+        }
+            // In MSIE, the true version is after "MSIE" in userAgent
+        else if ((verOffset = nAgt.indexOf("MSIE")) != -1) {
+            browserName = "Microsoft Internet Explorer";
+            fullVersion = nAgt.substring(verOffset + 5);
+        }
+            // In Chrome, the true version is after "Chrome"
+        else if ((verOffset = nAgt.indexOf("Chrome")) != -1) {
+            browserName = "Chrome";
+            fullVersion = nAgt.substring(verOffset + 7);
+        }
+            // In Safari, the true version is after "Safari" or after "Version"
+        else if ((verOffset = nAgt.indexOf("Safari")) != -1) {
+            browserName = "Safari";
+            fullVersion = nAgt.substring(verOffset + 7);
+            if ((verOffset = nAgt.indexOf("Version")) != -1)
+                fullVersion = nAgt.substring(verOffset + 8);
+        }
+            // In Firefox, the true version is after "Firefox"
+        else if ((verOffset = nAgt.indexOf("Firefox")) != -1) {
+            browserName = "Firefox";
+            fullVersion = nAgt.substring(verOffset + 8);
+        }
+            // In most other browsers, "name/version" is at the end of userAgent
+        else if ((nameOffset = nAgt.lastIndexOf(' ') + 1) <
+                  (verOffset = nAgt.lastIndexOf('/'))) {
+            browserName = nAgt.substring(nameOffset, verOffset);
+            fullVersion = nAgt.substring(verOffset + 1);
+            if (browserName.toLowerCase() == browserName.toUpperCase()) {
+                browserName = navigator.appName;
+            }
+        }
+        // trim the fullVersion string at semicolon/space if present
+        if ((ix = fullVersion.indexOf(";")) != -1)
+            fullVersion = fullVersion.substring(0, ix);
+        if ((ix = fullVersion.indexOf(" ")) != -1)
+            fullVersion = fullVersion.substring(0, ix);
+
+        majorVersion = parseInt('' + fullVersion, 10);
+        if (isNaN(majorVersion)) {
+            fullVersion = '' + parseFloat(navigator.appVersion);
+            majorVersion = parseInt(navigator.appVersion, 10);
+        }
+
+        $('#Browser').val(browserName + ':' + fullVersion);
+
+    });
+          
+</script>

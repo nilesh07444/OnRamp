@@ -1,0 +1,47 @@
+﻿@model Ramp.Contracts.Events.CustomerSelfSignedUpEvent
+@{
+    Layout = null;
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath = Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var loginLink = AppSettings.Urls.ResolveUrl("~Account/Login");
+    var loginDescription = AppSettings.Urls.Main;
+    var notificationheader = "#27b899";
+    var notificationfooter = "#27b899";
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany.CustomColours != null) {
+        notificationheader = PortalContext.Current.UserCompany.CustomColours.HeaderColour;
+        notificationfooter = PortalContext.Current.UserCompany.CustomColours.FooterColour;
+    }
+}
+
+<html>
+<head>
+
+    <style>
+
+    .headerstyle {
+     background: @notificationheader;
+     height:40px;
+    }
+    .footerstyle {
+        background: @notificationfooter;
+        height: 40px;
+    }
+
+    </style>
+
+</head>
+<body>
+    <div class="headerstyle"></div>
+    <br />
+    <br />
+    <p>Dear @Model.UserViewModel.FullName,</p>
+    <p>Your account has been approved, please click on the following link to sign in with your account details: </p>
+    <p><a href="@loginLink" title="User account">@loginDescription</a></p>
+    <p>Regards,</p>
+    <p>The OnRamp Team</p>
+    <br />
+    <br />
+    <div class="footerstyle"></div>
+</body>
+</html>

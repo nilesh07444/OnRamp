@@ -1,0 +1,521 @@
+﻿@using Domain.Customer.Models
+@using Ramp.Services.Helpers
+@using Web.UI.Code.Helpers
+@using Domain.Models
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@model List<Ramp.Contracts.ViewModel.UserActivityLogViewModel>
+
+@{
+    Layout = null;
+}
+<style type="text/css">
+    abbr[title], abbr[data-original-title] {
+        border-bottom: none !important;
+        cursor: default !important;
+    }
+
+    li {
+        margin-bottom: 6px !important;
+    }
+</style>
+@if (Model != null && Model.Any())
+{
+    <ul class="list-group">
+        @foreach (var activity in Model)
+        {
+            if (activity.ActivityType.Equals(StandardUserActivityLog.Login))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i><strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.Logout))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                     <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(UserActivityEnum.CreateCustomerUser.ToString()))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.UpdateUserProfile))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.DeleteCustomerUser))
+            {
+                <li class="list-group-item">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(UserActivityEnum.CreateCustomerCompany.ToString()))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.UpdateCompanyProfile))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                       <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(UserActivityEnum.DeleteCustomerCompany.ToString()))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                       <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.ResetPassword))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                       <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.CreateTrainingGuide))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.EditTrainingGuide))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                       <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.DeleteTrainingGuide))
+            {
+                <li class="list-group-item">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                       <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.ViewTrainingGuide))
+            {
+                <li class="list-group-item">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.CreateTrainingTest))
+            {
+                <li class="list-group-item">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.DeleteTrainingTest))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.EditTrainingTest))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        @activity.Description
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+                    </p>
+                </li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.TakeTest))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                       <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        <i class="fa fa-laptop">
+                        </i> <strong style="color: #1BBC9B">@activity.Description</strong>
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+</li>
+            }
+            else if (activity.ActivityType.Equals(StandardUserActivityLog.LegalDisclaimer))
+            {
+                <li class="list-group-item ">
+                    <p>
+                        <i class="fa fa-user">
+                        </i>
+
+                        <strong style="color: #3a87ad"> @activity.User.FirstName @activity.User.LastName </strong><br>
+                        <i class="fa fa-envelope">
+                        </i> <strong style="color: #3a87ad"> @activity.User.EmailAddress</strong>
+                        @foreach (var role in activity.User.CustomerRoles)
+                        {
+                            <span class=" pull-right label label-info" title="User Role">@role</span>
+                        }
+                        @activity.ActivityType
+                        <i class="fa fa-laptop">
+                        </i> <strong style="color: #1BBC9B">@activity.Description</strong>
+                        <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px;" title="Time">
+                            <i class="fa fa-clock-o">
+                            </i>
+                            <span>
+                                <abbr class="timeago" title="@activity.ActivityDate">
+                                </abbr>
+                            </span>
+                        </div>
+</li>
+            }
+        }
+    </ul>
+}
+else
+{
+    <label>No Activities yet</label>
+}
+<script type="text/javascript">
+    $(function () {
+        jQuery("abbr.timeago").timeago();
+    });
+</script>

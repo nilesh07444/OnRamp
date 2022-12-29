@@ -1,0 +1,43 @@
+﻿
+@model  List<Ramp.Contracts.ViewModel.UserModelShort>
+<table id="tblViewTrainees" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+    <thead>
+        <tr>
+            <th class="">Name</th>
+            <th class="col-lg-2">Email</th>
+           
+           
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+            <tr>
+                <td>
+                    @item.UserName
+                </td>
+                <td>@item.Email</td>
+                
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+<script>
+
+    $(function () {
+
+        $('#tblViewTrainees').dataTable({
+            bDeferRender: true,
+            bDestroy: true,
+            bFilter: false,
+            bPaginate: false,
+            dom: 'rt<"bottom"flp><"clear">',
+            initComplete: function () {
+                $(this.api().table().container()).find('input[type="search"]').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+            }
+        });
+    });
+
+
+</script>

@@ -1,0 +1,92 @@
+﻿@model Ramp.Contracts.ViewModel.VirtualClassModel
+@using System.Threading
+@using Web.UI.Code.Extensions
+@{
+    ViewBag.Title = "VirtualMeeting";
+    Layout = "~/Views/Shared/_JoinMeetingPartialView.cshtml";
+}
+<link href="~/Content/Areas/Document/Preview.css" rel="stylesheet" />
+
+<script src='https://meet.jit.si/external_api.js'></script>
+
+<div class="row">
+
+    <div class="col-sm-offset-1 col-lg-10" data-bind="with:data">
+        <h1 class="lead">@Model.VirtualClassRoomName.ToUpper()</h1>
+
+        <h4><strong><span class="pageHeading_ref" data-bind="text:$root.enums.documentType[ko.unwrap(DocumentType)].toUpperCase() + ' REF: '"></span><span data-bind="text:ReferenceId"></span></strong></h4>
+
+        <h4><strong><span class="pageHeading_ref">VIRTUAL MEETING ROOM REF:</span><span> @Model.ReferenceId</span></strong></h4>
+        <div class="well">
+            <p>@Model.Description</p>
+        </div>
+
+        <br />
+
+        <div class="panel panel-info" data-bind="attr:{id:Id}">
+            <div class="panel-heading hidden-xs">
+
+                <h4></h4>&nbsp;
+                <p class="chapterName">@Model.VirtualClassRoomName</p>
+                <span class="clearfix"></span>
+
+            </div>
+
+            <div id="meet">
+
+            </div>
+
+        </div>
+        <br>
+        <div class="text-center">
+            <div class="btn-group">
+                @if (Thread.CurrentPrincipal.IsInAdminRole()) {
+                    <a href="@Url.Action("Index","VirtualMeeting")" class="btn btn-danger">End Call</a>
+                } else {
+                    <a href="@Url.Action("MyVirtualMeetings","Document")" class="btn btn-danger">End Call</a>
+                }
+            </div>
+        </div>
+
+        <br>
+    </div>
+</div>
+
+
+
+<script>
+    $(function () {
+
+        const domain = '@ViewData["JitsiServerName"]';
+        const options = {
+            roomName: '@Model.VirtualClassRoomName'+'@Model.Id',
+
+            height: 500,
+            parentNode: document.querySelector('#meet'),
+
+            interfaceConfigOverwrite: {
+              LANG_DETECTION: true,
+              TOOLBAR_BUTTONS: ['microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+                                 'fodeviceselection', 'profile', 'chat', 'recording',
+             'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+        'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+        'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+        'e2ee'],
+              filmStripOnly: false,
+    SHOW_JITSI_WATERMARK: false,
+    JITSI_WATERMARK_LINK: '',
+    SHOW_WATERMARK_FOR_GUESTS: false,
+    SHOW_BRAND_WATERMARK: false,
+    BRAND_WATERMARK_LINK: '',
+    SHOW_POWERED_BY: false,
+
+        }
+        }
+
+        const api = new JitsiMeetExternalAPI(domain, options);
+        api.executeCommand('subject', ' ');
+
+    });
+
+       
+</script>

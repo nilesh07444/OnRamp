@@ -1,0 +1,1810 @@
+﻿@using Domain.Customer.Models
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Common.Web
+@using Domain.Models
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.CompanyViewModel
+@{
+    var path = Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id + "_bootstrap.css");
+
+    var roles = SessionManager.GetRolesForCurrentlyLoggedInUser().ToList();
+}
+<script src="~/Scripts/Areas/CustomerManagement/CustomerAdminSetting.js"></script>
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInResellerRole() || Thread.CurrentPrincipal.IsInAdminRole())
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<style>
+    .max-width-none {
+        max-width: none;
+    }
+
+
+    .no-padding {
+        padding: 0 !important;
+    }
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .switch-label {
+        margin-left: 2em;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header" style="text-align:center">Portal Settings</h1>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="test">
+
+    @using (Html.BeginForm("CustomerAdminSetting", "CustomerMgmt", FormMethod.Post, new { enctype = "multipart/form-data", id = "frmCustomerAdminSetting" }))
+    {
+        @Html.HiddenFor(model => model.Id)
+        <div class="row">
+
+            @*modal popup*@
+            <div class="modal fade" id="editAutoAssignWorkflowModal" tabindex="-1" role="dialog" aria-labelledby="editAutoAssignWorkflowModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header modalSearch">
+                            <button id="btnAutoAssignWizardClose2" type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                            <h4 class="modal-title"><span id="spnUser">Edit Auto Assign Workflow</span></h4>
+                        </div>
+                        <div id="temp" class="mb1"></div>
+                    </div>
+                </div>
+
+            </div>
+            @*modal poup end*@
+
+            @if (roles.Contains(Ramp.Contracts.Security.Role.ManageAutoWorkflow.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.PortalAdmin.ToString()))
+            {
+                <div class="col-md-6">
+                    <div class="panel panel-info" style="border-width:1px">
+                        <div class="panel-heading">
+                            <h5 class="signUpFont" style="font-weight: 500;">
+                                <a><i class="glyphicon glyphicon-plus" style="cursor:pointer;color:white;" id="openAutoAssignWorkflowWizard"></i></a> |
+                                Auto Assign Workflow
+                            </h5>
+                        </div>
+                        <div class="dataTables_wrapper form-inline" role="grid">
+
+                            @if (ViewBag.WorkflowList.Count == 0)
+                            {<br>
+                                <div style="text-align: center;text-decoration: underline;font-weight: bolder;">
+                                    <table>
+                                        <tr>No Workflow created</tr>
+                                    </table>
+                                </div>
+                                <br>
+                            }
+                            @if (ViewBag.WorkflowList.Count != 0)
+                            {
+                                <table id="tblUserList" class="table table-hover table-fixed" aria-describedby="dataTables-example_info">
+                                    <thead>
+                                        <tr role="row">
+                                            <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                Workflow Name
+                                            </th>
+                                            <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                Docs
+                                            </th>
+                                            <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                Groups
+                                            </th>
+                                            <th class="requiredCss" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                Options
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in ViewBag.WorkflowList)
+                                        {
+
+                                            <tr class="gradeA odd">
+                                                <td class="">
+                                                    @item.WorkflowName
+                                                </td>
+                                                <td class="">
+                                                    @item.DocumentList.Count
+                                                </td>
+                                                <td class="">
+                                                    @item.GroupIds.Length
+                                                </td>
+                                                <td class="tooltip-demo" title="Toolip">
+
+                                                    <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Edit">
+
+                                                        <button id="@item.Id" data-bind="item" type="button" class="btn btn-default EditAutoAssignWorkflowWizard" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-edit"></span> Edit</button>
+                                                    </a>
+
+
+                                                    <a href="javascript:void(0)" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                                        <button id="@item.Id" type="button" class="btn btn-default DeleteAutoAssignWorkflowWizard" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-trash"></span> Delete</button>
+
+                                                    </a>
+
+                                                </td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            }
+
+
+                        </div>
+                    </div>
+                </div>
+
+
+            }
+
+
+
+            @if (roles.Contains(Ramp.Contracts.Security.Role.ManageReportSchedule.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.PortalAdmin.ToString()))
+            {
+
+                <div class="col-md-6">
+                    <div class="panel panel-info" style="border-width:1px">
+                        <div class="panel-heading">
+                            <h5 class="signUpFont" style="font-weight: 500;">
+                                <a><i class="glyphicon glyphicon-plus" style="cursor:pointer;color:white;" id="openScheduleReportWizard"></i></a> |
+                                Report schedule
+                            </h5>
+                        </div>
+                        <div class="dataTables_wrapper form-inline" role="grid">
+
+                            @if (ViewBag.ScheduleReportList.Count == 0)
+                            {<br>
+                                <div style="text-align: center;text-decoration: underline;font-weight: bolder;">
+                                    <table>
+                                        <tr>No Report created</tr>
+                                    </table>
+                                </div>
+                                <br>
+                            }
+                            @if (ViewBag.ScheduleReportList.Count != 0)
+                            {
+                                <table id="tblReportList" class="table table-hover table-fixed" aria-describedby="dataTables-example_info">
+                                    <thead>
+                                        <tr role="row">
+                                            <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                Schedule Name
+                                            </th>
+                                            <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                Status
+                                            </th>
+                                            <th class="requiredCss" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                Options
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in ViewBag.ScheduleReportList)
+                                        {
+
+                                            <tr class="gradeA odd">
+                                                <td class="">
+                                                    @item.ScheduleName
+                                                </td>
+                                                <td class="">
+                                                    <label class="switch">
+                                                        <input type="checkbox" checked="@item.Status" id="@item.Id" onclick="changeStatus(this)" />
+                                                        <span class="slider round"> </span>
+                                                    </label>
+                                                </td>
+
+                                                <td class="tooltip-demo" title="Toolip">
+
+                                                    <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Edit">
+
+                                                        <button id="@item.Id" data-bind="item" type="button" class="btn btn-default EditScheduleReportWizard" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-edit"></span> Edit</button>
+                                                    </a>
+
+
+                                                    <a href="javascript:void(0)" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                                        <button id="@item.Id" type="button" class="btn btn-default DeleteScheduleReportWizard" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-trash"></span> Delete</button>
+
+                                                    </a>
+
+                                                </td>
+                                            </tr>
+                                        }
+
+                                    </tbody>
+                                </table>
+                            }
+
+
+                        </div>
+                    </div>
+                </div>
+
+            }
+
+
+
+        </div>
+        @*code by GK end*@
+        if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.PortalAdmin.ToString()))
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h5 class="signUpFont" style="font-weight: 400;">Landing Page Content Settings</h5>
+                        </div>
+                        <div class="panel-body">
+                            <p>Upload a video for your landing page here. Provide a title for the video and a description of it for your users to read when they visit the portal.</p>
+                            <br />
+                            <div class="col-lg-6">
+
+                                <div class="form-group">
+                                    <label class="control-label">Title</label>
+                                    @Html.TextBoxFor(model => model.DashboardVideoTitle, new { @class = "form-control max-width-none" })
+                                </div>
+                                <div class="form-group">
+                                    <div>
+                                        <label class="control-label">Description</label>
+                                        <label class="control-label pull-right">
+                                            <span data-bind="text: videoDescription() ? videoDescription().length : 0"></span>/500
+                                        </label>
+                                    </div>
+                                    @Html.TextAreaFor(x => x.DashboardVideoDescription, new
+                               {
+                                   @class = "form-control max-width-none",
+                                   rows = "11",
+                                   maxlength = 500,
+                                   data_bind = "textInput: videoDescription"
+                               })
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label class="control-label">Video File</label><br />
+                                    <!-- ko if:Upload -->
+
+                                    <div align="center" class="embed-responsive embed-responsive-16by9">
+                                        <video controls="controls" data-bind="html: videoSource" class="embed-responsive-item"></video>
+                                    </div>
+                                    <br />
+                                    <div class="btn-group">
+                                        <button class="btn btn-default" data-bind="click:upload.click.bind()"><span class="glyphicon glyphicon-upload"></span> Upload</button>
+                                        <button class="btn btn-default" data-bind="click:upload.remove.bind()"><span class="glyphicon glyphicon-trash"></span> Remove</button>
+                                    </div>
+
+                                    <!-- /ko -->
+                                    <!-- ko ifnot:Upload -->
+                                    <button class="btn btn-default" data-bind="click:upload.click.bind()">Upload</button>
+                                    <!-- /ko -->
+                                    <div id="inputs" class="hidden"></div>
+                                    <input type="hidden" id="DashboardVideoFileId" name="DashboardVideoFileId" data-bind="value: Upload() ? ko.unwrap(Upload().Id): ''" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                @*below code added by neeraj*@
+
+                @*modal popup*@
+
+                <div class="modal fade" id="addCustomRoleModal" tabindex="-1" role="dialog" aria-labelledby="addCustomRoleModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header modalSearch">
+                                <button id="btnWizardModalClose" type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                                <h4 class="modal-title"><span id="spnUser">Create a custom role</span></h4>
+                            </div>
+                            @Html.Partial("_AddCustomUserRole")
+                        </div>
+                    </div>
+
+                </div>
+                @*modal poup end*@
+
+                @*modal popup*@
+
+                <div class="modal fade" id="addCustomFields" tabindex="-1" role="dialog" aria-labelledby="addCustomFields" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header modalSearch">
+                                <button id="CloseFieldModalClose" type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                                <h4 class="modal-title"><span id="spnUser">Add a Field</span></h4>
+                            </div>
+                            @Html.Partial("_AddField")
+                        </div>
+                    </div>
+
+                </div>
+                @*modal poup end*@
+
+                @*modal popup*@
+                <div class="modal fade" id="editCustomRoleModal" tabindex="-1" role="dialog" aria-labelledby="editCustomRoleModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header modalSearch">
+                                <button id="btnWizardModalClose2" type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                                <h4 class="modal-title"><span id="spnUser">Edit a custom role</span></h4>
+                            </div>
+                            <div class="mb"></div>
+                        </div>
+                    </div>
+                </div>
+                @*modal poup end*@
+                @if (Thread.CurrentPrincipal.IsInAdminRole() || Thread.CurrentPrincipal.IsInGlobalAdminRole())
+                {
+
+                    <div class="col-md-6">
+                        <div class="panel panel-info" style="border-width:1px">
+                            <div class="panel-heading">
+                                <h5 class="signUpFont" style="font-weight: 500;">
+                                    <a><i class="glyphicon glyphicon-plus" style="cursor:pointer;color:white;" id="openWizard"></i></a> |
+                                    Custom Roles
+                                </h5>
+                            </div>
+                            <div class="panel-body">
+                                <p>Click on the '+' to create your own custom role.</p>
+                                <br />
+
+                                <div class="dataTables_wrapper form-inline" role="grid">
+
+                                    @if (ViewBag.CustomRoles.Count == 0)
+                                    {
+                                        <div style="text-align: center;text-decoration: underline;font-weight: bolder;">
+                                            <tr>No roles created</tr>
+                                        </div>
+                                    }
+                                    @if (ViewBag.CustomRoles.Count != 0)
+                                    {
+                                        <table id="tblUserList" class="table table-hover table-fixed" aria-describedby="dataTables-example_info">
+                                            <thead>
+                                                <tr role="row">
+                                                    <th class="" tabindex="0" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                        Role Name
+                                                    </th>
+                                                    <th class="requiredCss" tabindex="0" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                                        Options
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in ViewBag.CustomRoles)
+                                                {
+
+                                                    <tr class="gradeA odd">
+                                                        <td class="">
+                                                            @item.Title
+                                                        </td>
+                                                        <td class="tooltip-demo" title="Toolip">
+
+                                                            <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Edit">
+
+                                                                <button id="@item.Id" data-bind="item" type="button" class="btn btn-default EditCustomUserRoleCss" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-edit"></span> Edit</button>
+                                                            </a>
+
+
+                                                            <a href="javascript:void(0)" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                                                <button id="@item.Id" type="button" class="btn btn-default DeleteCustomUserRoleCss" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;"> <span class="glyphicon glyphicon-trash"></span> Delete</button>
+
+                                                            </a>
+
+                                                        </td>
+                                                    </tr>
+                                                }
+
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+                @*code by neeraj end*@
+
+
+            </div>
+            <div class="row">
+                @*modal poup end*@
+                @if (Thread.CurrentPrincipal.IsInAdminRole() || Thread.CurrentPrincipal.IsInGlobalAdminRole())
+                {
+
+                    <div class="col-md-6">
+                        <div class="panel panel-info" style="border-width:1px">
+                            <div class="panel-heading">
+                                <h5 class="signUpFont" style="font-weight: 500;">
+                                    <a><i class="glyphicon glyphicon-plus" style="cursor:pointer;color:white;" id="openpopup"></i></a> |
+                                    Add Fields
+                                </h5>
+                            </div>
+                            <div class="panel-body">
+                                <p>Click on the '+' to create your own custom fields.</p>
+                                <br />
+                                <div class="tree" id="tree"></div>
+                            </div>
+                        </div>
+                    </div>
+                  
+                }
+                @*code by neeraj end*@
+
+
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h5 class="signUpFont" style="font-weight: 500;">Landing Page Quotation Settings</h5>
+                        </div>
+                        <div class="panel-body">
+                            <p>Share an inspirational quote for users to read on their portal.</p>
+                            <br />
+                            <div class="form-group">
+                                <label class="control-label">Author</label>
+                                @Html.TextBoxFor(model => model.DashboardQuoteAuthor, new { @class = "form-control max-width-none" })
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Quote</label>
+                                @Html.TextAreaFor(x => x.DashboardQuoteText, new { @class = "form-control max-width-none", rows = "5" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="panel panel-info" style="border-width:1px">
+                        <div class="panel-heading"><h5 class="signUpFont" style="font-weight: 500;">Self Sign Up</h5></div>
+                        <div class="panel-body">
+                            <p>Manage you self sign-up settings.</p>
+                            <br />
+                            @Html.HiddenFor(model => model.Id)
+                            @Html.HiddenFor(model => model.IsForSelfSignUp)
+                            @Html.HiddenFor(model => model.IsSelfSignUpApprove)
+                            @Html.HiddenFor(model => model.IsEmployeeCodeReq)
+                            @Html.HiddenFor(model => model.IsEnabledEmployeeCode)
+                            @Html.HiddenFor(model => model.SelectedGroupId)
+                            <div class="form-group">
+
+                                <label class="switch">
+                                    <input type="checkbox" id="chkIsForSelfSignUp" />
+                                    <span class="slider round"> </span>
+                                </label>
+                                <span class="switch-label">Enable self-sign up on your portal</span>
+
+                            </div>
+                            <div id="divSelfSignUp">
+                                <div class="form-group">
+
+                                    <label class="switch">
+                                        <input type="checkbox" id="chkIsSelfSignUpApprove" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span class="switch-label">Approve self-sign up users automatically</span>
+                                </div>
+                                <div class="form-group">
+
+                                    <label class="switch">
+                                        <input type="checkbox" id="chkIsEnabledEmployeeCode" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span class="switch-label">Enable employee code.</span>
+
+                                </div>
+                                <div class="form-group" id="divEmployeeCodeReq" style="display:none;">
+
+                                    <label class="switch">
+                                        <input type="checkbox" id="chkIsEmployeeCodeReq" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span class="switch-label">Mark employee code as required.</span>
+
+                                </div>
+                                <div class="form-group">
+                                    <label>Set default Sign-up group</label>
+                                    <br />
+                                    <select id="ddlGroup" class="form-control">
+                                        @foreach (var item in ViewBag.Groups)
+                                        {
+                                            if (item.Text != null && item.Text != "")
+                                            {
+
+                                                <option value="@item.Value">@item.Text</option>
+
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <input type="hidden" id="hdnGroup" />
+                            <br />
+                            @*<input type="button" id="btnSaveSelfSignup" value="Save" class="btn btn-primary" />*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h5 style="font-weight: 500;">Achievements Library</h5>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="form-group text-center">
+                                <label class="control-label">&nbsp;</label><br /><br />
+                                <a href="@Url.Action("Index", "Achievement", new { Area = "" })" class="btn btn-default">Manage Achievements</a>
+
+                            </div>
+                            <label class="control-label">&nbsp;</label><br /><br />
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-info" style="border-width: 1px;">
+                        <div class="panel-heading">
+
+                            <h5 class="signUpFont" style="font-weight: 500;">Auto Account Lockout</h5>
+                        </div>
+                        <div class="panel-body portal-settings-panel-body">
+                            <p>Set a time frame for when users will be locked out of their accounts here.</p>
+                            <br />
+                            <div class="form-group">
+                                @Html.Label("Automatically lock inactive accounts out of the system after the specified number of days", new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.DefaultUserExpireDays, new { @class = "form-control max-width-none", type = "number", min = 0 })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <dov class="col-md-12">
+                    <div class="panel panel-info" style="border-width:1px">
+                        <div class="panel-heading"><h5 class="signUpFont" style="font-weight: 500;">Legal Disclaimer</h5></div>
+                        <div class="panel-body portal-settings-panel-body">
+                            <p>State your disclaimer for information provided in the portal here.</p>
+                            <br />
+                            <div>
+                                <div class="form-group">
+                                    <label class="control-label">Disclaimer</label>
+                                    @Html.TextAreaFor(x => x.LegalDisclaimer, new { @class = "form-control max-width-none", rows = "5", @placeholer = "Insert your Legal Text Here" })
+                                </div>
+                            </div>
+                            <br />
+                            <div class="text-center">
+                                <div class="btn-group">
+                                    @Html.HiddenFor(x => x.LegalDisclaimerActivationType)
+                                    <button type="button" id="showLegalDisclaimerOnlyOnce" class="disclaimer-setting btn btn-default">Prompt User Once</button>
+                                    <button type="button" id="showLegalDisclaimer" class="disclaimer-setting btn btn-default">Prompt User Every Time</button>
+                                    <button type="button" id="legalDiclaimerDisabled" class="disclaimer-setting btn btn-default">Disabled</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </dov>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-info" style="border-width: 1px;">
+                        <div class="panel-heading"><h5 class="signUpFont" style="font-weight: 500;">System Theme</h5></div>
+                        <div class="panel-body portal-settings-panel-body">
+                            <div class="col-md-12">
+
+                                <p>Enter colour hex code or select colours using the color pickers below to theme the system to your requirements. You can click on Reset to set the system to the OnRamp default, and Save to finalize your changes.</p>
+                                <br>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="col-lg-8">
+                                            <div class="form-group">
+                                                <label class="control-label">Site Title</label>
+
+                                                @Html.TextBoxFor(model => model.CompanySiteTitle, new { @class = "form-control max-width-none", @placeholder = "Please enter your site title" })
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <b>Company Logo:</b>
+                                        @Html.TextBoxFor(m => m.CompanyLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                    </div>
+                                    @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.CustomerConfigurations.Count > 0
+&& PortalContext.Current.UserCompany.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                                    {
+                                        var dashboardImage = PortalContext.Current.UserCompany.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault().UploadModel;
+                                        <img src="data:image/png;base64,@Convert.ToBase64String(dashboardImage.Data)" class="img-responsive center-block company-logo" />
+                                        <input type="button" value=Delete id="DashboardLogo" class="DeleteCss" />
+                                    }
+                                </div>      <div class="col-md-4">
+                                    <div class="form-group">
+                                        <b>Footer Logo:</b>
+                                        @Html.TextBoxFor(m => m.FooterLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                    </div>
+                                    @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.CustomerConfigurations.Count > 0
+&& PortalContext.Current.UserCompany.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.FooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                                    {
+                                        var footerImage = PortalContext.Current.UserCompany.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.FooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault().UploadModel;
+                                        <img src="data:image/png;base64,@Convert.ToBase64String(footerImage.Data)" class="img-responsive center-block company-logo" />
+                                        <input type="button" value=Delete id="FooterLogo" class="DeleteCss" />
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <b>Login Cover Image:</b>
+                                        @Html.TextBoxFor(m => m.LoginLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                    </div>
+                                    @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.CustomerConfigurations.Count > 0
+&& PortalContext.Current.UserCompany.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.LoginLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                                    {
+                                        var loginImage = PortalContext.Current.UserCompany.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.LoginLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault().UploadModel;
+                                        <img src="data:image/png;base64,@Convert.ToBase64String(loginImage.Data)" class="img-responsive center-block company-logo" />
+                                        <input type="button" value=Delete id="LoginLogo" class="DeleteCss" />
+                                    }
+                                </div>
+                            </div>
+
+
+                            <br>
+                            <br>
+                            <div class="col-md-12">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Header</label>
+                                        <div id="headerStyle" class="input-group colorpicker-component">
+                                            @Html.TextBoxFor(model => model.CustomColours.HeaderColour, new { @class = "form-control max-width-none" })
+                                            <span class="input-group-addon"><i></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Footer</label>
+                                        <div id="footerStyle" class="input-group colorpicker-component">
+                                            @Html.TextBoxFor(model => model.CustomColours.FooterColour, new { @class = "form-control max-width-none" })
+                                            <span class="input-group-addon"><i></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Modal Headers</label>
+                                        <div id="searchStyle" class="input-group colorpicker-component">
+                                            @Html.TextBoxFor(model => model.CustomColours.SearchColour, new { @class = "form-control max-width-none" })
+                                            <span class="input-group-addon"><i></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Feedback Modals</label>
+                                        <div id="feedbackStyle" class="input-group colorpicker-component">
+                                            @Html.TextBoxFor(model => model.CustomColours.FeedbackColour, new { @class = "form-control max-width-none" })
+                                            <span class="input-group-addon"><i></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Navigation Menus</label>
+                                        <div id="navigationStyle" class="input-group colorpicker-component">
+                                            @Html.TextBoxFor(model => model.CustomColours.NavigationColour, new { @class = "form-control max-width-none" })
+                                            <span class="input-group-addon"><i></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Buttons</label>
+                                        <div id="buttonStyle" class="input-group colorpicker-component">
+                                            @Html.TextBoxFor(model => model.CustomColours.ButtonColour, new { @class = "form-control max-width-none" })
+                                            <span class="input-group-addon"><i></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Login Background</label>
+                                        <div id="loginStyle" class="input-group colorpicker-component">
+                                            @Html.TextBoxFor(model => model.CustomColours.LoginColour, new { @class = "form-control max-width-none" })
+                                            <span class="input-group-addon"><i></i></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="switch">
+                                            <input type="checkbox" id="ShowCompanyNameOnDashboard" name="ShowCompanyNameOnDashboard" data-bind="checked:showCompanyNameOnDashboard, attr:{value:showCompanyNameOnDashboard}" />
+                                            <span class="slider round"></span>
+                                        </label>
+                                        <span class="switch-label">Show company name on Dashboard</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <div>
+
+                                            <label class="switch">
+                                                <input type="checkbox" id="ShowCompanyLogoOnDashboard" name="ShowCompanyLogoOnDashboard" data-bind="checked:showCompanyLogoOnDashboard, attr:{value:showCompanyLogoOnDashboard}" />
+                                                <span class="slider round"></span>
+                                            </label>
+                                            <span class="switch-label">Show company logo on Dashboard</span>
+                                            <span class="pull-right">
+                                                @Html.ActionLink("Reset", "ResetCustomColours", "CustomerMgmt", new { CompanyId = PortalContext.Current.UserCompany.Id }, new { @class = "text text-danger" })
+                                            </span>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="form-group pull-right">
+                        <input type="button" onclick="settingsSubmit()" value="Save" class="btn btn-default" />
+                    </div>
+                </div>
+            </div>
+
+
+        }
+    }
+
+
+
+</div>
+@if (ViewBag.SaveMessage != null)
+{
+
+    @:<script>notif({ msg: "<b>Success :</b> " + '@ViewBag.SaveMessage', type: "success", });</script>
+}
+
+@*below code added by GK*@
+<div class="modal fade" id="addAutoAssignWorkflowModal" tabindex="-1" role="dialog" aria-labelledby="addAutoAssignWorkflowModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button id="btnAutoAssignWorkflowWizardClose" type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                <h4 class="modal-title"><span id="spnUser">Auto Assign Workflow Details</span></h4>
+            </div>
+            @Html.Partial("_AddAutoAssignWorkflow")
+
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="assignconfirmModal" role="dialog" aria-hidden="true" data-backdrop="static" style="overflow-y:auto">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @Html.Partial("_AutoAssignSummary")
+        </div>
+    </div>
+</div>
+
+@*modal popup report schedule details*@
+<div class="modal fade" id="addScheduleReportModal" tabindex="-1" role="dialog" aria-labelledby="addScheduleReportModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button id="btnScheduleReportWizardClose" type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                <h4 class="modal-title"><span id="spnUser">Schedule Details</span></h4>
+            </div>
+            @Html.Partial("_ScheduleReport")
+
+        </div>
+    </div>
+
+</div>
+@*modal poup end*@
+
+@*modal popup*@
+<div class="modal fade" id="editScheduleReportModal" tabindex="-1" role="dialog" aria-labelledby="editScheduleReportModal" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button id="btnScheduleReportClose2" type="button" class="close CssClose" data-dismiss=""><span aria-hidden="true">&times;</span><span data-dismiss="" class="sr-only">Close</span></button>
+                <h4 class="modal-title"><span id="spnUser">Edit Schedule Report</span></h4>
+            </div>
+            <div class="mb1"></div>
+        </div>
+    </div>
+</div>
+@*modal poup end*@
+
+@*below code added by GK ends*@
+
+
+<script>
+        $(document).ready(function(){
+        $('#vt').tooltip({ title: "Provide a title for your video here.", delay: 500 });
+        $('#des').tooltip({ title: "Write a motivating message for your team to read.", delay: 500 });
+        $('#du').tooltip({ title: "Provide the name of the author of the quote.", delay: 500 });
+        $('#uu').tooltip({ title: "Write the quote details here.", delay: 500 });
+        $('#eu').tooltip({ title: "Click here to edit user details.", delay: 500 });
+        $('#dcu').tooltip({ title: "Click here to delete user.", delay: 500 });
+        $('#up').tooltip({ title: "Click here to update a users password.", delay: 500 });
+        $('#lp').tooltip({ title: "Click here to view assigned documents to the user.", delay: 500 });
+
+});
+
+
+
+
+    function settingsSubmit() {
+
+        var isForSelfSignUp = false;
+        var isSelfSignUpApprove = false;
+        var isEmployeeCodeReq = false;
+        var IsEnabledEmployeeCode = false;
+        if ($("#chkIsForSelfSignUp").is(":checked")) {
+            isForSelfSignUp = true;
+            $('#SelectedGroupId').val($('#ddlGroup').val());
+        }
+        else {
+            isForSelfSignUp = false;
+            $('#SelectedGroupId').val('@ViewBag.DefaultGroup');
+        }
+        if ($("#chkIsSelfSignUpApprove").is(":checked")) {
+            isSelfSignUpApprove = true;
+        }
+        else {
+            isSelfSignUpApprove = false;
+        }
+        if ($('#chkIsEnabledEmployeeCode').is(":checked")) {
+            if ($("#chkIsEmployeeCodeReq").is(":checked")) {
+                isEmployeeCodeReq = true;
+            }
+            else {
+                isEmployeeCodeReq = false;
+            }
+            $('#divEmployeeCodeReq').show();
+            IsEnabledEmployeeCode = true;
+        } else {
+            $('#divEmployeeCodeReq').hide();
+        }
+
+        $('#IsForSelfSignUp').val(isForSelfSignUp);
+        $('#IsSelfSignUpApprove').val(isSelfSignUpApprove);
+        $('#IsEmployeeCodeReq').val(isEmployeeCodeReq);
+        $('#IsEnabledEmployeeCode').val(IsEnabledEmployeeCode);
+        $('#frmCustomerAdminSetting').submit();
+    }
+    $(document).on('click', '.DeleteCss', function () {
+        var id = $(this).attr('id');
+        $.ajax({
+        type: "POST",
+        url: '@Url.Action("DeleteLogo", "CustomerMgmt", new { Area = "" })',
+        data: {
+            id: id
+        },
+        success: function (data) {
+            location.reload();
+        },
+        error: function(data) {
+
+        }
+        })
+
+    });
+
+    $(function () {
+        var groupId = '@ViewBag.SelfSignedGroup';
+        var defaultGroup = '@ViewBag.DefaultGroup';
+
+        if (groupId != '00000000-0000-0000-0000-000000000000') {
+            $('#ddlGroup').val('@ViewBag.SelfSignedGroup');
+        } else if (defaultGroup) {
+            $('#ddlGroup').val('@ViewBag.DefaultGroup');
+        }
+
+        var dmployeeCodeReq = '@Model.IsEmployeeCodeReq';
+        if (dmployeeCodeReq === true || dmployeeCodeReq === 'true' || dmployeeCodeReq === 'True') {
+        $('#chkIsEmployeeCodeReq').prop('checked', true);
+        } else {
+        $('#chkIsEmployeeCodeReq').prop('checked', false);
+        }
+        var dEnabledEmployeeCode = '@Model.IsEnabledEmployeeCode';
+        if (dEnabledEmployeeCode === true || dEnabledEmployeeCode === 'true' || dEnabledEmployeeCode === 'True') {
+            $('#chkIsEnabledEmployeeCode').prop('checked', true);
+            $('#divEmployeeCodeReq').show();
+        } else {
+            $('#chkIsEnabledEmployeeCode').prop('checked', false);
+            $('#divEmployeeCodeReq').hide();
+
+        }
+
+        var selfSignUpApprove = '@Model.IsSelfSignUpApprove';
+        if (selfSignUpApprove === true || selfSignUpApprove === 'true' || selfSignUpApprove === 'True') {
+        $('#chkIsSelfSignUpApprove').prop('checked', true);
+        } else {
+        $('#chkIsSelfSignUpApprove').prop('checked', false);
+        }
+
+        var selfSignUp = '@Model.IsForSelfSignUp';
+        if (selfSignUp === true || selfSignUp === 'true' || selfSignUp==='True') {
+        $('#divSelfSignUp').show();
+        $('#chkIsForSelfSignUp').prop('checked', true);
+        } else {
+        $('#divSelfSignUp').hide();
+        $('#chkIsForSelfSignUp').prop('checked', false);
+        }
+        $('#hdnGroup').val($('#ddlGroup').val());
+        $('#ddlGroup').change(function () {
+        $('#hdnGroup').val($('#ddlGroup').val());
+        });
+
+        $('#chkIsForSelfSignUp').change(function () {
+        if ($(this).is(":checked")) {
+        $('#divSelfSignUp').show();
+        } else {
+        $('#divSelfSignUp').hide();
+        }
+        });
+        $('#chkIsEnabledEmployeeCode').change(function () {
+        if ($(this).is(":checked")) {
+            $('#divEmployeeCodeReq').show();
+        } else {
+            $('#divEmployeeCodeReq').hide();
+        }
+        });
+
+        $("#btnSaveSelfSignup").click(function () {
+
+
+        var isForSelfSignUp = false;
+        var isSelfSignUpApprove = false;
+        var isEmployeeCodeReq = false;
+            var IsEnabledEmployeeCode = false;
+        var groupId = '';
+        groupId = $('#hdnGroup').val();
+        if ($("#chkIsForSelfSignUp").is(":checked")) {
+        isForSelfSignUp = true;
+        }
+        else {
+        isForSelfSignUp = false;
+        }
+        if ($("#chkIsSelfSignUpApprove").is(":checked")) {
+        isSelfSignUpApprove = true;
+        }
+        else {
+        isSelfSignUpApprove = false;
+        }
+            if ($('#chkIsEnabledEmployeeCode').is(":checked")) {
+                if ($("#chkIsEmployeeCodeReq").is(":checked")) {
+                    isEmployeeCodeReq = true;
+                }
+                else {
+                    isEmployeeCodeReq = false;
+                }
+                IsEnabledEmployeeCode = true;
+            }
+
+        $.ajax({
+        type: "POST",
+        url: '@Url.Action("SaveSelfSignUpForCompany", "CustomerMgmt")',
+            data: { companyId: '@Model.Id', isForSelfSignUp: isForSelfSignUp, isSelfSignUpApprove: isSelfSignUpApprove, isEmployeeCodeReq: isEmployeeCodeReq, IsEnabledEmployeeCode: IsEnabledEmployeeCode },
+        success: function (data) {
+        notif({
+        msg: "<b>Success :</b> Self Signup Updated.",
+        type: "success",
+        });
+        $("#divUserList").html(data);
+        },
+        error: function (data) {
+        }
+        });
+
+        $.ajax({
+        type: "POST",
+        url: '@Url.Action("UpdateGroup", "Group", new { Area = "" })',
+        data: {
+        id: groupId
+        },
+        success: function (data) {
+        notif({
+        msg: "<b>Success :</b> Group Updated.",
+        type: "success",
+        });
+        },
+        error: function(data) {
+
+        }
+        })
+        });
+
+
+        if (initialSelectedLDAValueIS("@Convert.ToInt32(LegalDisclaimerActivationType.ShowOnLoginOnce)"))
+        setDisclaimerOptionAsActive($('#showLegalDisclaimerOnlyOnce'));
+        else if (initialSelectedLDAValueIS("@Convert.ToInt32(LegalDisclaimerActivationType.ShowOnLogin)"))
+        setDisclaimerOptionAsActive($('#showLegalDisclaimer'));
+        else
+        setDisclaimerOptionAsActive($('#legalDiclaimerDisabled'));
+        $('.disclaimer-setting').on('click', setDisclaimerOptionAsActive);
+        });
+        function initialSelectedLDAValueIS(condition) {
+        return "@Convert.ToInt32(Model.LegalDisclaimerActivationType)" == condition;
+        }
+        function setDisclaimerOptionAsActive(object) {
+        var button;
+        if (object.hasOwnProperty('originalEvent'))
+        button = $(object.target);
+        else {
+        button = object;
+        }
+        $.each($('.disclaimer-setting'), function () {
+        $(this).removeClass('btn-primary');
+        });
+        $(button).addClass('btn-primary');
+        setLegalDisclaimerActivationTypeOnModel($(button).attr('id'));
+        }
+        function setLegalDisclaimerActivationTypeOnModel(id) {
+        var value = "@Convert.ToInt32(LegalDisclaimerActivationType.Disabled)";
+        if(id == 'showLegalDisclaimerOnlyOnce')
+        value = "@Convert.ToInt32(LegalDisclaimerActivationType.ShowOnLoginOnce)";
+        if(id == 'showLegalDisclaimer')
+        value = "@Convert.ToInt32(LegalDisclaimerActivationType.ShowOnLogin)";
+        $('#LegalDisclaimerActivationType').val(value);
+        }
+        var Controller = function (videoUpload, videoDescription, showCompanyNameOnDashboard, showCompanyLogoOnDashboard) {
+        var self = this;
+        self.videoImageUrl = '@Url.Content("~/Content/images/videoDoc.png")';
+        self.videoDescription = ko.observable(videoDescription);
+        self.showCompanyNameOnDashboard = ko.observable(showCompanyNameOnDashboard);
+        self.showCompanyLogoOnDashboard = ko.observable(showCompanyLogoOnDashboard);
+        self.Upload = ko.observable(null);
+        if (videoUpload) {
+        videoUpload.Url = '@Url.Action("Get", "Upload", new { Area = "" })/' + videoUpload.Id + '?mainContext=true';
+        self.Upload(ko.mapping.fromJS(videoUpload));
+        }
+        self.errors = ko.observable(null);
+        self.videoSource = ko.computed(function () {
+        var u = ko.unwrap(self.Upload);
+        if (u !== null) {
+        return '<source src="' + ko.unwrap(u.Url) + '" type="video/mp4" />';
+        }
+        return null;
+        });
+        }
+
+        function _upload_addAndExecute(data) {
+        $('#upload').remove();
+        var input = $(
+        '<input data-bind="fileUpload:new ko.observable(),fileuploadOptions:upload.options,valueProperty:Upload" class="hidden" type="file" name="files[]" accept="video/mp4" />');
+            $(input).prependTo('#inputs');
+
+            ko.applyBindingsToNode(input[0], null, data);
+
+        $(input).trigger('click');
+        return true;
+        }
+
+        var vm = new Controller(
+        @Html.ToJson(Model.DashboardVideoFile),
+        @Html.ToJson(Model.DashboardVideoDescription),
+        @Html.ToJson(Model.ShowCompanyNameOnDashboard),
+        @Html.ToJson(Model.ShowCompanyLogoOnDashboard));
+    vm.upload = {};
+
+        vm.upload.click = function (data) {
+
+
+        if (ko.unwrap(vm.Upload)) {
+        var u = ko.unwrap(vm.Upload);
+        if (ko.unwrap(u.DeleteUrl)) {
+        bootbox.confirm(
+        'Area you sure you want to replace the Video with a new one?<br />Once a new file is uploaded the current file will be removed',
+        function(result) {
+        if (result) {
+        vm.Upload(null);
+        _upload_addAndExecute(data);
+        }
+        });
+        }
+        } else {
+
+        _upload_addAndExecute(data);
+        }
+        };
+        vm.upload.remove = function() {
+        vm.Upload(null);
+        }
+        vm.upload.eventHandlers = {
+            before: function (element, fileName, valueProperty) {
+
+                if (ko.unwrap(element).context.files[0].size > 20000000) {
+                    notif({
+                        msg: 'Please Select A Video To Upload with size not more than 20MB',
+                        type: 'error'
+                    });
+                    return false;
+                }
+
+
+        if (fileName.toLowerCase().indexOf('.mp4') > -1) {
+        vm.upload.loading.show();
+        return true;
+        }
+        notif({
+        msg: 'Please Select A Video To Upload',
+        type: 'error'
+        });
+        return false;
+        },
+        success: function(data, textStatus, xhr, valueProperty) {
+        var u = ko.unwrap(vm.Upload);
+            vm.Upload(ko.mapping.fromJS(ko.mapping.toJS(valueProperty)));
+
+
+        vm.upload.loading.hide();
+            return false;
+        var errors = vm.errors();
+        if (errors != null && errors.hasOwnProperty('Upload')) {
+        delete errors['Upload'];
+        vm.errors(errors);
+        }
+        },
+        error: function() {
+        var errors = vm.errors();
+        errors = errors != null ? errors : {};
+        errors['Upload'] = 'Please upload a MP4 file';
+        vm.errors(errors);
+
+        vm.upload.loading.hide();
+        }
+        };
+        vm.upload.options = {
+        showProgress: false,
+        url: '@Url.Action("Post", "Upload", new { Area = "", mainContext = true })',
+        before: vm.upload.eventHandlers.before,
+        success: vm.upload.eventHandlers.success,
+        error: vm.upload.eventHandlers.error,
+        autoupload: true
+        };
+        vm.upload.loading = {
+        show: function() {
+        $('#LoadingImageDiv').show();
+        },
+        hide: function() {
+        $('#LoadingImageDiv').hide();
+        }
+    };
+    vm.show = ko.observable(false);
+    //ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    ko.applyBindingsToNode(vm, document.getElementById('test'));
+
+    //for autoassignwf
+    //self = vm;
+    //self.DocumentsInJSTree = ko.observableArray();
+    //self.selectedGroups = ko.observableArray();
+    //self.WorkflowName;
+    //self.SendNotiEnabled = ko.observableArray(false);
+
+
+
+    //below code added by neeraj
+    $("#openWizard").on("click", (data) => {
+        console.log("addCustomRoleModal clciked")
+        $("#addCustomRoleModal").modal("show");
+    });
+
+    $("#btnWizardModalClose").click(function () {
+        $("#addCustomRoleModal").modal("hide");
+    });
+
+    $("#openpopup").on("click", (data) => {
+        console.log("addCustomFields clciked")
+        $("#addCustomFields").modal("show");
+    });
+    $("#CloseFieldModalClose").click(function () {
+        $("#addCustomFields").modal("hide");
+    });
+
+    $(".DeleteCustomUserRoleCss").click(function (data) {
+        console.log("data deletee ", data.target.id);
+
+        $.post("/CustomerManagement/CustomerMgmt/DeleteCustomUserRole?id=" + data.target.id,
+            {
+
+            }
+        ).done((data) => {
+            console.log("data 1 ", data);
+            if (data.success) {
+                notif({
+                    msg: "<b>Success :</b> Custom Role Deleted.",
+                    type: "success",
+                });
+                setTimeout(() => { location.reload(); },500)
+
+            } else {
+                notif({
+                    msg: 'Some error Occured',
+                    type: 'error'
+                });
+            }
+        })
+            .fail((data) => {
+                console.log("data 2 ", data)
+                notif({
+                    msg: 'Some error Occured',
+                    type: 'error'
+                });
+            })
+    });
+
+    $(".EditCustomUserRoleCss").click(function (data) {
+        console.log("data edit", data.target.id);
+        //$("#editCustomRoleModal").modal("show");
+        if(data.target.id != null)
+        $.get("@Url.Action("EditCustomUserRole", "CustomerMgmt")?id=" + data.target.id,
+            function (data) {
+                //console.log("data from api ", data)
+                    $('.mb').html(data);
+                });
+
+        $("#editCustomRoleModal").modal("show");
+
+    });
+
+    $("#btnWizardModalClose2").click(function () {
+        console.log("aaa")
+        $("#editCustomRoleModal").modal("hide");
+    });
+
+
+    //below code added by GK
+    $("#openAutoAssignWorkflowWizard").on("click", (data) => {
+        console.log("addAutoAssignWorkflowModal clicked")
+        $("#addAutoAssignWorkflowModal").modal("show");
+    });
+
+    $("#btnAutoAssignWorkflowWizardClose").click(function () {
+        $("#addAutoAssignWorkflowModal").modal("hide");
+    });
+
+    $(".DeleteAutoAssignWorkflowWizard").click(function (data) {
+        console.log("data deleted ", data.target.id);
+
+        $.post("/CustomerManagement/CustomerMgmt/DeleteAutoAssignWorkFlow?id=" + data.target.id,
+            {
+
+            }
+        ).done((data) => {
+            console.log("data 1 ", data);
+            if (data.success) {
+                notif({
+                    msg: "<b>Success :</b> Workflow Deleted.",
+                    type: "success",
+                });
+                setTimeout(() => { location.reload(); },500)
+
+            } else {
+                notif({
+                    msg: 'Some error Occured',
+                    type: 'error'
+                });
+            }
+        })
+            .fail((data) => {
+                console.log("data 2 ", data)
+                notif({
+                    msg: 'Some error Occured',
+                    type: 'error'
+                });
+            })
+    });
+
+    $(".EditAutoAssignWorkflowWizard").click(function (data) {
+        $('#LoadingImageDiv').show();
+        console.log("data edit", data.target.id);
+        if (data.target.id != null)
+            $.get("@Url.Action("EditAutoAssignWorkFlow", "CustomerMgmt")?id=" + data.target.id,
+                function (data) {
+                    console.log("res from api ")
+                    $('.mb1').html(data);
+                }).done(() => {
+                    console.log("apicall completeed")
+                    $('#LoadingImageDiv').hide();
+                    $("#editAutoAssignWorkflowModal").modal("show");
+                })
+
+        $("#btnAutoAssignWizardClose2").click(function () {
+            console.log("aaa")
+            $("#editAutoAssignWorkflowModal").modal("hide");
+        });
+    });
+
+    //code by gaurav sir
+
+      $("#openScheduleReportWizard").on("click", (data) => {
+          console.log("addscheduleReport clicked")
+          selfSR.Id(null);
+          selfSR.ScheduledName(null);
+          selfSR.Recipients(null);
+
+          var paramVal = [];
+          selfSR.selectedUsers(paramVal);
+
+          selfSR.selectedGroups(paramVal);
+
+          selfSR.selectedTags(paramVal)
+
+          selfSR.selectedCategories(paramVal)
+
+          selfSR.selectedGlobalAccess(paramVal)
+
+          selfSR.selectedVitualMeeting(paramVal)
+
+          selfSR.selectedTrainingLabelList(paramVal)
+
+          selfSR.selectedTrainingActivityType(paramVal)
+
+          selfSR.selectedTrainingActivityChecklist(paramVal)
+
+          selfSR.selectedTest(paramVal)
+
+          selfSR.selectedDocuments(paramVal)
+
+          selfSR.selectedDocumentTypes(paramVal)
+          selfSR.selectedCustomDocumentPublished(paramVal)
+
+        $("#addScheduleReportModal").modal("show");
+    });
+
+
+    $("#btnScheduleReportWizardClose").click(function () {
+        $("#addScheduleReportModal").modal("hide");
+    });
+
+
+
+    $(".DeleteScheduleReportWizard").click(function (data) {
+
+        console.log("data deleted ", data.target.id);
+
+        $.post("/CustomerManagement/CustomerMgmt/DeleteScheduleReport?id=" + data.target.id,
+            {
+
+            }
+        ).done((data) => {
+            console.log("data 1 ", data);
+            if (data.success) {
+                notif({
+                    msg: "<b>Success :</b> Report Deleted.",
+                    type: "success",
+                });
+                setTimeout(() => { location.reload(); },500)
+
+            } else {
+                notif({
+                    msg: 'Some error Occured',
+                    type: 'error'
+                });
+            }
+        })
+            .fail((data) => {
+                console.log("data 2 ", data)
+                notif({
+                    msg: 'Some error Occured',
+                    type: 'error'
+                });
+            })
+    });
+
+    $(".EditScheduleReportWizard").click(function (data) {
+
+        console.log("data edit", data.target.id);
+        $('#LoadingImageDiv').show();
+        if(data.target.id != null)
+        $.get("@Url.Action("EditScheduleReport", "CustomerMgmt")?id=" + data.target.id,
+            function (data) {
+                selfSR.Id(data.Id);
+                selfSR.ScheduledName(data.ScheduleName);
+                selfSR.Recipients(data.RecipientsList);
+                selfSR.SelectedOccurences(data.Occurences);
+                $('#reportID').val(data.Id);
+                $('#ddlReorts').val(data.ReportAssignedId);
+                $('#ddlReorts').change();
+
+                setTimeout(() => {
+                    @*selfSR.groupsDropDown = ko.observableArray(@Html.Raw(Json.Encode(ViewBag.Groups)));
+                    selfSR.users = ko.observableArray(@Html.Raw(Json.Encode(ViewBag.Users)));*@
+                    data.Params.forEach(e => {
+                        var paramVal = e.Value.split(',')
+                        if (e.Name == "Users") {
+                            selfSR.selectedUsers(paramVal);
+                        }
+
+                        if (e.Name == "Groups") {
+                            selfSR.selectedGroups(paramVal);
+                        }
+
+                        if (e.Name == "Tags") {
+                            selfSR.selectedTags(paramVal)
+                        }
+
+                        if (e.Name == "Categories") {
+                            selfSR.selectedCategories(paramVal)
+                        }
+
+                        if (e.Name == "GlobalAccess") {
+                            selfSR.selectedGlobalAccess(paramVal)
+                        }
+
+                        if (e.Name == "MeetingRoom") {
+                            selfSR.selectedVitualMeeting(paramVal)
+                        }
+                        if (e.Name == "InteractionReport") {
+                            selfSR.selectedTrainingLabelList(paramVal)
+                        }
+
+                        if (e.Name == "TrainingActivity") {
+                            selfSR.selectedTrainingActivityType(paramVal)
+                        }
+
+                        if (e.Name == "ActivityBook") {
+                            selfSR.selectedTrainingActivityChecklist(paramVal)
+                        }
+
+                        if (e.Name == "Tests") {
+                            selfSR.selectedTest(paramVal)
+                        }
+
+                        if (e.Name == "Documents") {
+                            selfSR.selectedDocuments(paramVal)
+                        }
+
+                        if (e.Name == "DocumentType") {
+                            selfSR.selectedDocumentTypes(paramVal)
+                        }
+                        if (e.Name == "CustomDocument") {
+                            selfSR.selectedCustomDocumentPublished(paramVal)
+                        }
+                    });
+                }, 1000);
+
+                //selfSR.documentTypes();
+                //selfSR.documents
+
+                //selfSR.categoryDropDown
+
+                //selfSR.TrainingLabelListDropDown
+                //selfSR.categoryDropDown
+                //selfSR.documentTypes
+                //selfSR.GlobalAccess
+                //selfSR.TrainingActivityChecklistDropDown
+                //selfSR.VitualMeetingDropDown
+
+                $("#addScheduleReportModal").modal("show");
+                //console.log("data from api ", data)
+                //    $('.mb1').html(data);
+                });
+        $('#LoadingImageDiv').hide();
+       // $("#EditScheduleReportWizard").modal("show");
+
+    });
+
+    $("#btnScheduleReportClose2").click(function () {
+        console.log("aaa")
+        $("#editScheduleReportModal").modal("hide");
+    });
+
+    //code by gaurav sir ends here
+
+    function changeStatus(element) {
+        $('#LoadingImageDiv').hide();
+        var reportid = $(element).attr('Id');
+        var status = $(element).is(":checked");
+        var type = $(element).attr('role');
+        var changeStatus = $.post("@Url.Action("ChangeReportStatus", "CustomerMgmt")", {
+            reportID: reportid, status: status
+                });
+
+        changeStatus.done(function (data) {
+
+                notif({
+                    msg: "<b>Success :</b>  Report status updated successfully.",
+                    type: "success",
+                });
+               // $("#divUserList").html(data);
+                });
+        changeStatus.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        changeStatus.always(function () {
+
+                });
+    }
+
+    //js tree//
+    function isUnique(node) {
+        var tree = $('.tree').jstree(true);
+        var collection = tree.get_node('#').children_d;
+        $(".tree").jstree(true).load_node('#');
+        collection = $.map(collection,
+            function (id) {
+                return tree.get_node(id);
+            });
+        for (var i = 0; i < collection.length; i++) {
+            if (node.id === collection[i].id || collection[i].type !== 'default') continue;
+            var current = collection[i].text;
+            current = current.toLowerCase().replace(' ', '').trim();
+            if (current.indexOf('\n') > 0) {
+                current = current.substring(0, current.indexOf('\n'));
+            }
+            if (node.text.toLowerCase().replace(' ', '').trim() === current) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+     fetchTreeData();
+    function fetchTreeData() {
+        $.ajax({
+            url:'@Url.Action("GetJSTreeFields", "CustomerMgmt", new { Area = "" })',
+            type: 'get',
+            success: function (data) {
+
+                self2.geDocumenttTreeData(data);
+
+            }, error: function (err) {
+                //$('#LoadingImageDiv').hide();
+            }
+        });
+    }
+    var tree = $('.tree');
+        var selectedDocumentsInJSTree = [];
+        $('#categorySearch').keyup(function () {
+            if (to) {
+                clearTimeout(to);
+            }
+            to = setTimeout(function () {
+                var value = $('#categorySearch').val();
+                tree.jstree(true).search(value);
+            },
+                250);
+        });
+
+        tree.jstree({
+            core: {
+                data: {
+                    url: '@Url.Action("GetJSTreeFields", "CustomerMgmt", new { Area = "" })'
+                },
+                check_callback: function (operation, node, node_parent, node_position, more) {
+                    if (operation === 'move_node') {
+                        if (node.text === 'Fields') {
+                            return false;
+                        }
+                        if (node.type !== 'Fields' && node_parent.type === 'Fields') {
+                            if (node_parent.text === 'Fields') {
+                                return false;
+                            }
+                            return true;
+                        }
+                        if (node.type === 'Fields' && node_parent.type === 'Fields') {
+                            return true;
+                        }
+                        return false;
+                    } else if (operation === 'delete_node') {
+                        //var descendants = $.map(node.children_d,
+                        //    function (id) {
+                        //        return $('.tree').jstree(true).get_node(id);
+                        //    });
+                        //if (containsDocument(descendants)) {
+                        //    notif({
+                        //        msg: 'Categories that contain documents cannot be deleted.',
+                        //        type: 'error'
+                        //    });
+                        //    return false;
+                        //}
+                        //return true;
+                    }
+                }
+            },
+            contextmenu: {
+
+            },
+            sort: function (a, b) {
+                var n1 = this.get_node(a);
+                var n2 = this.get_node(b);
+
+                if (n1.type === 'default' && n1.type === n2.type) { // folders
+                    return (n1.text > n2.text) ? 1 : -1;
+                } else if (n1.type === 'default' || n2.type === 'default') {
+                    return (n1.type !== 'default') ? 1 : -1; // folder first
+                } else {
+                    return (n1.text > n2.text) ? 1 : -1;
+                }
+            },
+            types: {
+                Memo: {
+                    icon: 'memo-icon'
+                },
+                Policy: {
+                    icon: 'policy-icon'
+                },
+                Test: {
+                    icon: 'test-icon'
+                },
+                TrainingManual: {
+                    icon: 'training-manual-icon'
+                },
+                Checklist: {
+                    icon: 'checklist-icon'
+                },
+                default: {
+                    icon: 'glyphicon glyphicon-plus-sign category-icon'
+                },
+            },
+            checkbox: {
+                "keep_selected_style": false,
+            },
+            //multiple: false, // disables multiple selection if false
+            plugins: ['sort', 'contextmenu', 'types', 'checkbox']
+        });
+
+        $(".tree").bind("changed.jstree",
+            function (e, data) {
+                if (data.selected.length > 0) {
+                    if (data.action == "deselect_node") {
+                        if (!(data.node.original.isParentNode)) {
+                            var index = selectedDocumentsInJSTree.findIndex(el => el.id === data.node.id);
+                            if (index != -1) {
+                                selectedDocumentsInJSTree.splice(index, 1);
+                                self2.DocumentsInJSTree.removeAll();
+                                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+
+                                    self2.DocumentsInJSTree.push(item);
+                                });
+                            }
+                        } else {
+                            var childNodesInArr = data.node.children_d;
+                            for (var i = 0; i < childNodesInArr.length; i++) {
+                                var childId = childNodesInArr[i];
+                                for (var j = 0; j < selectedDocumentsInJSTree.length; j++) {
+                                    if (selectedDocumentsInJSTree[j].id == childId) {
+                                        selectedDocumentsInJSTree.splice(j, 1);
+                                    }
+                                }
+                            }
+                            self2.DocumentsInJSTree.removeAll();
+                            ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                self2.DocumentsInJSTree.push(item);
+                            });
+                        }
+                    } else {
+                        if (data.node != undefined) {
+                            if (!(data.node.original.isParentNode)) {
+                                var obj = {
+                                    id: data.node.id,
+                                    text: data.node.text,
+                                    type: data.node.type
+                                }
+                                selectedDocumentsInJSTree.push(obj);
+                                ko.utils.arrayForEach(selectedDocumentsInJSTree, function (item) {
+                                    if (obj.id == item.id) {
+                                        self2.DocumentsInJSTree.push(item);
+                                    }
+                                });
+                                console.log("self2.DocumentsInJSTree..", ko.unwrap(self2.DocumentsInJSTree));
+
+                            } else {
+                                var child_nodes = data.node.children_d;
+                                var child_node_arr = [];
+                                for (var i = 0; i < child_nodes.length; i++) {
+                                    var childData = vm2.geDocumenttTreeData().filter(z => z.id == data.node.children_d[i])
+                                    if (childData.length > 0) {
+                                        var node = {
+                                            id: data.node.children_d[i],
+                                            text: childData[0].text,
+                                            type: childData[0].type,
+                                        }
+                                        selectedDocumentsInJSTree.push(node);
+                                        child_node_arr.push(node)
+                                    }
+                                }
+                                ko.utils.arrayForEach(child_node_arr, function (item) {
+                                    self2.DocumentsInJSTree.push(item);
+                                });
+                                console.log("self2.DocumentsInJSTree..", ko.unwrap(self2.DocumentsInJSTree));
+                            }
+                        }
+                    }
+                } else {
+                    selectedDocumentsInJSTree = [];
+                    self2.DocumentsInJSTree.removeAll();
+                }
+            });
+        tree
+            .on('open_node.jstree',
+                function (event, data) {
+                    if (_adjustPageFooter) _adjustPageFooter();
+                });
+
+</script>

@@ -1,0 +1,96 @@
+﻿@using Web.UI.Code.Extensions
+@using Ramp.Security.Authorization
+@using System.Threading
+@model Ramp.Contracts.ViewModel.TestModel
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<link href="~/Content/ErrorPage.css" rel="stylesheet" />
+<style type="text/css">
+    .nav > li {
+        position: relative;
+        display: block;
+        float: left;
+    }
+
+    #page-wrapper {
+        /*width:450px;*/
+        min-height: 450px;
+    }
+    #test-link {
+        color: black;
+    }   
+</style>
+<div>
+    <div class="container" @*style="max-width: 1165px; "*@>
+        <div id="wrapper">
+            <header class="clearfix">
+                <div class="row">
+                    <div class="col-md-5 col-sm-5">
+                        <p style="position: absolute; ">
+                            <a href="/">
+                                <img src="@Url.Content("~/Content/images/logo.png")" style="width: 210px; margin-left: 15px; margin-top: -2px; ">
+                                @*<img src="/images/powered.PNG" style="width: 210px; margin-left:15px; ">*@
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <!--end-of-row-->
+            </header>
+            <article>
+
+                <!-- Tab panes -->
+                <div class="tab-content-wrapper">
+                    <div class="tb-content active" id="home">
+                        <div class="box">
+                            <span class="section-icon" style="background-color: #1fbba6;"><i class="fa fa-chain-broken fa-2x"></i></span>
+                            <h1>Test In Progress</h1>
+                            <h4>Sorry - You may not access this page!</h4>
+                            <p>
+                                This is due to a closed test that is in progress. Please finish the <a id="test-link" href="@Url.Action("Start","Test",new { id = Model.Id})"><u>@Model.Title</u></a>  test and try again.
+                                <br />
+                            </p>
+                        </div>
+                    </div>
+                    <!--end-of-tab-content-->
+
+                    <div class="tb-content" id="subscribe" style="display: none;">
+                        <div class="box">
+                            <span class="section-icon"><i class="fa fa-plus-circle fa-2x"></i></span>
+                            <h4>Subscribe For Our E-Newsletter</h4>
+                            <p>Join our email list to receive updates, notifications, news, events and more...</p>
+                        </div>
+                        <form action="form/subscribe.php" method="post" id="subscribe-form" class="form-dark">
+                            <div class="input-group">
+                                <input type="email" id="emailSubscribe" name="emailSubscribe" placeholder="Enter your email address...">
+                                <input type="submit" id="subscribe-submit" name="subscribe-submit" value="">
+                            </div>
+                        </form>
+                    </div>
+                    <!--end-of-tab-content-->
+
+                    <div class="tb-content" id="contact" style="display: none;">
+                        <div class="box">
+                            <span class="section-icon"><i class="fa fa-envelope fa-2x"></i></span>
+                            <h4>Contact</h4>
+                            <p>
+                                Call Us: <strong>333.555.1212</strong> OR <br>
+                                Send us a message if you have any questions.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!--end-of-tab-content-->
+            </article>
+        </div>
+        <!--end-of-wrapper-->
+    </div>
+</div>

@@ -1,0 +1,304 @@
+﻿@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+@using Web.UI.Code.Extensions
+
+@model List<Ramp.Contracts.ViewModel.TrainingGuideViewModel>
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Areas/ManageTrainingTest/Views/../../../Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInResellerRole() || Thread.CurrentPrincipal.IsInAdminRole() || Thread.CurrentPrincipal.IsInStandardUserRole())
+    {
+        Layout = "~/Areas/ManageTrainingTest/Views/../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+}
+<script src="~/Scripts/jquery.jstree.js" type="text/javascript"></script>
+<link href="~/Scripts/themes/default/style.css" rel="stylesheet" />
+<script type="text/javascript">
+    var methodUrlTree = "@(Url.Action("MyTrainingGuidesWithCategory", "ManageTrainingGuides"))";
+</script>
+<style>
+    #categoryMyPlaybook a {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header"> My Playbooks </h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h5 id="playbookCategory">Currently viewing playbooks in all categories</h5>
+    </div>
+
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Playbooks
+            </div>
+            <div class="panel-body">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        @Html.Label("Select Category")
+
+                        <div class="form-group" id="categoryMenu" style="display:none"></div>
+                        <div class="form-group" id="categoryMyPlaybook"></div>
+                    </div>
+                </div>
+                <div class="col-md-9 PlaybookData">
+                    <div id="dataTables-example_wrapper" class=" row dataTables_wrapper form-inline PlaybookData" role="grid">
+                        @{
+                            Html.RenderPartial("_GetMyPlaybook", Model);
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="print-modal" class="modal fade" tabindex="-1" role="dialog" name="">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header modal-header-custom">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Export</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" id="print-modal-submit" class="btn btn-primary">Print</button>
+                <button type="button" id="download-modal-submit" class="btn btn-primary">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+    var categoryId;
+    function ShowLoading(bool) {
+        if (bool) {
+            $('#LoadingImageDiv').show();
+        }
+        else {
+            $('#LoadingImageDiv').hide();
+        }
+    }
+    $(document).ready(function () {
+
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+
+        $('#LoadingImageDiv').show();
+        var methodUrl = "@(Url.Action("MyPlaybookCategories", "ManageTrainingGuides", "ManageTrainingGuides"))";
+
+        $.ajax({
+            type: "GET",
+            url: methodUrl,
+            success: function (data) {
+
+                $('#categoryMenu').empty();
+                $('#categoryMyPlaybook').empty();
+                $('#categoryMenu').append(data);
+                $('#categoryMyPlaybook').append($('#categoryMenu').find('#demoTree'));
+
+                $('#LoadingImageDiv').hide();
+
+            },
+
+            error: function (data) {
+            }
+        });
+
+        var edited = false;
+        $('#print-modal-submit').on('click', print);
+        $('#download-modal-submit').on('click', zip);
+        $('#print-modal').on('hide.bs.modal', function () {
+            $('#print-modal').attr('name', '');
+            $('#print_highlight_correct_answer').prop('checked', false);
+        });
+    });
+      function printActivate(event) {
+        $('#print-modal').attr('name', event);
+        $('#print-modal').modal('show');
+    }
+    function print() {
+        var url = '@Url.Action("DownloadPDF", "TrainingGuideExport", new { Area = "Reporting" })';
+        var query = {
+            TrainingGuideId: $('#print-modal').attr('name')
+        };
+        if (!query.TrainingGuideId) {
+            notif({
+                msg: 'Something Went Wrong, please try again',
+                type: 'error'
+            });
+            return;
+        }
+        url = url + '?' + $.param(query);
+        downloadReport(url);
+    }
+     function zip() {
+        var url = '@Url.Action("Zip", "TrainingGuideExport", new { Area = "Reporting" })';
+        var query = {
+            TrainingGuideId: $('#print-modal').attr('name')
+        };
+        if (!query.TrainingGuideId) {
+            notif({
+                msg: 'Something Went Wrong, please try again',
+                type: 'error'
+            });
+            return;
+        }
+        url = url + '?' + $.param(query);
+        downloadReport(url);
+    }
+     function downloadReport(url) {
+         ShowLoading(true);
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = 'blob';
+        request.onload = function () {
+            ShowLoading(false);
+            $('#print-modal').modal('hide');
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+            }
+        }
+        request.send();
+    }
+</script>
+<script type="text/javascript">
+
+    /* globals hopscotch: false */
+
+    /* ============ */
+    /* EXAMPLE TOUR */
+    /* ============ */
+    var tour = {
+            id: 'hello-hopscotch',
+            steps: [
+                {
+                    target: 'recordId',
+                    title: 'Records',
+                    content: 'Total playbook',
+                    placement: 'top',
+                    xOffset: 'center',
+                    arrowOffset: 'center',
+                    width: 200
+                },
+                {
+                    target: 'Sorting',
+                    placement: 'top',
+                    title: 'Sorting',
+                    content: 'Sorting PlayBook',
+                    xOffset: 'center',
+                    arrowOffset: 'center'
+                },
+                {
+                    target: 'searchId',
+                    placement: 'top',
+                    title: 'Search',
+                    content: 'Search Playbook.',
+                    xOffset: 'center',
+                    arrowOffset: 'center',
+                    width: 240
+                },
+                {
+                    target: 'Options',
+                    placement: 'top',
+                    title: 'Options',
+                    content: 'Options for Preview',
+                    arrowOffset: 100,
+                    xOffset: 'center',
+                    arrowOffset: 'center'
+                }, {
+                    target: 'print',
+                    placement: 'top',
+                    title: 'Print',
+                    content: 'Click here to download and print this Playbook.',
+                    xOffset: 'center',
+                    arrowOffset: 'center',
+                    multiLine: true,
+                    width: 200
+                }
+            ],
+            showPrevButton: true,
+            scrollTopMargin: 100
+        },
+
+        /* ========== */
+        /* TOUR SETUP */
+        /* ========== */
+        addClickListener = function (el, fn) {
+            if (el.addEventListener) {
+                el.addEventListener('click', fn, false);
+            }
+            else {
+                el.attachEvent('onclick', fn);
+            }
+        },
+
+        init = function () {
+            var startBtnId = 'startTourBtn',
+                calloutId = 'startTourCallout',
+                mgr = hopscotch.getCalloutManager(),
+                state = hopscotch.getState();
+
+            if (state && state.indexOf('hello-hopscotch:') === 0) {
+
+                $('#TourCheckBox').bootstrapToggle('on');
+                hopscotch.startTour(tour);
+            }
+            else {
+
+            }
+
+            addClickListener(document.getElementById(startBtnId), function () {
+                if (!hopscotch.isActive) {
+                    mgr.removeAllCallouts();
+                    hopscotch.startTour(tour);
+                }
+            });
+        };
+
+    init();
+
+    $('#TourCheckBox').change(function () {
+
+        if ($(this).prop('checked')) {
+            hopscotch.startTour(tour);
+        }
+        else {
+            hopscotch.endTour(tour);
+        }
+    });
+
+    $(document).on('click', '#hopscotch-done', function (e) {
+        $('#TourCheckBox').bootstrapToggle('off');
+
+    });
+
+    $(document).on('click', '.hopscotch-bubble-close', function (e) {
+        $('#TourCheckBox').bootstrapToggle('off');
+    });
+</script>

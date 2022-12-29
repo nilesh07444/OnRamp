@@ -1,0 +1,28 @@
+﻿@model Ramp.Contracts.ViewModel.TrainingTestViewModel
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>OnRAMP Online Training Platform</title>
+</head>
+<body>
+    <label>Dear @Model.User.FirstName</label>
+    <p class="content">
+        You are requested to retake test on @Model.TestTitle,
+        for the Play Book @Model.TrainingGuideName
+    </p>
+    <br />
+    <br />
+    --
+    Thanks & Regards<br />
+    @AppSettings.CompanyName Team
+    <br />
+    <footer style="text-align:center">
+        <p>&copy; @DateTime.Now.Year</p>
+        <p>
+            <a href="@AppSettings.Urls.Marketting.AsUrl()">
+                <img src="~/images/powered.PNG" />
+            </a>
+        </p>
+    </footer>
+</body>
+</html>

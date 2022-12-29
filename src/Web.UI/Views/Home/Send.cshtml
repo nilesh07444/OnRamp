@@ -1,0 +1,71 @@
+﻿@using Web.UI.Areas.CustomerManagement.Controllers
+@using Web.UI.Areas.ManageTrainingGuides.Controllers
+@using Web.UI.Areas.ManageTrainingTest.Controllers
+@using Web.UI.Code.Extensions
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<div class="row row-centered">
+    <div class="col-md-12 text-center col-centered">
+        <div class="form-group text-center">
+            <h1>SEND</h1>
+        </div>
+    </div>
+</div>
+
+@if (Html.CanAccess<ManageTrainingGuidesController>(a => a.Assign_UnAssignPlaybooks(Ramp.Contracts.ViewModel.FunctionalMode.Playbooks))
+                || Html.CanAccess<ManageTrainingTestController>(a => a.Assign_UnAssignTests()))
+{
+    <div class="row row-centered menu-row">
+        <div class="col-md-12">
+            @if (Html.CanAccess<ManageTrainingGuidesController>(a => a.Assign_UnAssignPlaybooks(Ramp.Contracts.ViewModel.FunctionalMode.Playbooks)))
+            { 
+                <div class="col-md-6 col-centered menu-tile" id="assign-unAssign-playbooks">
+                    <a href="@(Url.Content("~/ManageTrainingGuides/ManageTrainingGuides/Assign_UnAssignPlaybooks"))">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Assign_UnAssignPlaybooks],true)" class="img-responsive" id="managePlyBooks" />
+                        <h4>
+                            <span class="label label-default shade">
+                                Assign/Un-Assign Playbooks
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+            @if (Html.CanAccess<ManageTrainingTestController>(a => a.Assign_UnAssignTests()))
+            {
+                <div class="col-md-6 col-centered menu-tile" id="assign-unAssign-tests">
+                    <a href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/Assign_UnAssignTests"))">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Assign_UnAssignTests],true)" class="img-responsive" id="manageTests" />
+                        <h4>
+                            <span class="label label-default shade">
+                                Assign/Un-Assign Tests
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+    <script>
+        tour.steps = [
+             {
+                 target: 'assign-unAssign-playbooks',
+                 placement: 'top',
+                 title: 'Assign/Un-Assign Playbooks',
+                 content: 'Click here to allocate/assign playbooks to users and groups. Assigning a playbook will send an email and/or sms (depending on your OnRamp Subscription level) to selected users and groups informing them that there is a new playbook for them to complete. Note that a playbook must be published (In Build -> Manage Playbook Library) for you  to assign it.',
+                 xOffset: 'center',
+                 arrowOffset: 'center',
+                 width: '480'
+             },
+              {
+                  target: 'assign-unAssign-tests',
+                  placement: 'top',
+                  title: 'Assign/Un-Assign Tests',
+                  content: 'Click here to allocate/assign tests to users and groups.<br/>Assigning a test will send an email and/or sms (depending on your OnRamp Subscription level) to selected users and groups informing them that there is a new test for them to complete.Note that a test must be published (In Build -> Manage Test Library) for you to assign it.',
+                  xOffset: 'center',
+                  arrowOffset: 'center',
+                  width: '480'
+              }
+        ];
+    </script>

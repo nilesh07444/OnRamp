@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.PdfViewer
+
+
+@Html.EJS().PdfViewer("pdfviewer").ServiceUrl(VirtualPathUtility.ToAbsolute("~/PdfViewer/")).DocumentPath("FormFillingDocument.pdf").Render()
+
+<style>
+    #pdfviewer {
+        display: block;
+    }
+</style>

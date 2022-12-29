@@ -1,0 +1,19 @@
+﻿@{
+    ViewBag.Title = "Email Verification";
+}
+
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+
+<div class="row" style=" min-height: 460px; ">
+    <h2>@ViewBag.Title</h2>
+    <div class="col-md-8">
+        Hi there,<br /><br />
+
+        <p>We have sent an email to your address <span style="color: red; display: inline">@ViewBag.Email</span>. <br />Please check your email and click on the link to verify your access.</p>
+
+        <p>The OnRamp Team</p>
+
+        @*Please check your Email Inbox, a confirm Email is Sent to : <p style="color:red;display:inline">@ViewBag.Email</p>*@
+    </div>
+</div>
+

@@ -1,0 +1,824 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B579989D-E0AA-4D68-9DBF-4B7FF6800D69}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Ramp.Contracts</RootNamespace>
+    <AssemblyName>Ramp.ViewModel</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'QA|AnyCPU'">
+    <OutputPath>bin\QA\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UAT|AnyCPU'">
+    <OutputPath>bin\UAT\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Production|AnyCPU'">
+    <OutputPath>bin\Production\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Licensing, Version=17.4451.0.53, Culture=neutral, PublicKeyToken=632609b4d040f6b4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Licensing.17.4.0.53\lib\net451\Syncfusion.Licensing.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.4\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.4\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="VirtuaCon, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\VirtuaCon.2.0.285.1796\lib\net35\VirtuaCon.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CommandParameter\AcrobatField\DeleteAcrobatFieldUserUploadResultCommand.cs" />
+    <Compile Include="CommandParameter\ActivityManagement\AddUserActivityCommand.cs" />
+    <Compile Include="CommandParameter\ActivityManagement\CreateUserDiclaimerActivityLogEntryCommand.cs" />
+    <Compile Include="CommandParameter\ActivityManagement\UpdateActivityLogDescriptionsCommand.cs" />
+    <Compile Include="CommandParameter\ActivityManagement\UpdateUserActivityLogCommand.cs" />
+    <Compile Include="CommandParameter\AutoAssignWorkflow\DeleteAutoAssignWorkflowCommand.cs" />
+    <Compile Include="CommandParameter\AutoAssignWorkflow\SaveOrUpdateAutoAssignWorkflowCommand.cs" />
+    <Compile Include="CommandParameter\Certificate\CreateOrUpdateBEECertificateCommand.cs" />
+    <Compile Include="CommandParameter\Certificate\CreateOrUpdateCertificateCommand.cs" />
+    <Compile Include="CommandParameter\Certificate\RemoveCertificateUploadCommand.cs" />
+    <Compile Include="CommandParameter\Certificate\RemoveUploadFromCertificateCommand.cs" />
+    <Compile Include="CommandParameter\CustomFields\SaveOrUpdateCustomFieldCommand.cs" />
+    <Compile Include="CommandParameter\Policy\DeletePolicyContentUserUploadResultCommand.cs" />
+    <Compile Include="CommandParameter\TrainingMannual\DeleteTrainingMannualUserUploadResultCommand.cs" />
+    <Compile Include="CommandParameter\Test\DeleteTestUserUploadResultCommand.cs" />
+    <Compile Include="CommandParameter\Memo\DeleteMemoUserUploadResultCommand.cs" />
+    <Compile Include="CommandParameter\CheckList\DeleteCheckListUserUploadResultCommand.cs" />
+    <Compile Include="CommandParameter\Course\AddOrUpdateCourseCommand.cs" />
+    <Compile Include="CommandParameter\Course\AssignDocumentToCourseCommand.cs" />
+    <Compile Include="CommandParameter\Course\AssignCourseToUsersCommand.cs" />
+    <Compile Include="CommandParameter\Course\DeleteCourseCommand.cs" />
+    <Compile Include="CommandParameter\CreateCommandAuditTrailCommand.cs" />
+    <Compile Include="CommandParameter\CustomDocument\AddOrUpdateCustomDocumentCommand.cs" />
+    <Compile Include="CommandParameter\CustomDocument\DeleteCustomDoumentCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\AddOrUpdateCustomColourCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\DeleteCustomColourCommand.cs" />
+    <Compile Include="CommandParameter\CustomUserRole\DeleteCustomUserRoleCommand.cs" />
+    <Compile Include="CommandParameter\CustomUserRole\SaveOrUpdateCustomUserRoleCommand.cs" />
+    <Compile Include="CommandParameter\DocumentWorkflowAuditMessages\DeleteDocumentWorkflowAuditMessagesCommand.cs" />
+    <Compile Include="CommandParameter\DocumentWorkflowAuditMessages\SaveOrUpdateDocumentWorkflowAuditMessagesCommand.cs" />
+    <Compile Include="CommandParameter\ExternalMeetingUsers\CreateExternalMeetingUserCommand.cs" />
+    <Compile Include="CommandParameter\ExternalTrainingProvider\CreateAndUpdateExternalTrainingProviderCommand.cs" />
+    <Compile Include="CommandParameter\Group\GroupUpdateParentCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\Assign_UnassignCommand.cs" />
+    <Compile Include="CommandParameter\Categories\CategoriesChangeRootOfNodeCommandParameter.cs" />
+    <Compile Include="CommandParameter\Categories\CategoriesCommandParameter.cs" />
+    <Compile Include="CommandParameter\Categories\DeleteCategoryCommandParamter.cs" />
+    <Compile Include="CommandParameter\CorrespondenceManagement\AddUserCorrespondenceCommand.cs" />
+    <Compile Include="CommandParameter\CorrespondenceManagement\UpdateCorrespondanceLogsCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\AddOrUpdateCustomerCompanyUserByCustomerAdminCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\AddOrUpdateCustomerCompanyUserCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\AddSurveyDetailsByCustomerUserCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\ChangeCompanyUserExpiryStatusCommandParameter.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\ChangeCustomerSelfSignUpApproveStatusCommandParameter.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\DeleteCustomerCompanyCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\SaveCSVCustomerCompanyUserCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\SaveCustomerUserSelfSignUpCommandParameter.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\SaveOrUpdateCustomerCompanyCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\SaveSelfProvisionalCustomerCompanyCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UpdateCompanyLockStatusShedulerCommandParameter.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UpdateCustomerCompanyAdminSettingCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UpdatecUSTOMERCompanyLockStatusCommandParameter.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UpdateCustomerUserExpiryStatusCommandParameter.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UpdateMyProfileCommandParameter.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UpdateParentUserIdCommand.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UpdateSelfProvisionEmailConfirm.cs" />
+    <Compile Include="CommandParameter\CustomerManagement\UploadCustomCSSCommandParameter.cs" />
+    <Compile Include="CommandParameter\EmptyCommand.cs" />
+    <Compile Include="CommandParameter\Feedback\ReadTestFeedbackCommandParameter.cs" />
+    <Compile Include="CommandParameter\Feedback\ReadPlaybookFeedbackCommandParameter.cs" />
+    <Compile Include="CommandParameter\Feedback\SaveFeedbackCommand.cs" />
+    <Compile Include="CommandParameter\Group\DeleteGroupCommand.cs" />
+    <Compile Include="CommandParameter\Group\SaveOrUpdateGroupCommand.cs" />
+    <Compile Include="CommandParameter\Group\UpdateRoleDescriptionsCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\AddCreatorToCollaboratorsListForCustomerCompanyCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\AddUserToColaboratorsCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\AssignTrainingGuideToUsersCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\Assign_UnAssignPlaybookToUserCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\CloneChapterLinkCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\CloneChapterUploadCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\CloneCKEUploadCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\CloneTrainingGuideChapterCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\CloneTrainingGuideCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\DeleteChapterCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\DeleteChapterUploadCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\DeleteTrainingGuideCommandParameter.cs" />
+    <Compile Include="CommandParameter\GuideManagement\DuplicateTrainingGuideCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\GetTrainingGuidesToCopyFromCompanyQueryParameter.cs" />
+    <Compile Include="CommandParameter\GuideManagement\IncrementTrainingGuideViewCommand.cs" />
+    <Compile Include="CommandParameter\Icon\DeleteIconSetCommand.cs" />
+    <Compile Include="CommandParameter\Icon\SaveIconSetCommand.cs" />
+    <Compile Include="CommandParameter\Migration\AddDefaultGroupToCustomerCompanies_ORP989.cs" />
+    <Compile Include="CommandParameter\Migration\AddDuplicateIconToDefaultIconSetCommand_ORP914.cs" />
+    <Compile Include="CommandParameter\Migration\AddIconsToDefaultIconSetCommand_ORP1047.cs" />
+    <Compile Include="CommandParameter\Migration\AddSprint9IconsCommand.cs" />
+    <Compile Include="CommandParameter\Migration\CreateDefaultIconSetCommand.cs" />
+    <Compile Include="CommandParameter\Migration\MigrateCompanyPlaybooksAndTestToVersionsCommand.cs" />
+    <Compile Include="CommandParameter\Migration\MigrateCustomConfigurationDataCommand.cs" />
+    <Compile Include="CommandParameter\Migration\MigrateTestFeedbackToTestIdCommand.cs" />
+    <Compile Include="CommandParameter\Migration\TestVersionMigrationCommand.cs" />
+    <Compile Include="CommandParameter\ScheduleReport\DeleteScheduleReportCommand.cs" />
+    <Compile Include="CommandParameter\ScheduleReport\SaveOrUpdateScheduleReportCommand.cs" />
+    <Compile Include="CommandParameter\Settings\ClearCustomConfigurationCommadParameter.cs" />
+    <Compile Include="CommandParameter\Settings\CreateDefaultContentCommandParameter.cs" />
+    <Compile Include="CommandParameter\Settings\CreatedUpdateCustomConfigurationCommandParameter.cs" />
+    <Compile Include="CommandParameter\Settings\SaveCustomConfigurationCommand.cs" />
+    <Compile Include="CommandParameter\StandardUserGroup\DeleteStandardUserGroupCommand.cs" />
+    <Compile Include="CommandParameter\StandardUserGroup\StandardUserGroupUpdateParentCommand.cs" />
+    <Compile Include="CommandParameter\StandardUserGroup\SaveOrUpdateStandardUserGroupCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\Answer\DeleteTestAnswerCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\Answer\SaveTestAnswerCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\Answer\UpdateTestAnswerCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\Assign_UnAssignTestToUserCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\CloneTestCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\CreateTestCertificateCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\CreateTestResultCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\DeleteOrphanTestResultsCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\LogTestResultCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\MigrateTestResultsExpansionCommandParameter.cs" />
+    <Compile Include="CommandParameter\GuideManagement\MigrateTrainingGuidesToKnockoutCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\ReindexChapterUploadsCommandParameter.cs" />
+    <Compile Include="CommandParameter\GuideManagement\SaveChapterUploadCommandParameter.cs" />
+    <Compile Include="CommandParameter\GuideManagement\SaveGuideAndChaptersCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\SaveTrainingGuideCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\UpdateAssignedTrainingGuideCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\UpdateTrainingGuideCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\UpdateTrainingGuideStatusCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\UpdateTrainingGuideUsageStatsCommand.cs" />
+    <Compile Include="CommandParameter\GuideManagement\UpdateTrainingGuideUserCommand.cs" />
+    <Compile Include="CommandParameter\Login\AddUserLoginStatsCommand.cs" />
+    <Compile Include="CommandParameter\Login\LoginUserCommandParameter.cs" />
+    <Compile Include="CommandParameter\Login\ResetPasswordCommand.cs" />
+    <Compile Include="CommandParameter\Login\RetreivePasswordCommandParameter.cs" />
+    <Compile Include="CommandParameter\Login\UpdateUserLoginStatsCommand.cs" />
+    <Compile Include="CommandParameter\PackageManagement\DeletePackageCommand.cs" />
+    <Compile Include="CommandParameter\PackageManagement\PackageCommandParameter.cs" />
+    <Compile Include="CommandParameter\Portal\OverridePortalContextCommand.cs" />
+    <Compile Include="CommandParameter\ProvisionalManagement\AddOrUpdateProvisionalCompanyUserCommand.cs" />
+    <Compile Include="CommandParameter\ProvisionalManagement\DeleteProvisionalCompanyCommandParameter.cs" />
+    <Compile Include="CommandParameter\ProvisionalManagement\DeleteProvisionalCompanyUserCommandParameter.cs" />
+    <Compile Include="CommandParameter\ProvisionalManagement\ProvisionalCompanyCommandParameter.cs" />
+    <Compile Include="CommandParameter\ProvisionalManagement\ReassignUserToAnotherProvisionalCompanyCommand.cs" />
+    <Compile Include="CommandParameter\ProvisionalManagement\UpdateProvisionalCompanyStatusCommand.cs" />
+    <Compile Include="CommandParameter\ProvisionalManagement\UpdateProvisionalCompanyUserStatusCommand.cs" />
+    <Compile Include="CommandParameter\Settings\ChangePasswordCommandParameter.cs" />
+    <Compile Include="CommandParameter\Settings\SettingCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\AddVersionNumberOnTestsCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\AssignTestsToUsersOrGroupsCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\DeleteOrphanTests.cs" />
+    <Compile Include="CommandParameter\TestManagement\DeleteTrainingTestCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\IncrementTrainingTestTakenCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\MarkPeopleHavingTakenTestCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\MarkTrainingTestExpirySentCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\MigrateTestResultCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\MigrateTestsToDbCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\MigrateTestsToKnockoutCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\PrepareTestExpiryNotificationCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\PublishTrainingTestCommandParameter.cs" />
+    <Compile Include="CommandParameter\TestManagement\QuestionUpload\DeleteQuestionUploadCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\QuestionUpload\SaveQuestionUploadCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\QuestionUpload\UpdateQuestionUploadCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\Question\DeleteTrainingQuestionCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\SaveDraftVersionOfTrainingTestCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\SaveTestResultCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\Question\SaveTrainingQuestionCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\SaveTrainingTestCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateAssignedTrainingTestCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateTestResultCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\Question\UpdateTrainingQuestionCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateTrainingTestCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateTrainingTestDraftPublishTestCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateTrainingTestDraftStatusCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateTrainingTestStatusCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateTrainingTestUsageStatsCommand.cs" />
+    <Compile Include="CommandParameter\TestManagement\UpdateTrainingTestUserCommand.cs" />
+    <Compile Include="CommandParameter\TrainingActivity\CreateOrUpdateBursaryTrainingActivityDetailCommand.cs" />
+    <Compile Include="CommandParameter\TrainingActivity\CreateOrUpdateExternalTrainingActivityDetailCommand.cs" />
+    <Compile Include="CommandParameter\TrainingActivity\CreateOrUpdateInternalTrainingActivityDetailCommand.cs" />
+    <Compile Include="CommandParameter\TrainingActivity\CreateOrUpdateMentoringAndCoachingTrainingActivityDetailCommand.cs" />
+    <Compile Include="CommandParameter\TrainingActivity\CreateOrUpdateToolboxTalkTrainingActivityDetailCommand.cs" />
+    <Compile Include="CommandParameter\TrainingActivity\CreateOrUpdateTrainingActivityCommand.cs" />
+    <Compile Include="CommandParameter\TrainingActivity\DeleteTrainingActivityByIdCommand.cs" />
+    <Compile Include="CommandParameter\TrainingLabel\CreateOrUpdateTrainingLableCommand.cs" />
+    <Compile Include="CommandParameter\TrainingLabel\DeleteTrainingLabelCommand.cs" />
+    <Compile Include="CommandParameter\Upload\CloneUploadCommand.cs" />
+    <Compile Include="CommandParameter\Upload\DeleteUploadCommand.cs" />
+    <Compile Include="CommandParameter\Upload\SaveUploadCommand.cs" />
+    <Compile Include="CommandParameter\Upload\UpdateUploadCommand.cs" />
+    <Compile Include="CommandParameter\VirtualClassroom\DeleteVirtualClassroomCommand.cs" />
+    <Compile Include="Command\AcrobatField\CreateOrUpdateAcrobatFieldChapterUserResultCommand.cs" />
+    <Compile Include="Command\AcrobatField\CreateOrUpdateAcrobatFieldChapterUserUploadResultsCommand.cs" />
+    <Compile Include="Command\AcrobatField\CreateOrUpdateAcrobatFieldCommand.cs" />
+    <Compile Include="Command\AcrobatField\CreateOrUpdateAcrobatFieldUserResultCommand.cs" />
+    <Compile Include="Command\AcrobatField\RestoreAcrobatFieldCommand.cs" />
+    <Compile Include="Command\Bundle\CreateOrUpdateBundleCommand.cs" />
+    <Compile Include="Command\Bundle\DeleteBundleCommand.cs" />
+    <Compile Include="Command\CheckList\CreateOrUpdateCheckListChapterCommand.cs" />
+    <Compile Include="Command\CheckList\CreateOrUpdateCheckListChapterUserUploadResultsCommand.cs" />
+    <Compile Include="Command\CheckList\CreateOrUpdateCheckListCommand.cs" />
+    <Compile Include="Command\CheckList\CreateOrUpdateCheckListChapterUserResultCommand.cs" />
+    <Compile Include="Command\CheckList\CreateOrUpdateCheckListUserResultCommand.cs" />
+    <Compile Include="Command\CheckList\RestoreChecklistCommand.cs" />
+    <Compile Include="Command\Company\UpdateCompanySelfSignUpSettingsCommand.cs" />
+    <Compile Include="Command\CustomDocument\CreateorUpdateCustomDocumentCommand.cs" />
+    <Compile Include="Command\CustomDocument\CreateOrUpdateCustomDocumentMessageCenterCommand.cs" />
+    <Compile Include="Command\CustomDocument\RestoreCustomDocumentCommand.cs" />
+    <Compile Include="Command\DocumentAudit\CreateOrUpdateDocumentAuditCommand.cs" />
+    <Compile Include="Command\DocumentUsage\CreateOrUpdateDocumentUsageCommand.cs" />
+    <Compile Include="Command\Document\AssignDocumentsToUsers.cs" />
+    <Compile Include="Command\Document\CopyDocumentsToAnotherCustomerCommand.cs" />
+    <Compile Include="Command\Document\PostProcessDocumentListModelCommand.cs" />
+    <Compile Include="Command\DocumentCategory\CreateDocumentCategoryCommand.cs" />
+    <Compile Include="Command\DocumentCategory\DeleteDocumentCategoryCommand.cs" />
+    <Compile Include="Command\DocumentCategory\DocumentCategoryUpdateParentCommand.cs" />
+    <Compile Include="Command\DocumentCategory\DocumentUpdateCategoryCommand.cs" />
+    <Compile Include="Command\DocumentCategory\RenameDocumentCategoryCommand.cs" />
+    <Compile Include="Command\Document\UnassignDocumentFromAllUsersCommand.cs" />
+    <Compile Include="Command\Document\UnassignDocumentsFromUsers.cs" />
+    <Compile Include="Command\Document\UpdateDocumentCollaboratorsCommand.cs" />
+    <Compile Include="Command\Form\CreateOrUpdateFormChapterUserResultCommand.cs" />
+    <Compile Include="Command\Form\CreateOrUpdateFormCommand.cs" />
+    <Compile Include="Command\Form\CreateOrUpdateFormFieldUserResultCommand.cs" />
+    <Compile Include="Command\Label\SyncLabelCommand.cs" />
+    <Compile Include="Command\Memo\CreateOrUpdateMemoUserResultCommand.cs" />
+    <Compile Include="Command\Memo\CreateOrUpdateMemoChapterUserResultCommand.cs" />
+    <Compile Include="Command\Memo\CreateOrUpdateMemoChapterUserUploadResultsCommand.cs" />
+    <Compile Include="Command\Memo\CreateOrUpdateMemoCommand.cs" />
+    <Compile Include="Command\Memo\RestoreMemoCommand.cs" />
+    <Compile Include="Command\PolicyResponse\CreatePolicyResponseCommand.cs" />
+    <Compile Include="Command\Policy\CreateOrUpdatePolicyCommand.cs" />
+    <Compile Include="Command\Policy\CreateOrUpdatePolicyContentBoxUserResultCommand.cs" />
+    <Compile Include="Command\Policy\CreateOrUpdatePolicyContentBoxUserUploadResultsCommand.cs" />
+    <Compile Include="Command\Policy\CreateOrUpdatePolicyContentUserResultCommand.cs" />
+    <Compile Include="Command\Policy\RestorePolicyCommand.cs" />
+    <Compile Include="Command\StandardUser\DeleteDisclaimerActivityLogsCommand.cs" />
+    <Compile Include="Command\StandardUser\UpdateUsersExpiryStatusCommand.cs" />
+    <Compile Include="Command\TestSession\TestSessionEndCommand.cs" />
+    <Compile Include="Command\TestSession\TestSessionStartCommand.cs" />
+    <Compile Include="Command\Test\CreateOrUpdateTestChapterUserResultCommand.cs" />
+    <Compile Include="Command\Test\CreateOrUpdateTestChapterUserUploadResultsCommand.cs" />
+    <Compile Include="Command\Test\CreateOrUpdateTestUserResultCommand.cs" />
+    <Compile Include="Command\Test\CreateOrUpdateTestCommand.cs" />
+    <Compile Include="Command\Test\RestoreTestCommand.cs" />
+    <Compile Include="Command\TrainingLabel\SyncTrainingLabelCommand.cs" />
+    <Compile Include="Command\TrainingManual\CreateOrUpdateTrainingManualChapterUserResultCommand.cs" />
+    <Compile Include="Command\TrainingManual\CreateOrUpdateTrainingManualChapterUserUploadResultsCommand.cs" />
+    <Compile Include="Command\TrainingManual\CreateOrUpdateTrainingManualUserResultCommand.cs" />
+    <Compile Include="Command\TrainingManual\CreateOrUpdateTrainingManualCommand.cs" />
+    <Compile Include="Command\TrainingManual\RestoreManualCommand.cs" />
+    <Compile Include="Command\UserFeedbackRead\CreateOrUpdateUserFeedbackReadCommand.cs" />
+    <Compile Include="Command\UserFeedback\CreateOrUpdateUserFeedbackCommand.cs" />
+    <Compile Include="Command\User\UserUpdateGroupCommand.cs" />
+    <Compile Include="Command\VirtualClassRoom\CreateOrUpdateVirtualClassRoomCommand.cs" />
+    <Compile Include="Events\Account\LostPasswordEvent.cs" />
+    <Compile Include="Events\Account\StandardUserDeletedEvent.cs" />
+    <Compile Include="Events\ActivityManagement\UserCorrespondaceOccuredEvent.cs" />
+    <Compile Include="Events\CustomerManagement\CustomerSelfProvisionedEvent.cs" />
+    <Compile Include="Events\CustomerManagement\CustomerSelfSignedUpEvent.cs" />
+    <Compile Include="Events\CustomerManagement\CustomerUserSelfSignedUpApprovedEvent.cs" />
+    <Compile Include="Events\CustomerManagement\UserCreatedEvent.cs" />
+    <Compile Include="Events\DocumentWorkflow\DocumentWorkflowEvent.cs" />
+    <Compile Include="Events\Document\DocumentsAssignedEvent.cs" />
+    <Compile Include="Events\Feedback\FeedbackCreatedEvent.cs" />
+    <Compile Include="Events\Feedback\UserFeedbackCreatedEvent.cs" />
+    <Compile Include="Events\GuideAndTestManagement\TrainingGuideAndTestAssignedEvent.cs" />
+    <Compile Include="Events\GuideManagement\TrainingGuideAssignedEvent.cs" />
+    <Compile Include="Events\LabelDeletedEvent.cs" />
+    <Compile Include="Events\TestManagement\SendTestExpiryNotificationEvent.cs" />
+    <Compile Include="Events\TestManagement\TestCompletedEvent.cs" />
+    <Compile Include="Events\TestManagement\TrainingTestAssignedEvent.cs" />
+    <Compile Include="Events\TestManagement\TrainingTestCompletedEvent.cs" />
+    <Compile Include="Events\VirtualClassroom\CancelVirtualRoomEvent.cs" />
+    <Compile Include="Events\VirtualClassroom\RemoveParticipantEvent.cs" />
+    <Compile Include="Events\VirtualClassroom\VirtualClassroomEvent.cs" />
+    <Compile Include="Events\VirtualClassroom\VirtualMeetingReminderEvent.cs" />
+    <Compile Include="QueryParameter\Account\UserProfileQuery.cs" />
+    <Compile Include="QueryParameter\ActivityManagement\AllUserActivitiesInTimeSpanQueryParameter.cs" />
+    <Compile Include="QueryParameter\ActivityManagement\AllUserActivityForCustomerCompanyQuery.cs" />
+    <Compile Include="QueryParameter\Catagories\AllCategoriesQueryParameter.cs" />
+    <Compile Include="QueryParameter\Catagories\CategoriesQueryParameter.cs" />
+    <Compile Include="QueryParameter\Catagories\CategoryNameExistQueryParameter.cs" />
+    <Compile Include="QueryParameter\Catagories\CategoryStatisticsReportQueryParameter.cs" />
+    <Compile Include="QueryParameter\Certificates\BEECertificateListQuery.cs" />
+    <Compile Include="QueryParameter\Certificates\CertificateListQuery.cs" />
+    <Compile Include="QueryParameter\ContextReportQuery.cs" />
+    <Compile Include="QueryParameter\CorrespondenceManagement\AllUserCorrespondanceForCompanyQuery.cs" />
+    <Compile Include="QueryParameter\CorrespondenceManagement\AllUserCorrespondenceInTimeSpanQueryParameter.cs" />
+    <Compile Include="QueryParameter\CorrespondenceManagement\UserCorrespondenceWithId.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\AllContentAdminsForCustomerCompanyQuery.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\AllCustomerCompanyByProvisionalCompanyParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\AllCustomerUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\AllCustomerUsersByCustomerAdminQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\AllStandardUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\AverageRatingByCustomerCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\CustomColourQuery.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\CustomerCompanyByPackageIdQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\CustomerCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\CustomerCompanyUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\CustomerSelfSignUpQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\FindCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\LatestSurveyByCustomerUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerManagement\UsersRatingHistoryByUserIdQueryParameter.cs" />
+    <Compile Include="QueryParameter\CustomerRoles\FindRoleByIdQuery.cs" />
+    <Compile Include="QueryParameter\EmptyQueryParameter.cs" />
+    <Compile Include="QueryParameter\ExternalTrainingProvider\ExternalTrainingProviderListQuery.cs" />
+    <Compile Include="QueryParameter\ExternalTrainingProvider\ExternalTrainingProviderQueryParameter.cs" />
+    <Compile Include="QueryParameter\ExternalTrainingProvider\FetchCertificatesForProviderQuery.cs" />
+    <Compile Include="QueryParameter\Feedback\GetBulkFeedbackQueryParameter.cs" />
+    <Compile Include="QueryParameter\Feedback\GetFeedbackForPlaybookQueryParameter.cs" />
+    <Compile Include="QueryParameter\Feedback\GetFeedbackForTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\Feedback\GetFeedbackQueryParameter.cs" />
+    <Compile Include="QueryParameter\FileUploadsManagement\FileUploadsQueryParameter.cs" />
+    <Compile Include="QueryParameter\Group\AllGroupsBuyProvisionalCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\Group\AllGroupsByCustomerAdminQueryParameter.cs" />
+    <Compile Include="QueryParameter\Group\AllGroupsByCustomerGroupIdParameter.cs" />
+    <Compile Include="QueryParameter\Group\FindGroupByIdQuery.cs" />
+    <Compile Include="QueryParameter\Group\GroupNameExistQueryParameter.cs" />
+    <Compile Include="QueryParameter\Group\GroupQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\AllAssignedGuidesToStandardUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\AllAssignedGuidesToStandardUserWithCategoryQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\AllTrainingGuideForMasterAdminQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\AllTrainingGuideQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\AllTrainingGuideToCreateTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\AssignTrainingGuideQuery.cs" />
+    <Compile Include="QueryParameter\GuideManagement\CheckForTrainingTestTitleExistQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\EditTrainingGuideQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\GetAllTrainingGuideUsageReportParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\GetAllTrainingGuideUsageReportThresholdParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\GetChapterUploadQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\GetTrainingGuideByReferenceIdQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\GlobalSearchQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\LastReferenceIdFromGuideQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\ManageableUsersForCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\MyPlaybookCategoryQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\TotalCreatedTrainingGuidesInSystemQuery.cs" />
+    <Compile Include="QueryParameter\GuideManagement\TrainingGuideBarometerQueryParameter.cs" />
+    <Compile Include="QueryParameter\GuideManagement\TrainingGuideExportQuery.cs" />
+    <Compile Include="QueryParameter\GuideManagement\TrainingGuideQueryParameter.cs" />
+    <Compile Include="QueryParameter\IconSet\AvaiableIconTypesQuery.cs" />
+    <Compile Include="QueryParameter\IconSet\FindIconSetQuery.cs" />
+    <Compile Include="QueryParameter\IconSet\IconSetListQuery.cs" />
+    <Compile Include="QueryParameter\IContextQuery.cs" />
+    <Compile Include="QueryParameter\Login\LoginQueryParameters.cs" />
+    <Compile Include="QueryParameter\Login\UserLoginHistoryQueryParameter.cs" />
+    <Compile Include="QueryParameter\Login\ValidateUserQueryParameters.cs" />
+    <Compile Include="QueryParameter\PackageManagement\PackageQueryParameter.cs" />
+    <Compile Include="QueryParameter\Portal\PortalQueryParameter.cs" />
+    <Compile Include="QueryParameter\Progress\GetStandardUserProgressQuery.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\AllCustomerCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\AllProvisionalUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\AllUsersByProvisionalCompanyUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\ClientSystemNameExistsQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\CompanyExpiryDateReoprtQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\CompanyNameExistQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\EmailExistQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\LayerSubDomainExistsQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\ProvisionalAccountQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\ProvisionalCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\ProvisionalCompanyUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\ResellerEmailExistQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\UserLoginFrequencyQueryParameter.cs" />
+    <Compile Include="QueryParameter\ProvisionalManagement\UsersLoginStatsQueryParameter.cs" />
+    <Compile Include="QueryParameter\Reporting\CustomerCompanyUserExportQuery.cs" />
+    <Compile Include="QueryParameter\Reporting\FocusAreaReportQuery.cs" />
+    <Compile Include="QueryParameter\Reporting\IndividualDevelopementRecordReportQuery.cs" />
+    <Compile Include="QueryParameter\Reporting\PlaybookUtilizationReportQuery.cs" />
+    <Compile Include="QueryParameter\Settings\GetCustomConfigurationQueryParameter.cs" />
+    <Compile Include="QueryParameter\Settings\SettingQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\AllAssignedTestsForAUserQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\AllAssignedTestUsersByTestIdQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\AllTestsThatRequiresExipryNotificationQuery.cs" />
+    <Compile Include="QueryParameter\TestManagement\AllTrainingTestExpiringTodayQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\AllTrainingTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\AssignTrainingTestQuery.cs" />
+    <Compile Include="QueryParameter\TestManagement\CheckUserHasAlreadyAppearedForTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\EditTrainingTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\ForcePeopletoRetakeTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\GetTrainingTestByReferenceIdQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\StartTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\TakeTrainingTestQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\PointsExportReportParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\TestCertificateForResultQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\TestHistoryReportParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\TestNotApperUsersParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\TestResultQuery.cs" />
+    <Compile Include="QueryParameter\TestManagement\TestResultQueryParameter.cs" />
+    <Compile Include="QueryParameter\TestManagement\TrainingTestExportReportQuery.cs" />
+    <Compile Include="QueryParameter\TestManagement\UserCanTakeTrainingTestQuery.cs" />
+    <Compile Include="QueryParameter\TrainingActivity\FetchAllTrainingActivityLogQuery.cs" />
+    <Compile Include="QueryParameter\TrainingActivity\FetchAllKnownBursaryTypesQuery.cs" />
+    <Compile Include="QueryParameter\TrainingActivity\FetchTrainingActivityByIdQuery.cs" />
+    <Compile Include="QueryParameter\TrainingActivity\FilterTrainingActivityLogQuery.cs" />
+    <Compile Include="QueryParameter\TrainingActivity\TrainingActivityListQuery.cs" />
+    <Compile Include="QueryParameter\TrainingLabel\FetchTrainingLableByIdQuery.cs" />
+    <Compile Include="QueryParameter\TrainingLabel\TrainingLabelListQuery.cs" />
+    <Compile Include="QueryParameter\TrophyCabinet\AllTrophiesByStandardUserQuery.cs" />
+    <Compile Include="QueryParameter\Upload\FetchUploadQueryParameterQuery.cs" />
+    <Compile Include="QueryParameter\Upload\FileUploadListQuery.cs" />
+    <Compile Include="QueryParameter\Upload\GetFileUploadFromPostedFile.cs" />
+    <Compile Include="QueryParameter\Upload\GetUploadContentQueryParameter.cs" />
+    <Compile Include="QueryParameter\User\GetAllAdminsFromSameCompanyQueryParameter.cs" />
+    <Compile Include="QueryParameter\User\GetAllRaceCodesQuery.cs" />
+    <Compile Include="QueryParameter\User\FindUserByIdQuery.cs" />
+    <Compile Include="QueryParameter\User\UserKPIReportQueryParameter.cs" />
+    <Compile Include="QueryParameter\User\UserListQuery.cs" />
+    <Compile Include="QueryParameter\User\UserQueryParameter.cs" />
+    <Compile Include="QueryParameter\User\UserSearchQuery.cs" />
+    <Compile Include="QueryParameter\User\UserSearchQueryParameter.cs" />
+    <Compile Include="Query\AcrobatField\AcrobatFieldChapterUserResultQuery.cs" />
+    <Compile Include="Query\AcrobatField\AcrobatFieldListQuery.cs" />
+    <Compile Include="Query\AcrobatField\RecycleAcrobatFieldQuery.cs" />
+    <Compile Include="Query\Bundle\BundleQuery.cs" />
+    <Compile Include="Query\Bundle\CustomerCompanyByBundleIdQuery.cs" />
+    <Compile Include="Query\CheckListChapterUserResult\CheckListChapterUserResultQuery.cs" />
+    <Compile Include="Query\CheckListUserResult\CheckListUserResultQuery.cs" />
+    <Compile Include="Query\CheckList\CheckListQuery.cs" />
+    <Compile Include="Query\CheckList\CheckListExportReportQuery.cs" />
+    <Compile Include="Query\CheckList\ChecklistSummaryExportReportQuery.cs" />
+    <Compile Include="Query\CheckList\RecycleChecklistQuery.cs" />
+    <Compile Include="Query\Course\CourseListQuery.cs" />
+    <Compile Include="Query\Course\RecycleCourseQuery.cs" />
+    <Compile Include="Query\Course\UsersAssignedCourseQuery.cs" />
+    <Compile Include="Query\Course\UsersNotAssignedCourseQuery.cs" />
+    <Compile Include="Query\CustomDocument\CustomDocumentListQuery.cs" />
+    <Compile Include="Query\CustomDocument\CustomDocumentSummaryExportReportQuery.cs" />
+    <Compile Include="Query\CustomDocument\RecycleCustomDocumentQuery.cs" />
+    <Compile Include="Query\CustomFields\CustomFiledsQuery.cs" />
+    <Compile Include="Query\DocumentAudit\DocumentAuditFilterQuery.cs" />
+    <Compile Include="Query\DocumentCategory\DocumentCategoryAndDescendantsIdQuery.cs" />
+    <Compile Include="Query\DocumentCategory\DocumentCategoryListQuery.cs" />
+    <Compile Include="Query\Document\CompanyDocumentCountQuery.cs" />
+    <Compile Include="Query\Document\DocAssignedToUserQuery.cs" />
+    <Compile Include="Query\Document\DocumentAssignedToUserQuery.cs" />
+    <Compile Include="Query\Document\DocumentCollaboratorsQuery.cs" />
+    <Compile Include="Query\Document\DocumentListQuery.cs" />
+    <Compile Include="Query\Document\DocumentQuery.cs" />
+    <Compile Include="Query\Document\DocumentReferenceIdQuery.cs" />
+    <Compile Include="Query\Document\DocumentsAssignedToUserQuery.cs" />
+    <Compile Include="Query\Document\DocumentsRemainingQuery.cs" />
+    <Compile Include="Query\Document\DocumentTitlesQuery.cs" />
+    <Compile Include="Query\Document\GetDocumentsToCopyFromCompanyQuery.cs" />
+    <Compile Include="Query\Document\PrintDocumentQuery.cs" />
+    <Compile Include="Query\Document\SyncDocumentContentToolsUploadsQuery.cs" />
+    <Compile Include="Query\Document\SyncDocumentContentUploadsQuery.cs" />
+    <Compile Include="Query\Document\SyncDocumentCoverPictureQuery.cs" />
+    <Compile Include="Query\Document\SyncDocumentLabelsQuery.cs" />
+    <Compile Include="Query\Document\UsersAssignedDocumentQuery.cs" />
+    <Compile Include="Query\Document\UsersNotAssignedDocumentQuery.cs" />
+    <Compile Include="Query\Form\FormChapterUserResultQuery.cs" />
+    <Compile Include="Query\Group\GroupsWithUsersQuery.cs" />
+    <Compile Include="Query\Label\LabelListQuery.cs" />
+    <Compile Include="Query\Label\TrainingLabelListQuery.cs" />
+    <Compile Include="Query\Memo\MemoChapterUserResultQuery.cs" />
+    <Compile Include="Query\Memo\MemoListQuery.cs" />
+    <Compile Include="Query\Memo\RecycleMemoQuery.cs" />
+    <Compile Include="Query\Policy\PolicyContentBoxUserResultQuery.cs" />
+    <Compile Include="Query\Policy\PolicyListQuery.cs" />
+    <Compile Include="Query\PolicyResponse\PolicyResponseQuery.cs" />
+    <Compile Include="Query\Policy\RecyclePolicyQuery.cs" />
+    <Compile Include="Query\RecycleBinQuery\RecycleQuery.cs" />
+    <Compile Include="Query\Reporting\AcrobetFieldDetailsQuery.cs" />
+    <Compile Include="Query\Reporting\AllCheckListSubmissionReportQuery.cs" />
+    <Compile Include="Query\Reporting\AllCustomDocumentListSubmissionReportQuery.cs" />
+    <Compile Include="Query\Reporting\CheckListSubmissionReportExportQuery.cs" />
+    <Compile Include="Query\Reporting\CheckListSubmissionReportQuery.cs" />
+    <Compile Include="Query\Reporting\CustomDocumentSubmissionReportExportQuery.cs" />
+    <Compile Include="Query\Reporting\CustomDocumentSubmissionReportQuery.cs" />
+    <Compile Include="Query\Reporting\InteractionReportDetailExportQuery.cs" />
+    <Compile Include="Query\Reporting\InteractionReportDetailQuery.cs" />
+    <Compile Include="Query\Reporting\InteractionReportExportQuery.cs" />
+    <Compile Include="Query\Reporting\InteractionReportQuery.cs" />
+    <Compile Include="Query\Reporting\PointsStatementExportQuery.cs" />
+    <Compile Include="Query\Reporting\PointsStatementQuery.cs" />
+    <Compile Include="Query\Reporting\UserActivityAndPerformanceReportExportQuery.cs" />
+    <Compile Include="Query\Reporting\UserActivityAndPerformanceReportQuery.cs" />
+    <Compile Include="Query\Reporting\UserActivityAndPerformanceUserListReportQuery.cs" />
+    <Compile Include="Query\Report\ReportParam.cs" />
+    <Compile Include="Query\StandardUserGroup\StandardUserGroupByUserIdQuery.cs" />
+    <Compile Include="Query\StandardUser\ActiveCustomerAdminsQuery.cs" />
+    <Compile Include="Query\StandardUser\NewExpiredUsersQuery.cs" />
+    <Compile Include="Query\TestSession\TestSessionQuery.cs" />
+    <Compile Include="Query\Test\TestChapterUserResultQuery.cs" />
+    <Compile Include="Query\Test\RecycleTestQuery.cs" />
+    <Compile Include="Query\Test\TestExportReportQuery.cs" />
+    <Compile Include="Query\Test\TestListQuery.cs" />
+    <Compile Include="Query\Test\TestResultCertificateByUserQuery.cs" />
+    <Compile Include="Query\Test\UserCanTakeTestQuery.cs" />
+    <Compile Include="Query\TrainingGuide\TrainingGuideListQuery.cs" />
+    <Compile Include="Query\TrainingManual\TrainingManualChapterUserResultQuery.cs" />
+    <Compile Include="Query\TrainingManual\RecycleManualQuery.cs" />
+    <Compile Include="Query\TrainingManual\TrainingManualListQuery.cs" />
+    <Compile Include="Query\Upload\FetchUploadByIdQuery.cs" />
+    <Compile Include="Query\Upload\FetchUploadFromCompanyQuery.cs" />
+    <Compile Include="Query\UserFeedbackRead\UserFeedbackReadListQuery.cs" />
+    <Compile Include="Query\UserFeedback\FilteredUserFeedbackQuery.cs" />
+    <Compile Include="Query\UserFeedback\UserFeedbackExportQuery.cs" />
+    <Compile Include="Query\UserFeedback\UserFeedbackListQuery.cs" />
+    <Compile Include="Query\User\AllUsersQuery.cs" />
+    <Compile Include="Query\User\StandardUsersQuery.cs" />
+    <Compile Include="Query\User\UsersAndGroupsQuery.cs" />
+    <Compile Include="Query\VirtualClassroom\FetchExternalMeetingUserQuery.cs" />
+    <Compile Include="Query\VirtualClassroom\MeetingReportQuery.cs" />
+    <Compile Include="Query\VirtualClassroom\ViewParticipantQuery.cs" />
+    <Compile Include="Query\VirtualClassroom\VirtualClassroomQuery.cs" />
+    <Compile Include="Security\OnrampClaimTypes.cs" />
+    <Compile Include="Security\Role.cs" />
+    <Compile Include="ViewModel\AcrobatFieldDetailsViewMolel.cs" />
+    <Compile Include="ViewModel\AcrobatModel.cs" />
+    <Compile Include="ViewModel\AddAutoAssignWorkflowViewModel.cs" />
+    <Compile Include="ViewModel\AddCustomUserRoleViewModel.cs" />
+    <Compile Include="ViewModel\AdminSettingViewModel.cs" />
+    <Compile Include="ViewModel\ADUser.cs" />
+    <Compile Include="ViewModel\AllTrainingGuidesInSystemViewModel.cs" />
+    <Compile Include="ViewModel\AssignedDocumentInfo.cs" />
+    <Compile Include="ViewModel\AssignedDocumentListModel.cs" />
+    <Compile Include="ViewModel\AssignedDocumentModel.cs" />
+    <Compile Include="ViewModel\AssignmentViewModel.cs" />
+    <Compile Include="ViewModel\AssignViewModel.cs" />
+    <Compile Include="ViewModel\AssignedTestViewModel.cs" />
+    <Compile Include="ViewModel\AssignedTrainingGuideViewModel.cs" />
+    <Compile Include="ViewModel\AssignTestToUsersOrGroupViewModel.cs" />
+    <Compile Include="ViewModel\AssignTrainingGuideToStandardUsersViewModel.cs" />
+    <Compile Include="ViewModel\AssignTrainingGuideToUsersOrGroupsViewModel.cs" />
+    <Compile Include="ViewModel\AssignTrainingTestToUsersOrGroupsViewModel.cs" />
+    <Compile Include="ViewModel\Assign_UnAssignPlaybooksAndTests.cs" />
+    <Compile Include="ViewModel\AttachmentModel.cs" />
+    <Compile Include="ViewModel\AuditReportModel.cs" />
+    <Compile Include="ViewModel\AutoAssignWorkflowViewModel.cs" />
+    <Compile Include="ViewModel\AutoCompleteModel.cs" />
+    <Compile Include="ViewModel\BEECertificateModel.cs" />
+    <Compile Include="ViewModel\BundleViewModel.cs" />
+    <Compile Include="ViewModel\CalendarViewModel.cs" />
+    <Compile Include="ViewModel\CategoryStatisticsReportViewModel.cs" />
+    <Compile Include="ViewModel\CategoryViewModel.cs" />
+    <Compile Include="ViewModel\CategoryViewModelLong.cs" />
+    <Compile Include="ViewModel\CertificateModel.cs" />
+    <Compile Include="ViewModel\ChangePasswordViewModel.cs" />
+    <Compile Include="ViewModel\ChapterLinkViewModel.cs" />
+    <Compile Include="ViewModel\ChapterUploadViewModel.cs" />
+    <Compile Include="ViewModel\CheckListChapterModel.cs" />
+    <Compile Include="ViewModel\AcrobatFieldContentBoxModel.cs" />
+    <Compile Include="ViewModel\AcrobatFieldChapterUserResultViewModel.cs" />
+    <Compile Include="ViewModel\CustomFieldsViewModel.cs" />
+    <Compile Include="ViewModel\FormChapterModel.cs" />
+    <Compile Include="ViewModel\FormChartViewModel.cs" />
+    <Compile Include="ViewModel\FormFieldModel.cs" />
+    <Compile Include="ViewModel\FormModel.cs" />
+    <Compile Include="ViewModel\PolicyContentBoxUserResultViewModel.cs" />
+    <Compile Include="ViewModel\TestChapterUserResultViewModel.cs" />
+    <Compile Include="ViewModel\TrainingManualChapterUserResultViewModel.cs" />
+    <Compile Include="ViewModel\MemoChapterUserResultViewModel.cs" />
+    <Compile Include="ViewModel\CheckListChapterUserUploadResultsModel.cs" />
+    <Compile Include="ViewModel\ChecklistChartViewModel.cs" />
+    <Compile Include="ViewModel\CheckListModel.cs" />
+    <Compile Include="ViewModel\CheckListChapterUserResultViewModel.cs" />
+    <Compile Include="ViewModel\CheckListUserResultViewModel.cs" />
+    <Compile Include="ViewModel\CheckUserHasAlreadyAppearedForTestViewModel.cs" />
+    <Compile Include="ViewModel\ContentFeedbackViewModel.cs" />
+    <Compile Include="ViewModel\CopyDocumentsFromCustomerCompanyViewModel.cs" />
+    <Compile Include="ViewModel\CopyDocumentsViewModel.cs" />
+    <Compile Include="ViewModel\CourseModel.cs" />
+    <Compile Include="ViewModel\CustomColourViewModel.cs" />
+    <Compile Include="ViewModel\CustomConfigurationViewModel.cs" />
+    <Compile Include="ViewModel\CustomDocumentChapters.cs" />
+    <Compile Include="ViewModel\CustomDocumentModel.cs" />
+    <Compile Include="ViewModel\CustomerSelfProvisionViewModel.cs" />
+    <Compile Include="ViewModel\CustomerSelfSignUpViewModel.cs" />
+    <Compile Include="ViewModel\DocumentWorkflowAuditMessagesViewModel.cs" />
+    <Compile Include="ViewModel\CustomUserRoleViewModel.cs" />
+    <Compile Include="ViewModel\CutomerConfigurationModel.cs" />
+    <Compile Include="ViewModel\DocumentAuditModel.cs" />
+    <Compile Include="ViewModel\DocumentAuditReportModel.cs" />
+    <Compile Include="ViewModel\DocumentCategoryViewModel.cs" />
+    <Compile Include="ViewModel\DocumentIndexModel.cs" />
+    <Compile Include="ViewModel\DocumentListModel.cs" />
+    <Compile Include="ViewModel\DocumentNotificationViewModel.cs" />
+    <Compile Include="ViewModel\DocumentSequenceViewModel.cs" />
+    <Compile Include="ViewModel\DocumentUrlViewModel.cs" />
+    <Compile Include="ViewModel\Document_DocumentUsageModel.cs" />
+    <Compile Include="ViewModel\ExternalMeetingUserModel.cs" />
+    <Compile Include="ViewModel\ExternalTrainingProviderModel.cs" />
+    <Compile Include="ViewModel\FeedbackReadViewModel.cs" />
+    <Compile Include="ViewModel\FeedbackViewModel.cs" />
+    <Compile Include="ViewModel\FocusAreaReportDataSources.cs" />
+    <Compile Include="ViewModel\FocusAreaReportOption.cs" />
+    <Compile Include="ViewModel\FocusAreaReportQuestion.cs" />
+    <Compile Include="ViewModel\FocusAreaReportTest.cs" />
+    <Compile Include="ViewModel\GlobalSearchViewModel.cs" />
+    <Compile Include="ViewModel\IconManagementModel.cs" />
+    <Compile Include="ViewModel\IconModel.cs" />
+    <Compile Include="ViewModel\IconSetModel.cs" />
+    <Compile Include="ViewModel\ContextReportModel.cs" />
+    <Compile Include="ViewModel\IndividualDevelopementModel.cs" />
+    <Compile Include="ViewModel\InteractionReportDetailViewModel.cs" />
+    <Compile Include="ViewModel\InteractionReportViewModel.cs" />
+    <Compile Include="ViewModel\JsTreeModel.cs" />
+    <Compile Include="ViewModel\JSTreeViewModel.cs" />
+    <Compile Include="ViewModel\KnockoutModel.cs" />
+    <Compile Include="ViewModel\LoginStatsViewModel.cs" />
+    <Compile Include="ViewModel\LostPasswordViewModel.cs" />
+    <Compile Include="ViewModel\CompanyViewModel.cs" />
+    <Compile Include="ViewModel\CompanyViewModelLong.cs" />
+    <Compile Include="ViewModel\CustomerCompanyViewModel.cs" />
+    <Compile Include="ViewModel\CustomerSurveyDetailViewModel.cs" />
+    <Compile Include="ViewModel\CustomerViewModel.cs" />
+    <Compile Include="ViewModel\EditUserProfileViewModel.cs" />
+    <Compile Include="ViewModel\GroupViewModel.cs" />
+    <Compile Include="ViewModel\GroupViewModelLong.cs" />
+    <Compile Include="ViewModel\IViewModel.cs" />
+    <Compile Include="ViewModel\ManageAssignmentGroupViewModel.cs" />
+    <Compile Include="ViewModel\ManageUserAndCompanyViewModel.cs" />
+    <Compile Include="ViewModel\ManageAssignmentUserViewModel.cs" />
+    <Compile Include="ViewModel\MeetingReportModel.cs" />
+    <Compile Include="ViewModel\MeetingReportUsageModel.cs" />
+    <Compile Include="ViewModel\MeetingViewModel.cs" />
+    <Compile Include="ViewModel\MemoChartViewModel.cs" />
+    <Compile Include="ViewModel\MemoContentBoxModel.cs" />
+    <Compile Include="ViewModel\MemoModel.cs" />
+    <Compile Include="ViewModel\OpenFileInNewBrowserViewModel.cs" />
+    <Compile Include="ViewModel\PlayBookImageMigrationWithDbModel.cs" />
+    <Compile Include="ViewModel\PlaybookUtilizationReportModel.cs" />
+    <Compile Include="ViewModel\PointsExportViewModel.cs" />
+    <Compile Include="ViewModel\PointsStatementViewModel.cs" />
+    <Compile Include="ViewModel\PolicyChartViewModel.cs" />
+    <Compile Include="ViewModel\PolicyContentBoxModel.cs" />
+    <Compile Include="ViewModel\PolicyModel.cs" />
+    <Compile Include="ViewModel\PortalContextViewModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModel\PackageViewModel.cs" />
+    <Compile Include="ViewModel\CompanyUserViewModel.cs" />
+    <Compile Include="ViewModel\ProvisionalCompanyListViewModel.cs" />
+    <Compile Include="ViewModel\ProvisionalCompanyUserViewModel.cs" />
+    <Compile Include="ViewModel\ProvisionalCompanyViewModel.cs" />
+    <Compile Include="ViewModel\QuestionResultViewModel.cs" />
+    <Compile Include="ViewModel\QuestionsViewModel.cs" />
+    <Compile Include="ViewModel\RaceCodeViewModel.cs" />
+    <Compile Include="ViewModel\ExportModel.cs" />
+    <Compile Include="ViewModel\ResetPasswordToken.cs" />
+    <Compile Include="ViewModel\ResetPasswordViewModel.cs" />
+    <Compile Include="ViewModel\ScheduleReportVM.cs" />
+    <Compile Include="ViewModel\SelfSignUpViewModel.cs" />
+    <Compile Include="ViewModel\SendMailToUsersToReTakeTest.cs" />
+    <Compile Include="ViewModel\SerializableSelectListItem.cs" />
+    <Compile Include="ViewModel\StandardUserGroupViewModel.cs" />
+    <Compile Include="ViewModel\StandardUserProgressViewModel.cs" />
+    <Compile Include="ViewModel\TempData.cs" />
+    <Compile Include="ViewModel\TestChartViewModel.cs" />
+    <Compile Include="ViewModel\TestQuestionAnswerModel.cs" />
+    <Compile Include="ViewModel\TestAnswerViewModel.cs" />
+    <Compile Include="ViewModel\TestAssignedUsersAndNotAppearedUsersViewModel.cs" />
+    <Compile Include="ViewModel\AssignmentNotificationEmailViewModel.cs" />
+    <Compile Include="ViewModel\TestHistoryReportViewModel.cs" />
+    <Compile Include="ViewModel\TestModel.cs" />
+    <Compile Include="ViewModel\TestNotApperUsersViewModel.cs" />
+    <Compile Include="ViewModel\TestQuestionModel.cs" />
+    <Compile Include="ViewModel\TestResultModel.cs" />
+    <Compile Include="ViewModel\TestResultViewModel.cs" />
+    <Compile Include="ViewModel\TestSessionViewModel.cs" />
+    <Compile Include="ViewModel\TestTrackingModel.cs" />
+    <Compile Include="ViewModel\TestViewModel.cs" />
+    <Compile Include="ViewModel\TrainingActivityModel.cs" />
+    <Compile Include="ViewModel\TrainingGuide.cs" />
+    <Compile Include="ViewModel\TrainingGuideAssignInfoViewModel.cs" />
+    <Compile Include="ViewModel\TrainingGuideusageStatsViewModel.cs" />
+    <Compile Include="ViewModel\TrainingLabelModel.cs" />
+    <Compile Include="ViewModel\TrainingManualChapterModel.cs" />
+    <Compile Include="ViewModel\TrainingManualChartViewModel.cs" />
+    <Compile Include="ViewModel\TrainingManualModel.cs" />
+    <Compile Include="ViewModel\TrainingTestAssignInfoViewModel.cs" />
+    <Compile Include="ViewModel\TrainingTestQuestionViewModel.cs" />
+    <Compile Include="ViewModel\RemoteValidationResponseViewModel.cs" />
+    <Compile Include="ViewModel\RoleViewModel.cs" />
+    <Compile Include="ViewModel\SettingViewModel.cs" />
+    <Compile Include="ViewModel\TrainingGuideViewModel.cs" />
+    <Compile Include="ViewModel\TrainingGuideViewModelLong.cs" />
+    <Compile Include="ViewModel\TrainingTestViewModel.cs" />
+    <Compile Include="ViewModel\TraningGuideChapterViewModel.cs" />
+    <Compile Include="ViewModel\TrophyModel.cs" />
+    <Compile Include="ViewModel\UploadViewModels.cs" />
+    <Compile Include="ViewModel\UserActivityAndPerformanceViewModel.cs" />
+    <Compile Include="ViewModel\UserCorrespondenceLogViewModel.cs" />
+    <Compile Include="ViewModel\UserActivityLogViewModel.cs" />
+    <Compile Include="ViewModel\UserActivityStatsViewModel.cs" />
+    <Compile Include="ViewModel\UserDisclaimerActivityLogEntryViewModel.cs" />
+    <Compile Include="ViewModel\UserFeedbackModel.cs" />
+    <Compile Include="ViewModel\UserFeedbackReadModel.cs" />
+    <Compile Include="ViewModel\UserFeedbackViewModel.cs" />
+    <Compile Include="ViewModel\UserFeedbackViewModelShort.cs" />
+    <Compile Include="ViewModel\UserFilterOnAssignPlaybooksViewModel.cs" />
+    <Compile Include="ViewModel\UserKPIReportViewModel.cs" />
+    <Compile Include="ViewModel\UserLoginFrequencyReportViewModel.cs" />
+    <Compile Include="ViewModel\UserLoginFrequencyViewModel.cs" />
+    <Compile Include="ViewModel\UserViewModel.cs" />
+    <Compile Include="ViewModel\UserViewModelShort.cs" />
+    <Compile Include="ViewModel\UserWithGroupModel.cs" />
+    <Compile Include="ViewModel\ValidateUserViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelEnumerations.cs" />
+    <Compile Include="ViewModel\VirtualClassModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\DataSources\Ramp.Contracts.ViewModel.FocusAreaReportQuestion.datasource" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{bbbb998d-2c63-4093-98dc-6d5b452997d0}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain.Customer\Domain.Customer.csproj">
+      <Project>{6894940b-7242-4321-8ff2-c8ad228dd87c}</Project>
+      <Name>Domain.Customer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain\Domain.csproj">
+      <Project>{ca18cb88-47de-4df8-9592-6e9b4fb018ed}</Project>
+      <Name>Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Serialization\Spec.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="QueryParameter\StandardUserGroup\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

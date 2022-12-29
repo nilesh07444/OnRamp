@@ -1,0 +1,757 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{000AEFBB-729D-4E10-A4BF-1834EE86FEA6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Ramp.Services</RootNamespace>
+    <AssemblyName>Ramp.Services</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'QA|AnyCPU'">
+    <OutputPath>bin\QA\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'UAT|AnyCPU'">
+    <OutputPath>bin\UAT\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Production|AnyCPU'">
+    <OutputPath>bin\Production\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="antlr.runtime, Version=2.7.6.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.2.7\lib\net45\antlr.runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="FlexCel, Version=5.3.0.0, Culture=neutral, PublicKeyToken=cb8f6080e6d5a4d6, processorArchitecture=MSIL">
+      <HintPath>..\packages\FlexCel.5.3.0.0\lib\net35\FlexCel.dll</HintPath>
+    </Reference>
+    <Reference Include="Hangfire.Core, Version=1.6.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.Core.1.6.14\lib\net45\Hangfire.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Ical.Net, Version=2.1.0.24148, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.2.7\lib\net45\Ical.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Ical.Net.Collections, Version=2.1.0.24147, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.2.7\lib\net45\Ical.Net.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.AWT.WinForms, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.AWT.WinForms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Beans, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Beans.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Charsets, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Charsets.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Corba, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Corba.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Core, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Jdbc, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Jdbc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Management, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Management.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Media, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Media.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Misc, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Misc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Naming, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Naming.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Remoting, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Remoting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Security, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.SwingAWT, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.SwingAWT.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Text, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Text.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Tools, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Tools.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Util, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.Util.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.API, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.API.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.Bind, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Bind.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.Crypto, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Crypto.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.Parse, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Parse.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.Transform, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.Transform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.WebServices, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.WebServices.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.XML.XPath, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.OpenJDK.XML.XPath.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.Runtime, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IKVM.Runtime.JNI, Version=7.4.5196.0, Culture=neutral, PublicKeyToken=13235d27fcbfff58, processorArchitecture=MSIL">
+      <HintPath>..\packages\IKVM.7.4.5196.0\lib\IKVM.Runtime.JNI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.12.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.12\lib\itextsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="itextsharp.xmlworker, Version=5.5.12.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\itextsharp.xmlworker.5.5.12\lib\itextsharp.xmlworker.dll</HintPath>
+    </Reference>
+    <Reference Include="LinqKit, Version=1.1.15.0, Culture=neutral, PublicKeyToken=bc217f8844052a91, processorArchitecture=MSIL">
+      <HintPath>..\packages\LinqKit.1.1.15\lib\net45\LinqKit.dll</HintPath>
+    </Reference>
+    <Reference Include="LINQtoCSV, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\LINQtoCSV.1.5.0.0\lib\net35\LINQtoCSV.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Practices.ServiceLocation">
+      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NodaTime, Version=1.3.0.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ical.Net.2.2.7\lib\net45\NodaTime.dll</HintPath>
+    </Reference>
+    <Reference Include="NReco.ImageGenerator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=0ef6c878974c90ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\NReco.ImageGenerator.1.1.0\lib\net20\NReco.ImageGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="NReco.VideoConverter, Version=1.1.2.0, Culture=neutral, PublicKeyToken=395ccb334978a0cd, processorArchitecture=MSIL">
+      <HintPath>..\packages\NReco.VideoConverter.1.1.2\lib\net20\NReco.VideoConverter.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="RazorEngine, Version=3.10.0.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
+      <HintPath>..\packages\RazorEngine.3.10.0\lib\net45\RazorEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Licensing, Version=17.4451.0.53, Culture=neutral, PublicKeyToken=632609b4d040f6b4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Licensing.17.4.0.53\lib\net451\Syncfusion.Licensing.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.4\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.4\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.4\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="tika-app, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TikaOnDotNet.1.7.0\lib\net35\tika-app.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="TikaOnDotNet, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TikaOnDotNet.1.7.0\lib\net35\TikaOnDotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="VirtuaCon, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\VirtuaCon.Reporting.Pdf.2.1.368.1854\lib\net35\VirtuaCon.dll</HintPath>
+    </Reference>
+    <Reference Include="VirtuaCon.Reporting.Excel, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\VirtuaCon.Reporting.Excel.2.1.368.1854\lib\net35\VirtuaCon.Reporting.Excel.dll</HintPath>
+    </Reference>
+    <Reference Include="VirtuaCon.Reporting.Pdf, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\VirtuaCon.Reporting.Pdf.2.1.368.1854\lib\net35\VirtuaCon.Reporting.Pdf.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CommandHandler\AcrobatFieldValuesCommandHandler.cs" />
+    <Compile Include="CommandHandler\ActivityManagement\UpdateActivityLogDescriptionsCommandHandler.cs" />
+    <Compile Include="CommandHandler\ActivityManagement\UpdateUserActivityLogCommandHandler.cs" />
+    <Compile Include="CommandHandler\ActivityManagement\UserDisclaimerActivityLogEntryCommandHandler.cs" />
+    <Compile Include="CommandHandler\AutoAssignWorkflow\AddOrUpdateAutoAssignWorkFlowCommandHandler.cs" />
+    <Compile Include="CommandHandler\AutoAssignWorkflow\DeleteAutoAssignWorkflowCommandHandler.cs" />
+    <Compile Include="CommandHandler\BEECertificateCommandHandler.cs" />
+    <Compile Include="CommandHandler\BundleCommandHandler.cs" />
+    <Compile Include="CommandHandler\Categories\CategoriesChangeRootOfNodeCommandHandler.cs" />
+    <Compile Include="CommandHandler\CertificateCommandHandler.cs" />
+    <Compile Include="CommandHandler\CheckListChapterCommandHandler.cs" />
+    <Compile Include="CommandHandler\AcrobatFieldChapterUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\AcrobatFieldChapterUserUploadResultsCommandHandler.cs" />
+    <Compile Include="CommandHandler\AcrobatFieldCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\AcrobatFieldCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomDocumentCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomDocuments\AddCustomDocumentAnswerSubmission.cs" />
+    <Compile Include="CommandHandler\CustomDocuments\AddOrUpdateCustomDocumentMessageCenterCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateMissingStandardUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomFields\SaveOrUpdateCustomFieldsCommandHandler.cs" />
+    <Compile Include="CommandHandler\FormChapterUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\FormCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\FormCommandHandler.cs" />
+    <Compile Include="CommandHandler\FormFieldUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\PolicyContentBoxUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\PolicyContentBoxUserUploadResultsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TrainingMannualChapterUserUploadResultsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestChapterUserUploadResultsCommandHandler.cs" />
+    <Compile Include="CommandHandler\MemoChapterUserUploadResultsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestChapterUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\TrainingManualChapterUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\MemoChapterUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\CheckListChapterUserUploadResultsCommandHandler.cs" />
+    <Compile Include="CommandHandler\CheckListCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\CheckListCommandHandler.cs" />
+    <Compile Include="CommandHandler\CheckListChapterUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\CheckListUserResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\CommandAuditTrailCommandHandler.cs" />
+    <Compile Include="CommandHandler\CompanyCommandHandler.cs" />
+    <Compile Include="CommandHandler\CorrespondenceManagement\AddUserCorrespondenceCommandHandler.cs" />
+    <Compile Include="CommandHandler\ActivityManagement\AddUserActivityCommandHandler.cs" />
+    <Compile Include="CommandHandler\Categories\AllcategoriesCommandHandler.cs" />
+    <Compile Include="CommandHandler\Categories\CategoriesCommandHandler.cs" />
+    <Compile Include="CommandHandler\Categories\DeleteCategoryCommandHandler.cs" />
+    <Compile Include="CommandHandler\CorrespondenceManagement\UpdateCorrespondanceLogsCommandHandler.cs" />
+    <Compile Include="CommandHandler\Courses\AddOrUpdateCourseCommandHandler.cs" />
+    <Compile Include="CommandHandler\Courses\DeleteCourseCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomConfigurationCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomDocuments\AddOrUpdateCustomDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomDocuments\DeleteCustomDocumentCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\AddOrUpdateCustomColourCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\AddOrUpdateCustomerCompanyUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\AddSurveyDetailsByCustomerUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\ChangeCompanyUserExpiryStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\ChangeCustomerSelfSignUpApproveStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\DeleteCustomColoursCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\DeleteCustomerCompanyCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\SaveCsvCustomerCompanyUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\SaveCustomerCompanySelfProvisionCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\SaveCustomerUserSelfSignUpCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\SaveOrUpdateCustomerCompanyCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateCompanyLockStatusShedulerCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateCustomerCompanyAdminSettingCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateCustomerCompanyLockStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateCustomerUserExpiryStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateMyProfileCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateParentUserIdCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UpdateSelfProvisionEmailConfirmCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\UploadCustomCSSCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomUserRole\DeleteCustomUserRoleCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomUserRole\SaveOrUpdateCustomUserRoleCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentAssignmentCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentAuditCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentCategoryCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentNotificationCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentUsageCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentWorkflowAuditMessages\DeleteDocumentWorkflowAuditMessagesCommandHandler.cs" />
+    <Compile Include="CommandHandler\DocumentWorkflowAuditMessages\SaveOrUpdateDocumentWorkflowAuditMessagesCommandHandler.cs" />
+    <Compile Include="CommandHandler\ExternalMeetingUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\ExternalTrainingProviderCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\Assign_UnassignCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\TrainingGuideCloningCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\TrainingGuideCommandHandler.cs" />
+    <Compile Include="CommandHandler\IconCommandHandler.cs" />
+    <Compile Include="CommandHandler\LabelCommandHandler.cs" />
+    <Compile Include="CommandHandler\MemoCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\MemoCommandHandler.cs" />
+    <Compile Include="CommandHandler\PolicyCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\PolicyCommandHandler.cs" />
+    <Compile Include="CommandHandler\PolicyResponseCommandHandler.cs" />
+    <Compile Include="CommandHandler\ScheduleReport\AddOrUpadteScheduleReportCommandHanlder.cs" />
+    <Compile Include="CommandHandler\ScheduleReport\DeleteScheduleReportCommandhandler.cs" />
+    <Compile Include="CommandHandler\StandardUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\StandardUserGroup\DeleteStandardUserGroupCommandHandler.cs" />
+    <Compile Include="CommandHandler\StandardUserGroup\SaveOrUpdateStandardUserGroupCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\CloneTestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\PrepareTestExpiryNotificationCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestSessionCommandHandler.cs" />
+    <Compile Include="CommandHandler\TrainingActivityCommandHandler.cs" />
+    <Compile Include="CommandHandler\TrainingManualCloneCommandHandler.cs" />
+    <Compile Include="CommandHandler\TrainingManualCommandHandler.cs" />
+    <Compile Include="CommandHandler\UserFeedbackCommandHandler.cs" />
+    <Compile Include="CommandHandler\UserFeedbackReadCommandHandler.cs" />
+    <Compile Include="CommandHandler\VirtualClassRoomCommandHandler.cs" />
+    <Compile Include="CSVMasks\User.cs" />
+    <Compile Include="Handler\FeedbackHandler.cs" />
+    <Compile Include="CommandHandler\Group\UpdateRoleDescriptionsCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\AddCreatorToCollaboratorsListForCustomerCompanyCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\AddUserToColaboratorsCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\AssignTrainingGuideToUsersCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\Assign_UnAssignPlaybookToUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\DeleteChapterCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\DeleteChapterUploadCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\DeleteTrainingGuideCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\IncrementTrainingGuideViewCommandHandler.cs" />
+    <Compile Include="CommandHandler\Settings\ClearCustomConfigurationCommadHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\Answer\DeleteTestAnswerCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\Answer\SaveTestAnswerCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\Answer\UpdateTestAnswerCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\Assign_UnAssignTestToUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\DeleteOrphanTestResultsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\LogTestResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\MigrateTestResultsExpansionCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\MigrateTrainingGuidesToKnockoutCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\ReindexChapterUploadsCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\SaveChapterUploadCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\SaveGuideAndChaptersCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\SaveTrainingGuideCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\UpdateAssignedTrainingGuideCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\UpdateTrainingGuideCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\UpdateTrainingGuideStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\UpdateTrainingGuideUsageStatsCommandHandler.cs" />
+    <Compile Include="CommandHandler\GuideManagement\UpdateTrainingGuideUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\Login\AddUserLoginStatsCommandHandler.cs" />
+    <Compile Include="CommandHandler\Login\ResetPasswordCommandHandler.cs" />
+    <Compile Include="CommandHandler\Login\UpdateUserLoginStatsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\AddVersionNumberOnTestsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\DeleteOrphanTestsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\MigrateTestResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\MigrateTestsToDbCommandHandler.cs" />
+    <Compile Include="CommandHandler\PackageManagement\DeletePackageCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\AssignTestsToUsersOrGroupsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\IncrementTrainingTestTakenCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\MarkPeopleHavingTakenTestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\MigrateTestsToKnockoutCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\PublishTrainingTestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\QuestionUpload\DeleteQuestionUploadCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\QuestionUpload\SaveQuestionUploadCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\QuestionUpload\UpdateQuestionUploadCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\Question\DeleteTrainingQuestionCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\Question\SaveTrainingQuestionCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\SaveDraftVersionOfTrainingTestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\SaveTestResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\TrainingTestCommandHandlers.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateAssignedTrainingTestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateTestResultCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\Question\UpdateTrainingQuestionCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateTrainingTestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateTrainingTestDraftPublishTestCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateTrainingTestDraftStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateTrainingTestStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\Group\DeleteGroupCommandHandler.cs" />
+    <Compile Include="CommandHandler\Group\SaveOrUpdateGroupCommandHandler.cs" />
+    <Compile Include="CommandHandler\PackageManagement\PackageCommandHandler.cs" />
+    <Compile Include="CommandHandler\ProvisionalManagement\AddOrUpdateProvisionalCompanyUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\ProvisionalManagement\DeleteProvisionalCompanyCommandHandler.cs" />
+    <Compile Include="CommandHandler\ProvisionalManagement\DeleteProvisionalCompanyUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\ProvisionalManagement\ReassignUserToAnotherProvisionalCompanyCommandHandler.cs" />
+    <Compile Include="CommandHandler\CustomerManagement\AddOrUpdateCustomerCompanyUserByCustomerAdminCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateTrainingTestUsageStatsCommandHandler.cs" />
+    <Compile Include="CommandHandler\TestManagement\UpdateTrainingTestUserCommandHandler.cs" />
+    <Compile Include="CommandHandler\FileUpload\DeleteUploadCommandHandler.cs" />
+    <Compile Include="CommandHandler\FileUpload\SaveUploadCommandHandler.cs" />
+    <Compile Include="CustomerDbRepositoryHelper.cs" />
+    <Compile Include="EventHandlers\ActivityManagement\UserCorrespondaceOccuredEventHandler.cs" />
+    <Compile Include="Handler\MigrationHandler.cs" />
+    <Compile Include="Handler\TrainingGuideHandler.cs" />
+    <Compile Include="Handler\TrainingTestHandler.cs" />
+    <Compile Include="Helpers\CommonHelper.cs" />
+    <Compile Include="Helpers\EncryptionHelper.cs" />
+    <Compile Include="Helpers\EnumHelper.cs" />
+    <Compile Include="Helpers\Errorloghelper.cs" />
+    <Compile Include="Helpers\LastReferenceIdForGuide.cs" />
+    <Compile Include="Helpers\NumberToTextConverterHelper.cs" />
+    <Compile Include="Helpers\RampDirectoryManager.cs" />
+    <Compile Include="Helpers\RampEnumDescriptionAttribute.cs" />
+    <Compile Include="Helpers\SearchHelper.cs" />
+    <Compile Include="Helpers\SendEmail.cs" />
+    <Compile Include="Helpers\StringExtensions.cs" />
+    <Compile Include="Helpers\UserRoleHelper.cs" />
+    <Compile Include="Implementations\NotificationService.cs" />
+    <Compile Include="Helpers\RampEmailHelper.cs" />
+    <Compile Include="Implementations\SMS.cs" />
+    <Compile Include="Projections\Project.cs" />
+    <Compile Include="INotificationService.cs" />
+    <Compile Include="CommandHandler\ProvisionalManagement\ProvisionalCompanyCommandHandler.cs" />
+    <Compile Include="CommandHandler\ProvisionalManagement\UpdateProvisionalCompanyStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\ProvisionalManagement\UpdateProvisionalCompanyUserStatusCommandHandler.cs" />
+    <Compile Include="CommandHandler\Settings\ChangePasswordCommandHandler.cs" />
+    <Compile Include="CommandHandler\Settings\SettingCommandHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Helpers\SMSHelper.cs" />
+    <Compile Include="QueryHandler\Account\UserProfileQueryHandler.cs" />
+    <Compile Include="QueryHandler\AcrobatFieldChapterUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\AcrobatFieldChapterUserUploadResultsQueryHandler.cs" />
+    <Compile Include="QueryHandler\ActivityManagement\AllUserActivitiesInTimeSpanQueryHandler.cs" />
+    <Compile Include="QueryHandler\ActivityManagement\AllUserActivityForCustomerCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\ActivityManagement\AllUsersInTheSystemQueryHandler.cs" />
+    <Compile Include="QueryHandler\AutoAssignWorkFlowQueryHandler.cs" />
+    <Compile Include="QueryHandler\BEECertificateQueryHandler.cs" />
+    <Compile Include="QueryHandler\BundleQueryHandler.cs" />
+    <Compile Include="QueryHandler\Calendar\CalendarQueryHandler.cs" />
+    <Compile Include="QueryHandler\Categories\AllCategoriesQueryHandler.cs" />
+    <Compile Include="QueryHandler\Categories\CategoriesQueryHandler.cs" />
+    <Compile Include="QueryHandler\Categories\CategoryNameExistQueryHandler.cs" />
+    <Compile Include="QueryHandler\Categories\CategoryStatisticsReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\CertificateQueryHandler.cs" />
+    <Compile Include="QueryHandler\AcrobatFieldQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomDocumentSummaryExportReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomDocument\CustomDocumentScheculeReport.cs" />
+    <Compile Include="QueryHandler\CustomFields\CustomFieldsQueryHandler.cs" />
+    <Compile Include="QueryHandler\FormQueryHandler.cs" />
+    <Compile Include="QueryHandler\PolicyContentBoxUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\PolicyContentBoxUserUploadResultsQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestChapterUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\TrainingManualChapterUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\TrainingManualChapterUserUploadResultsQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestChapterUserUploadResultsQueryHandler.cs" />
+    <Compile Include="QueryHandler\MemoChapterUserUploadResultsQueryHandler.cs" />
+    <Compile Include="QueryHandler\MemoUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\MemoChapterUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\CheckListChapterUserUploadResultsQueryHandler.cs" />
+    <Compile Include="QueryHandler\CheckListExportReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\CheckListQueryHandler.cs" />
+    <Compile Include="QueryHandler\CheckListChapterUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\ChecklistSummaryExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\CheckListUserResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\CommandAuditTrailQueryHandler.cs" />
+    <Compile Include="QueryHandler\CorrespondenceManagement\AllUsercorrespondanceForCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\CorrespondenceManagement\AllUserCorrespondenceInTimeSpanQueryHandler.cs" />
+    <Compile Include="QueryHandler\CorrespondenceManagement\IQueryHandler.cs" />
+    <Compile Include="QueryHandler\CorrespondenceManagement\UserCorrespondenceWithIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\Courses\CourseAssignmentQueryHandler.cs" />
+    <Compile Include="QueryHandler\Courses\CourseQueryHandler.cs" />
+    <Compile Include="QueryHandler\Courses\GetAllAdministrators.cs" />
+    <Compile Include="QueryHandler\CustomDocument\CustomDocumentQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AllContentAdminsForCustomerCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AllCustomerCompanyByProvisionalCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AllCustomerCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AllCustomerUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AllCustomerUsersByCustomerAdminQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AllStandardUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AverageRatingByCustomerCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\AverageRatingByCustomerCompanyUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\CustomColourQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\CustomerCompanyByPackageIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\CustomerCompanyByProvisionalCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\CustomerCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\CustomerCompanyUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\CustomerSelfSignUpQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\CustomerUserByProvisionalUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\FindCompanyByIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\LatestSurveyByCustomerUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomerManagement\UsersRatingHistoryByUserIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomUserRole\AllCustomUserRoleQueryHandler.cs" />
+    <Compile Include="QueryHandler\CustomUserRole\FindCustomUserRoleByIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentAuditExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentAudit\DocumentAuditQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentCategoryQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentCountQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentNotificationQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentsAssignmentQueryHandler.cs" />
+    <Compile Include="QueryHandler\DocumentWorkflowAuditMessages\AllMessagesInDocumentQueryHandler.cs" />
+    <Compile Include="QueryHandler\ExternalTrainingProviderQueryHandler.cs" />
+    <Compile Include="QueryHandler\FileUploadManagement\FileUploadQueryHandler.cs" />
+    <Compile Include="QueryHandler\Group\AllGroupQueryHandler.cs" />
+    <Compile Include="QueryHandler\Group\AllGroupsBuyProvisionalCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\Group\AllGroupsByCustomerAdminQueryHandler.cs" />
+    <Compile Include="QueryHandler\Group\AllGroupsByCustomerGroupId.cs" />
+    <Compile Include="QueryHandler\Group\GroupNameExistQueryHandler.cs" />
+    <Compile Include="QueryHandler\Group\GroupQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\AllAssignedGuidesToStandardUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\AllAssignedGuidesToStandardUserWithCategoryQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\AllTrainingGuideForMasterAdminQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\AllTrainingGuideQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\AllTrainingGuideToCreateTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\AssignTrainingGuideQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\EditTrainingGuideQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\GetAllTrainingGuideUsageReportHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\GetAllTrainingGuideUsageThresholdReportHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\GetChapterUploadQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\GetTrainingGuideByReferenceIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\GlobalSearchQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\LastReferenceIdFromGuideQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\ManageableUsersForCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\MyPlaybookCategoryQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\TotalCreatedTrainingGuidesInSystemQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\TrainingGuideBarometerQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\TrainingGuideExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\GuideManagement\TrainingGuideQueryHandler.cs" />
+    <Compile Include="QueryHandler\IconQueryHandler.cs" />
+    <Compile Include="QueryHandler\IndividualDevelopmentQueryHandler.cs" />
+    <Compile Include="QueryHandler\LabelQueryHandler.cs" />
+    <Compile Include="QueryHandler\Login\LoginQueryHandler.cs" />
+    <Compile Include="QueryHandler\Login\UserLoginHistoryQueryHandler.cs" />
+    <Compile Include="QueryHandler\Login\ValidateUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\MeetingExportReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\MemoQueryHandler.cs" />
+    <Compile Include="QueryHandler\PackageManagement\PackageQueryHandler.cs" />
+    <Compile Include="QueryHandler\PolicyQueryHandler.cs" />
+    <Compile Include="QueryHandler\PolicyResponseQueryHandler.cs" />
+    <Compile Include="QueryHandler\Portal\PortalQueryHandler.cs" />
+    <Compile Include="QueryHandler\PrintDocumentQueryHandler.cs" />
+    <Compile Include="QueryHandler\Progress\GetStandardUserProgressQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\AllCustomerCompaniesByProvisionalCompanyIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\AllCustomerCompaniesQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\AllProvisionalCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\AllUsersByProvisionalCompanyUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\ClientSystemNameExistsQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\CompanyExpiryDateReoprtQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\CompanyNameExistQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\EmailExistQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\LayerSubDomainExistsQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\ProvisionalAccountQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\ProvisionalCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\ProvisionalCompanyUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\ReassignUsersToProvisionalCompaniesQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\ResellerEmailExistQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\UserLoginFrequencyQueryHandler.cs" />
+    <Compile Include="QueryHandler\ProvisionalManagement\UsersLoginStatsQueryHandler.cs" />
+    <Compile Include="QueryHandler\ReportingQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\FocusAreaReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\InteractionReportDetailExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\InteractionReportExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\InteractionReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\PlaybookUtilizationReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\PointsStatementExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\PointsStatementQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\TrainingActivityLogExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\UserActivityAndPerformanceReportExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\UserActivityAndPerformanceReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Reporting\UserActivityAndPerformanceUserListReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\ScheduleReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\Settings\GetCustomConfigurationQueryHandler.cs" />
+    <Compile Include="QueryHandler\Settings\SettingQueryHandler.cs" />
+    <Compile Include="QueryHandler\Settings\UsersAndCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\StandardUserGroup\StandardUserGroupQueryHandler.cs" />
+    <Compile Include="QueryHandler\StandardUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestExportReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\AllAssignedTestsForAUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\AllAssignedTestUsersByTestIdQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\AllTestsThatRequiresExipryNotificationQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\AllTrainingTestExpiringTodayQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\AllTrainingTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\AssignTrainingTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\CheckForTrainingTestTitleExistQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\CheckUserHasAlreadyAppearedForTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\EditTrainingTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\ForcePeopletoRetakeTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\PointsExportReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\StartTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\TakeTrainingTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\TestCertificateForResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\TestHistoryReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\TestNotApperUsersHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\TestResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\TrainingTestReportHandler.cs" />
+    <Compile Include="QueryHandler\TestManagement\UserCanTakeTestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestResultQueryHandler.cs" />
+    <Compile Include="QueryHandler\TestSessionQueryHandler.cs" />
+    <Compile Include="QueryHandler\TrainingActivityQueryHandler.cs" />
+    <Compile Include="QueryHandler\TrainingManualQueryHandler.cs" />
+    <Compile Include="QueryHandler\TrophyCabinet\AllTrophiesByStandardUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\UploadQueryHandler.cs" />
+    <Compile Include="QueryHandler\UserFeedbackExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\UserFeedbackQueryHandler.cs" />
+    <Compile Include="QueryHandler\UserFeedbackReadQueryHandler.cs" />
+    <Compile Include="QueryHandler\UserQueryHandler.cs" />
+    <Compile Include="QueryHandler\User\AllRolesQueryHandler.cs" />
+    <Compile Include="QueryHandler\User\AllUsersByEmailAddressQueryHandler.cs" />
+    <Compile Include="QueryHandler\User\AllUsersQueryHandler.cs" />
+    <Compile Include="QueryHandler\User\CustomerCompanyUserExportQueryHandler.cs" />
+    <Compile Include="QueryHandler\User\GetAllAdminsFromSameCompanyQueryHandler.cs" />
+    <Compile Include="QueryHandler\User\GetAllRaceCodesQueryHandler.cs" />
+    <Compile Include="QueryHandler\User\UserKPIReportQueryHandler.cs" />
+    <Compile Include="QueryHandler\VirtualClassRooms\ExternalMeetingUserQueryHandler.cs" />
+    <Compile Include="QueryHandler\VirtualClassRooms\VirtualClassRoomQueryHandler.cs" />
+    <Compile Include="Recurrence\DailyMailService.cs" />
+    <Compile Include="Recurrence\NotifyTestExpiry.cs" />
+    <Compile Include="SchedulingEmailTemplate\Resource1.Designer.cs" />
+    <Compile Include="Validation\Categories\ValidateDeleteCategory.cs" />
+    <Compile Include="Validation\CustomerManagement\ValidateCSVUploads.cs" />
+    <Compile Include="Validation\CustomerManagement\ValidateDeleteCustomerCompany.cs" />
+    <Compile Include="Validation\CustomerManagement\ValidateSaveCustomerUserSelfSignUp.cs" />
+    <Compile Include="Validation\CustomerManagement\ValidateSaveSelfProvisionalCustomerCompany.cs" />
+    <Compile Include="Validation\FileUpload\SaveCommandValidator.cs" />
+    <Compile Include="Validation\Group\ValidateDeleteGroup.cs" />
+    <Compile Include="Validation\Group\ValidateSaveOrUpdateGroup.cs" />
+    <Compile Include="Validation\GuideManagement\Assign_UnassignCommandValidator.cs" />
+    <Compile Include="Validation\GuideManagement\ValidateAddUserToColaborators.cs" />
+    <Compile Include="Validation\GuideManagement\ValidateDeleteChapterUpload.cs" />
+    <Compile Include="Validation\GuideManagement\ValidateDeleteChapter.cs" />
+    <Compile Include="Validation\GuideManagement\ValidateUpdateTrainingGuide.cs" />
+    <Compile Include="Validation\Login\ValidateLoginCredentials.cs" />
+    <Compile Include="Validation\PackageManagement\ValidateDeletePackage.cs" />
+    <Compile Include="Validation\ProvisionalManagement\ValidateDeleteProvisionalCompanyUser.cs" />
+    <Compile Include="Validation\TestManagement\Answer\DeleteTestAnswerCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\Answer\SaveTestAnswerCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\Answer\UpdateTestAnswerCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\QuestionUpload\DeleteQuestionUploadCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\QuestionUpload\SaveQuestionUploadCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\QuestionUpload\UpdateQuestionUploadCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\Question\DeleteTrainingQuestionCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\Question\SaveTrainingQuestionCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\Question\UpdateTrainingQuestionCommandValidator.cs" />
+    <Compile Include="Validation\TestManagement\UpdateTrainingTestCommandValidator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\DataSources\Ramp.Contracts.ViewModel.FocusAreaReportOption.datasource" />
+    <None Include="Properties\DataSources\Ramp.Contracts.ViewModel.FocusAreaReportQuestion.datasource" />
+    <None Include="Properties\DataSources\Ramp.Contracts.ViewModel.FocusAreaReportTest.datasource" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{bbbb998d-2c63-4093-98dc-6d5b452997d0}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Data.EF.Customer\Data.EF.Customer.csproj">
+      <Project>{3364A543-15E5-45AF-856F-5FB47524B476}</Project>
+      <Name>Data.EF.Customer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Data.EF\Data.EF.csproj">
+      <Project>{5F3E358D-E2BB-4C5C-AB8D-142FB5803068}</Project>
+      <Name>Data.EF</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain.Customer\Domain.Customer.csproj">
+      <Project>{6894940b-7242-4321-8ff2-c8ad228dd87c}</Project>
+      <Name>Domain.Customer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain\Domain.csproj">
+      <Project>{ca18cb88-47de-4df8-9592-6e9b4fb018ed}</Project>
+      <Name>Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ramp.Contracts\Ramp.Contracts.csproj">
+      <Project>{b579989d-e0aa-4d68-9dbf-4b7ff6800d69}</Project>
+      <Name>Ramp.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Utility\Utility.csproj">
+      <Project>{73d7a7bf-a39d-413e-bc1a-3324f7737aa7}</Project>
+      <Name>Utility</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EventHandlers\GuideManagement\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SchedulingEmailTemplate\EmailTemplate.html" />
+    <Content Include="Serialization\Spec.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="SchedulingEmailTemplate\Resource1.resx" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\AutoMapper.3.2.1\tools\AutoMapper.targets" Condition="Exists('..\packages\AutoMapper.3.2.1\tools\AutoMapper.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

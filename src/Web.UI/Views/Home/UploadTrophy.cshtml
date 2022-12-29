@@ -1,0 +1,61 @@
+﻿@model  Ramp.Contracts.ViewModel.UploadTrophyViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    //var path = "url(../Content/images/" + "@aa" + ")";
+}
+
+    <div class="row">
+    <div class="col-md-12">
+        <h1 class="page-header" style="text-align:center;"> Upload Trophy</h1>
+
+        <p style="color:red;">@ViewBag.Message</p>
+        @Html.ValidationSummary(true)
+
+        @using (Html.BeginForm(null, null, FormMethod.Post, new { @class = "navbar-form navbar-left", enctype = "multipart/form-data" }))
+            {
+            <div class="form-group">
+                <input type="file" name="files" class="form-control" value="" multiple="multiple" style="height: 40px;" />
+                <input type="submit" value="Upload" class="btn btn-default" />
+            </div>
+        }
+        <br />
+        <br />
+        <br />
+
+        @if (Model.uploadedList.Any())
+            {
+
+                foreach (var FileName in Model.uploadedList)
+                {
+
+                <div class="col-lg-2 col-centered" style="height: 184px; margin-bottom: 10px; text-align: center;">
+                    <a href="javscript:Void(0)" style="text-decoration: none">
+
+                        <img src="@(Url.Content("~/Content/TrophyPicDir/" + FileName))" style="display: block; margin: 0 auto; height: 150Px;" class="img-responsive" id="standardPlayBooks" />
+
+
+                        <h4>
+                            <span class="label label-default shade">
+                                @if (FileName.Length < 21)
+                                {
+                                    @FileName
+                                }
+                                else
+                                {
+                                    @FileName.Substring(0, 20)
+                                }
+
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+
+            <h2>You have not uploaded any Trophies yet!</h2>
+        }
+
+    </div>
+</div>

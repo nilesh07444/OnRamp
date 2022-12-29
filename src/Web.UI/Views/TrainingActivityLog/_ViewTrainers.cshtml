@@ -1,0 +1,131 @@
+﻿
+@model  Ramp.Contracts.ViewModel.TrainingActivityModel
+@if (Model.TrainingActivityType == Domain.Customer.Models.TrainingActivityType.Bursary && Model.BursaryTrainingActivityDetail != null) {
+    <table id="tblViewTrainers" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+        <thead>
+            <tr>
+                <th class="">Name</th>
+                <th class="col-lg-2">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.BursaryTrainingActivityDetail.ConductedBy) {
+                <tr>
+                    <td>
+                        @item.UserName
+                    </td>
+                    <td>@item.Email</td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+@if (Model.TrainingActivityType == Domain.Customer.Models.TrainingActivityType.Internal && Model.InternalTrainingActivityDetail != null) {
+    <table id="tblViewTrainers" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+        <thead>
+            <tr>
+                <th class="">Name</th>
+                <th class="col-lg-2">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.InternalTrainingActivityDetail.ConductedBy) {
+                <tr>
+                    <td>
+                        @item.UserName
+                    </td>
+                    <td>@item.Email</td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+@if (Model.TrainingActivityType == Domain.Customer.Models.TrainingActivityType.MentoringAndCoaching && Model.MentoringAndCoachingTrainingActivityDetail != null) {
+    <table id="tblViewTrainers" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+        <thead>
+            <tr>
+                <th class="">Name</th>
+                <th class="col-lg-2">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.MentoringAndCoachingTrainingActivityDetail.ConductedBy) {
+                <tr>
+                    <td>
+                        @item.UserName
+                    </td>
+                    <td>@item.Email</td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+@if (Model.TrainingActivityType == Domain.Customer.Models.TrainingActivityType.ToolboxTalk && Model.ToolboxTalkTrainingActivityDetail != null) {
+    <table id="tblViewTrainers" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+        <thead>
+            <tr>
+                <th class="">Name</th>
+                <th class="col-lg-2">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ToolboxTalkTrainingActivityDetail.ConductedBy) {
+                <tr>
+                    <td>
+                        @item.UserName
+                    </td>
+                    <td>@item.Email</td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+@if (Model.TrainingActivityType == Domain.Customer.Models.TrainingActivityType.External && Model.ExternalTrainingActivityDetail != null) {
+    <table id="tblViewTrainers" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+        <thead>
+            <tr>
+                <th class="">Company Name</th>
+                <th class="col-lg-2">Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ExternalTrainingActivityDetail.ConductedBy) {
+                <tr>
+                    <td>
+                        @item.CompanyName
+                    </td>
+                    <td>@item.EmailAddress</td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+
+<script>
+
+    $(function () {
+
+        $('#tblViewTrainers').dataTable({
+            bDeferRender: true,
+            bDestroy: true,
+            bFilter: false,
+            bPaginate: false,
+            dom: 'rt<"bottom"flp><"clear">',
+            initComplete: function () {
+                $(this.api().table().container()).find('input[type="search"]').parent().wrap('<form>').parent().attr('autocomplete', 'off');
+            }
+        });
+    });
+
+
+</script>

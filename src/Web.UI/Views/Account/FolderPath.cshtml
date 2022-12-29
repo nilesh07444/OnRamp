@@ -1,0 +1,34 @@
+﻿@model string
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Sample</title>
+</head>
+<body>
+    @using (Html.BeginForm("FolderPath", "Account", FormMethod.Post))
+    {
+        <div>
+            <input type="radio" name="rdType" value="~/LogoImages/CustomerLogo/" /> CustomerCompanyLogo
+            <input type="radio" name="rdType" value="~/LogoImages/ProvisionalLogo/" /> ProvisionalCompanyLogo
+            <input type="radio" name="rdType" value="~/CSVFile/" /> UserCVSFile
+            <input type="radio" name="rdType" value="~/ChapterFiles/" /> TrainingGuidFilePath
+            <input type="radio" name="rdType" value="~/TrainingGuideQuestionUploads/" /> TrainingGuidQuestionFilePath
+            <input type="radio" name="rdType" value="~/TestCertificates/" /> TestCertificatesFilePath
+        </div>
+
+    <input type="submit" name="btnSubmit" id="btnSubmit" value="Submit" />
+    }
+    @if (Model != null)
+    {
+        <div> @ViewBag.path</div>
+    }
+    <div> @ViewBag.path</div>
+</body>
+</html>

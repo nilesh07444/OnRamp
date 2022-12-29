@@ -1,0 +1,1549 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3364A543-15E5-45AF-856F-5FB47524B476}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Data.EF.Customer</RootNamespace>
+    <AssemblyName>Data.EF.Customer</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ServiceLocation">
+      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Syncfusion.Licensing, Version=17.4451.0.53, Culture=neutral, PublicKeyToken=632609b4d040f6b4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Licensing.17.4.0.53\lib\net451\Syncfusion.Licensing.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConnectionStringResolver.cs" />
+    <Compile Include="CustomerContextInitializer.cs" />
+    <Compile Include="CustomerRepositoryFactory.cs" />
+    <Compile Include="CustomerContext.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="IReadRepository.cs" />
+    <Compile Include="ITransientRepository.cs" />
+    <Compile Include="Migrations\201410280818248_initial.cs" />
+    <Compile Include="Migrations\201410280818248_initial.Designer.cs">
+      <DependentUpon>201410280818248_initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201410300748345_TrainingCategoriesLink.cs" />
+    <Compile Include="Migrations\201410300748345_TrainingCategoriesLink.Designer.cs">
+      <DependentUpon>201410300748345_TrainingCategoriesLink.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201411031040520_TrainingGuideChapterToTrainingGuideLink.cs" />
+    <Compile Include="Migrations\201411031040520_TrainingGuideChapterToTrainingGuideLink.Designer.cs">
+      <DependentUpon>201411031040520_TrainingGuideChapterToTrainingGuideLink.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201411281312285_AccomodateMultipleChapterLinks.cs" />
+    <Compile Include="Migrations\201411281312285_AccomodateMultipleChapterLinks.Designer.cs">
+      <DependentUpon>201411281312285_AccomodateMultipleChapterLinks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201412011313493_ChapterLinksDependantOnChapters.cs" />
+    <Compile Include="Migrations\201412011313493_ChapterLinksDependantOnChapters.Designer.cs">
+      <DependentUpon>201412011313493_ChapterLinksDependantOnChapters.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201412031228095_ExpiryNotificationSentOn.cs" />
+    <Compile Include="Migrations\201412031228095_ExpiryNotificationSentOn.Designer.cs">
+      <DependentUpon>201412031228095_ExpiryNotificationSentOn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201502190620331_DocumentFileToChapterUploads.cs" />
+    <Compile Include="Migrations\201502190620331_DocumentFileToChapterUploads.Designer.cs">
+      <DependentUpon>201502190620331_DocumentFileToChapterUploads.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503130831310_CategoryMigration.cs" />
+    <Compile Include="Migrations\201503130831310_CategoryMigration.Designer.cs">
+      <DependentUpon>201503130831310_CategoryMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503191551356_ChapterUploadSequence.cs" />
+    <Compile Include="Migrations\201503191551356_ChapterUploadSequence.Designer.cs">
+      <DependentUpon>201503191551356_ChapterUploadSequence.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503301420147_TestExpiryDateNullable.cs" />
+    <Compile Include="Migrations\201503301420147_TestExpiryDateNullable.Designer.cs">
+      <DependentUpon>201503301420147_TestExpiryDateNullable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201503311157331_YoutubeLink.cs" />
+    <Compile Include="Migrations\201503311157331_YoutubeLink.Designer.cs">
+      <DependentUpon>201503311157331_YoutubeLink.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201507070321481_TestTrophy.cs" />
+    <Compile Include="Migrations\201507070321481_TestTrophy.Designer.cs">
+      <DependentUpon>201507070321481_TestTrophy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201508171009034_FileUploadsMigration.cs" />
+    <Compile Include="Migrations\201508171009034_FileUploadsMigration.Designer.cs">
+      <DependentUpon>201508171009034_FileUploadsMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201511270926343_SplitViewForGuidesAndTests.cs" />
+    <Compile Include="Migrations\201511270926343_SplitViewForGuidesAndTests.Designer.cs">
+      <DependentUpon>201511270926343_SplitViewForGuidesAndTests.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601060947524_AddContentToChaperUpload.cs" />
+    <Compile Include="Migrations\201601060947524_AddContentToChaperUpload.Designer.cs">
+      <DependentUpon>201601060947524_AddContentToChaperUpload.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601201149346_CustomerDataExtraction.cs" />
+    <Compile Include="Migrations\201601201149346_CustomerDataExtraction.Designer.cs">
+      <DependentUpon>201601201149346_CustomerDataExtraction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601280935500_AddPassPointsToTest.cs" />
+    <Compile Include="Migrations\201601280935500_AddPassPointsToTest.Designer.cs">
+      <DependentUpon>201601280935500_AddPassPointsToTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601281150234_SetTestPointsDefaultToZero.cs" />
+    <Compile Include="Migrations\201601281150234_SetTestPointsDefaultToZero.Designer.cs">
+      <DependentUpon>201601281150234_SetTestPointsDefaultToZero.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602031311291_CallaboratorsOnTrainingGuide.cs" />
+    <Compile Include="Migrations\201602031311291_CallaboratorsOnTrainingGuide.Designer.cs">
+      <DependentUpon>201602031311291_CallaboratorsOnTrainingGuide.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201602031349003_AssignMarksToQuestions.cs" />
+    <Compile Include="Migrations\201602031349003_AssignMarksToQuestions.Designer.cs">
+      <DependentUpon>201602031349003_AssignMarksToQuestions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603041423071_QuestionUploads.cs" />
+    <Compile Include="Migrations\201603041423071_QuestionUploads.Designer.cs">
+      <DependentUpon>201603041423071_QuestionUploads.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603111123230_FileUploadInQuestionAndChapterUpload.cs" />
+    <Compile Include="Migrations\201603111123230_FileUploadInQuestionAndChapterUpload.Designer.cs">
+      <DependentUpon>201603111123230_FileUploadInQuestionAndChapterUpload.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201603171515478_CoverPictureFileUploadTrainingGuide.cs" />
+    <Compile Include="Migrations\201603171515478_CoverPictureFileUploadTrainingGuide.Designer.cs">
+      <DependentUpon>201603171515478_CoverPictureFileUploadTrainingGuide.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604051426160_TestResultUpdate.cs" />
+    <Compile Include="Migrations\201604051426160_TestResultUpdate.Designer.cs">
+      <DependentUpon>201604051426160_TestResultUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604070713480_VersionNumberOnTests.cs" />
+    <Compile Include="Migrations\201604070713480_VersionNumberOnTests.Designer.cs">
+      <DependentUpon>201604070713480_VersionNumberOnTests.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604121224058_TestResultExpansion.cs" />
+    <Compile Include="Migrations\201604121224058_TestResultExpansion.Designer.cs">
+      <DependentUpon>201604121224058_TestResultExpansion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604121313358_TestResultsTrophyData.cs" />
+    <Compile Include="Migrations\201604121313358_TestResultsTrophyData.Designer.cs">
+      <DependentUpon>201604121313358_TestResultsTrophyData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604130735405_LastEditDateTrainingGuide.cs" />
+    <Compile Include="Migrations\201604130735405_LastEditDateTrainingGuide.Designer.cs">
+      <DependentUpon>201604130735405_LastEditDateTrainingGuide.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604261419124_TestCertificatesOnStandardUser.cs" />
+    <Compile Include="Migrations\201604261419124_TestCertificatesOnStandardUser.Designer.cs">
+      <DependentUpon>201604261419124_TestCertificatesOnStandardUser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201604281257253_CustomConfiguration.cs" />
+    <Compile Include="Migrations\201604281257253_CustomConfiguration.Designer.cs">
+      <DependentUpon>201604281257253_CustomConfiguration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605161335046_IDNumber.cs" />
+    <Compile Include="Migrations\201605161335046_IDNumber.Designer.cs">
+      <DependentUpon>201605161335046_IDNumber.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605171353062_RaceAndGender.cs" />
+    <Compile Include="Migrations\201605171353062_RaceAndGender.Designer.cs">
+      <DependentUpon>201605171353062_RaceAndGender.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605191051338_TestReview.cs" />
+    <Compile Include="Migrations\201605191051338_TestReview.Designer.cs">
+      <DependentUpon>201605191051338_TestReview.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201605260718222_TestUserAnswer.cs" />
+    <Compile Include="Migrations\201605260718222_TestUserAnswer.Designer.cs">
+      <DependentUpon>201605260718222_TestUserAnswer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607131036593_AddFeedbackDomainObject.cs" />
+    <Compile Include="Migrations\201607131036593_AddFeedbackDomainObject.Designer.cs">
+      <DependentUpon>201607131036593_AddFeedbackDomainObject.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607131246397_AddDateToFeedback.cs" />
+    <Compile Include="Migrations\201607131246397_AddDateToFeedback.Designer.cs">
+      <DependentUpon>201607131246397_AddDateToFeedback.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607131256470_AddUserIdToFeedback.cs" />
+    <Compile Include="Migrations\201607131256470_AddUserIdToFeedback.Designer.cs">
+      <DependentUpon>201607131256470_AddUserIdToFeedback.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607131304371_AddReadsToFeedback.cs" />
+    <Compile Include="Migrations\201607131304371_AddReadsToFeedback.Designer.cs">
+      <DependentUpon>201607131304371_AddReadsToFeedback.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607201059338_ChangeFeedbackSubjectDataType.cs" />
+    <Compile Include="Migrations\201607201059338_ChangeFeedbackSubjectDataType.Designer.cs">
+      <DependentUpon>201607201059338_ChangeFeedbackSubjectDataType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607210751145_MaximumRewritesOnTest.cs" />
+    <Compile Include="Migrations\201607210751145_MaximumRewritesOnTest.Designer.cs">
+      <DependentUpon>201607210751145_MaximumRewritesOnTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607220709404_MaximumTestRewritesReachedOnResult.cs" />
+    <Compile Include="Migrations\201607220709404_MaximumTestRewritesReachedOnResult.Designer.cs">
+      <DependentUpon>201607220709404_MaximumTestRewritesReachedOnResult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201607271003209_AddBrowserToCustomerSurvey.cs" />
+    <Compile Include="Migrations\201607271003209_AddBrowserToCustomerSurvey.Designer.cs">
+      <DependentUpon>201607271003209_AddBrowserToCustomerSurvey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201608101101154_UnassignedOnUsageStats.cs" />
+    <Compile Include="Migrations\201608101101154_UnassignedOnUsageStats.Designer.cs">
+      <DependentUpon>201608101101154_UnassignedOnUsageStats.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201608161236568_CKEUploadsOnTrainingGuideChapter.cs" />
+    <Compile Include="Migrations\201608161236568_CKEUploadsOnTrainingGuideChapter.Designer.cs">
+      <DependentUpon>201608161236568_CKEUploadsOnTrainingGuideChapter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201608161340040_CascadeOnDeleteForCKEUpload.cs" />
+    <Compile Include="Migrations\201608161340040_CascadeOnDeleteForCKEUpload.Designer.cs">
+      <DependentUpon>201608161340040_CascadeOnDeleteForCKEUpload.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201609051050290_cascadeOnDeleteForTestuseranswer.cs" />
+    <Compile Include="Migrations\201609051050290_cascadeOnDeleteForTestuseranswer.Designer.cs">
+      <DependentUpon>201609051050290_cascadeOnDeleteForTestuseranswer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201609300745134_TestVersion.cs" />
+    <Compile Include="Migrations\201609300745134_TestVersion.Designer.cs">
+      <DependentUpon>201609300745134_TestVersion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201609300746026_TestVersionData.cs" />
+    <Compile Include="Migrations\201609300746026_TestVersionData.Designer.cs">
+      <DependentUpon>201609300746026_TestVersionData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201610061151588_TestFeedbackDataSubjectToId.cs" />
+    <Compile Include="Migrations\201610061151588_TestFeedbackDataSubjectToId.Designer.cs">
+      <DependentUpon>201610061151588_TestFeedbackDataSubjectToId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201610191448188_TestUserAnswer1.cs" />
+    <Compile Include="Migrations\201610191448188_TestUserAnswer1.Designer.cs">
+      <DependentUpon>201610191448188_TestUserAnswer1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611031404309_FileUploads_Description.cs" />
+    <Compile Include="Migrations\201611031404309_FileUploads_Description.Designer.cs">
+      <DependentUpon>201611031404309_FileUploads_Description.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611090705221_TestUserAnswer_Missing_Migration_Issue.cs" />
+    <Compile Include="Migrations\201611090705221_TestUserAnswer_Missing_Migration_Issue.Designer.cs">
+      <DependentUpon>201611090705221_TestUserAnswer_Missing_Migration_Issue.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611220608586_CustomerConfigurationUpdate.cs" />
+    <Compile Include="Migrations\201611220608586_CustomerConfigurationUpdate.Designer.cs">
+      <DependentUpon>201611220608586_CustomerConfigurationUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611220611271_CustomerConfiguationData.cs" />
+    <Compile Include="Migrations\201611220611271_CustomerConfiguationData.Designer.cs">
+      <DependentUpon>201611220611271_CustomerConfiguationData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612091136294_ExtensionCustomColours.cs" />
+    <Compile Include="Migrations\201612091136294_ExtensionCustomColours.Designer.cs">
+      <DependentUpon>201612091136294_ExtensionCustomColours.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612190726533_RemoveCustomColor.cs" />
+    <Compile Include="Migrations\201612190726533_RemoveCustomColor.Designer.cs">
+      <DependentUpon>201612190726533_RemoveCustomColor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201702060903066_AddDefaultGroup.cs" />
+    <Compile Include="Migrations\201702060903066_AddDefaultGroup.Designer.cs">
+      <DependentUpon>201702060903066_AddDefaultGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201702162117093_StandardUserDisclaimerActivityLog_ORP_912.cs" />
+    <Compile Include="Migrations\201702162117093_StandardUserDisclaimerActivityLog_ORP_912.Designer.cs">
+      <DependentUpon>201702162117093_StandardUserDisclaimerActivityLog_ORP_912.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201703231139122_PlaybookPreviewType_ORP1040.cs" />
+    <Compile Include="Migrations\201703231139122_PlaybookPreviewType_ORP1040.Designer.cs">
+      <DependentUpon>201703231139122_PlaybookPreviewType_ORP1040.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704180725409_Sprint_9.cs" />
+    <Compile Include="Migrations\201704180725409_Sprint_9.Designer.cs">
+      <DependentUpon>201704180725409_Sprint_9.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705151119050_ManyUsersToManyTrainingActivities_ORP-1119.cs" />
+    <Compile Include="Migrations\201705151119050_ManyUsersToManyTrainingActivities_ORP-1119.Designer.cs">
+      <DependentUpon>201705151119050_ManyUsersToManyTrainingActivities_ORP-1119.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708051145482_TestQuestion_Audio.cs" />
+    <Compile Include="Migrations\201708051145482_TestQuestion_Audio.Designer.cs">
+      <DependentUpon>201708051145482_TestQuestion_Audio.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708071644571_TrainingGuide_Printable.cs" />
+    <Compile Include="Migrations\201708071644571_TrainingGuide_Printable.Designer.cs">
+      <DependentUpon>201708071644571_TrainingGuide_Printable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708071807388_TrainingTest_DisableQuestionRandomization.cs" />
+    <Compile Include="Migrations\201708071807388_TrainingTest_DisableQuestionRandomization.Designer.cs">
+      <DependentUpon>201708071807388_TrainingTest_DisableQuestionRandomization.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708080932358_TestAnswer_Position.cs" />
+    <Compile Include="Migrations\201708080932358_TestAnswer_Position.Designer.cs">
+      <DependentUpon>201708080932358_TestAnswer_Position.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201708100706077_TrainingTest_EmailSummaryOnCompletion.cs" />
+    <Compile Include="Migrations\201708100706077_TrainingTest_EmailSummaryOnCompletion.Designer.cs">
+      <DependentUpon>201708100706077_TrainingTest_EmailSummaryOnCompletion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801052227269_ORP-1183.cs" />
+    <Compile Include="Migrations\201801052227269_ORP-1183.Designer.cs">
+      <DependentUpon>201801052227269_ORP-1183.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804261401477_ORP_1239.cs" />
+    <Compile Include="Migrations\201804261401477_ORP_1239.Designer.cs">
+      <DependentUpon>201804261401477_ORP_1239.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804261448345_ORP_1255.cs" />
+    <Compile Include="Migrations\201804261448345_ORP_1255.Designer.cs">
+      <DependentUpon>201804261448345_ORP_1255.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201804300735424_ORP_1239_ORP_1255.cs" />
+    <Compile Include="Migrations\201804300735424_ORP_1239_ORP_1255.Designer.cs">
+      <DependentUpon>201804300735424_ORP_1239_ORP_1255.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805230048483_ORP-1238.cs" />
+    <Compile Include="Migrations\201805230048483_ORP-1238.Designer.cs">
+      <DependentUpon>201805230048483_ORP-1238.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805231024564_ORP-1241_RenameCustomerRolesDescriptions.cs" />
+    <Compile Include="Migrations\201805231024564_ORP-1241_RenameCustomerRolesDescriptions.Designer.cs">
+      <DependentUpon>201805231024564_ORP-1241_RenameCustomerRolesDescriptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201805291436126_ORP-1245_RenameCustomerRolesDescription.cs" />
+    <Compile Include="Migrations\201805291436126_ORP-1245_RenameCustomerRolesDescription.Designer.cs">
+      <DependentUpon>201805291436126_ORP-1245_RenameCustomerRolesDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806081010526_ORP-1252_AssignedDocument_DocumentUsage.cs" />
+    <Compile Include="Migrations\201806081010526_ORP-1252_AssignedDocument_DocumentUsage.Designer.cs">
+      <DependentUpon>201806081010526_ORP-1252_AssignedDocument_DocumentUsage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806180853136_ORP-1243_StandardUserDisclaimerActivityLog_Deleted.cs" />
+    <Compile Include="Migrations\201806180853136_ORP-1243_StandardUserDisclaimerActivityLog_Deleted.Designer.cs">
+      <DependentUpon>201806180853136_ORP-1243_StandardUserDisclaimerActivityLog_Deleted.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201807191947385_ORP-1239_TestMaximumAttempts.cs" />
+    <Compile Include="Migrations\201807191947385_ORP-1239_TestMaximumAttempts.Designer.cs">
+      <DependentUpon>201807191947385_ORP-1239_TestMaximumAttempts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808020701407_ORP-1238_DocumentCollaborators.cs" />
+    <Compile Include="Migrations\201808020701407_ORP-1238_DocumentCollaborators.Designer.cs">
+      <DependentUpon>201808020701407_ORP-1238_DocumentCollaborators.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808060830385_ORP-1238_PolicyResponse.cs" />
+    <Compile Include="Migrations\201808060830385_ORP-1238_PolicyResponse.Designer.cs">
+      <DependentUpon>201808060830385_ORP-1238_PolicyResponse.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808231306252_ORP-1281_DocumentUsage_Duration.cs" />
+    <Compile Include="Migrations\201808231306252_ORP-1281_DocumentUsage_Duration.Designer.cs">
+      <DependentUpon>201808231306252_ORP-1281_DocumentUsage_Duration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808271211569_ORP-1289_TestSession.cs" />
+    <Compile Include="Migrations\201808271211569_ORP-1289_TestSession.Designer.cs">
+      <DependentUpon>201808271211569_ORP-1289_TestSession.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808271340078_ORP-1289_Test_OpenTest.cs" />
+    <Compile Include="Migrations\201808271340078_ORP-1289_Test_OpenTest.Designer.cs">
+      <DependentUpon>201808271340078_ORP-1289_Test_OpenTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201810031411044_ORP-1281_Test_Result_TimeTaken.cs" />
+    <Compile Include="Migrations\201810031411044_ORP-1281_Test_Result_TimeTaken.Designer.cs">
+      <DependentUpon>201810031411044_ORP-1281_Test_Result_TimeTaken.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903251248300_TrainingActivity_FileUploads_FileUpload.cs" />
+    <Compile Include="Migrations\201903251248300_TrainingActivity_FileUploads_FileUpload.Designer.cs">
+      <DependentUpon>201903251248300_TrainingActivity_FileUploads_FileUpload.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903251331436_TrainingActivity_FileUploads_FileUpload_CloneScript.cs" />
+    <Compile Include="Migrations\201903251331436_TrainingActivity_FileUploads_FileUpload_CloneScript.Designer.cs">
+      <DependentUpon>201903251331436_TrainingActivity_FileUploads_FileUpload_CloneScript.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904051242132_DocumentTrainingLabelsCommaSeparatedString.cs" />
+    <Compile Include="Migrations\201904051242132_DocumentTrainingLabelsCommaSeparatedString.Designer.cs">
+      <DependentUpon>201904051242132_DocumentTrainingLabelsCommaSeparatedString.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904051406405_TrainingActivityTrainingLabelsCommaSeparatedString.cs" />
+    <Compile Include="Migrations\201904051406405_TrainingActivityTrainingLabelsCommaSeparatedString.Designer.cs">
+      <DependentUpon>201904051406405_TrainingActivityTrainingLabelsCommaSeparatedString.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201906191206307_ORP-1390.cs" />
+    <Compile Include="Migrations\201906191206307_ORP-1390.Designer.cs">
+      <DependentUpon>201906191206307_ORP-1390.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907161330322_ORP-1347.cs" />
+    <Compile Include="Migrations\201907161330322_ORP-1347.Designer.cs">
+      <DependentUpon>201907161330322_ORP-1347.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201907191235576_ORP-1393_TestTimedByDefault.cs" />
+    <Compile Include="Migrations\201907191235576_ORP-1393_TestTimedByDefault.Designer.cs">
+      <DependentUpon>201907191235576_ORP-1393_TestTimedByDefault.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912030733399_fixdata.cs" />
+    <Compile Include="Migrations\201912030733399_fixdata.Designer.cs">
+      <DependentUpon>201912030733399_fixdata.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912201506573_addCategory-CustomerSurveyDetails.cs" />
+    <Compile Include="Migrations\201912210904075_CustomerSurveyDetail.cs" />
+    <Compile Include="Migrations\201912210904075_CustomerSurveyDetail.Designer.cs">
+      <DependentUpon>201912210904075_CustomerSurveyDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912301547075_certificateuploadId.cs" />
+    <Compile Include="Migrations\201912301547075_certificateuploadId.Designer.cs">
+      <DependentUpon>201912301547075_certificateuploadId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001101322342_added_noteAllow.cs" />
+    <Compile Include="Migrations\202001101322342_added_noteAllow.Designer.cs">
+      <DependentUpon>202001101322342_added_noteAllow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001172115103_parentid.cs" />
+    <Compile Include="Migrations\202001172115103_parentid.Designer.cs">
+      <DependentUpon>202001172115103_parentid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002030822105_addIsrecurring_coloumn.cs" />
+    <Compile Include="Migrations\202002030822105_addIsrecurring_coloumn.Designer.cs">
+      <DependentUpon>202002030822105_addIsrecurring_coloumn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003121146426_Add_IsGlobalAccessField.cs" />
+    <Compile Include="Migrations\202003121146426_Add_IsGlobalAccessField.Designer.cs">
+      <DependentUpon>202003121146426_Add_IsGlobalAccessField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003131033276_Add_AdditionalMsg_Field.cs" />
+    <Compile Include="Migrations\202003131033276_Add_AdditionalMsg_Field.Designer.cs">
+      <DependentUpon>202003131033276_Add_AdditionalMsg_Field.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003171051363_IsGlobalAccessed.cs" />
+    <Compile Include="Migrations\202003171051363_IsGlobalAccessed.Designer.cs">
+      <DependentUpon>202003171051363_IsGlobalAccessed.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003181358091_Testsession.cs" />
+    <Compile Include="Migrations\202003181358091_Testsession.Designer.cs">
+      <DependentUpon>202003181358091_Testsession.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003181440481_TestResult.cs" />
+    <Compile Include="Migrations\202003181440481_TestResult.Designer.cs">
+      <DependentUpon>202003181440481_TestResult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003191427072_IsGlobalAccessed1.cs" />
+    <Compile Include="Migrations\202003191427072_IsGlobalAccessed1.Designer.cs">
+      <DependentUpon>202003191427072_IsGlobalAccessed1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003201010263_DocumentId.cs" />
+    <Compile Include="Migrations\202003201010263_DocumentId.Designer.cs">
+      <DependentUpon>202003201010263_DocumentId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003241405200_policyresponse.cs" />
+    <Compile Include="Migrations\202003241405200_policyresponse.Designer.cs">
+      <DependentUpon>202003241405200_policyresponse.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004031244402_checklistchapterresult.cs" />
+    <Compile Include="Migrations\202004031244402_checklistchapterresult.Designer.cs">
+      <DependentUpon>202004031244402_checklistchapterresult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004101208569_datecompleted.cs" />
+    <Compile Include="Migrations\202004101208569_datecompleted.Designer.cs">
+      <DependentUpon>202004101208569_datecompleted.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004181228299_trackedEnable.cs" />
+    <Compile Include="Migrations\202004181228299_trackedEnable.Designer.cs">
+      <DependentUpon>202004181228299_trackedEnable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004181319348_TrackedDate.cs" />
+    <Compile Include="Migrations\202004181319348_TrackedDate.Designer.cs">
+      <DependentUpon>202004181319348_TrackedDate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202004290719227_VirtaulClassroom.cs" />
+    <Compile Include="Migrations\202004290719227_VirtaulClassroom.Designer.cs">
+      <DependentUpon>202004290719227_VirtaulClassroom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005080920114_ReferenceId.cs" />
+    <Compile Include="Migrations\202005080920114_ReferenceId.Designer.cs">
+      <DependentUpon>202005080920114_ReferenceId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005181051500_AuditTrack.cs" />
+    <Compile Include="Migrations\202005181051500_AuditTrack.Designer.cs">
+      <DependentUpon>202005181051500_AuditTrack.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005181131104_changesAudit.cs" />
+    <Compile Include="Migrations\202005181131104_changesAudit.Designer.cs">
+      <DependentUpon>202005181131104_changesAudit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005191158309_documentType.cs" />
+    <Compile Include="Migrations\202005191158309_documentType.Designer.cs">
+      <DependentUpon>202005191158309_documentType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005200912222_documentName.cs" />
+    <Compile Include="Migrations\202005200912222_documentName.Designer.cs">
+      <DependentUpon>202005200912222_documentName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005251051410_IsPublicAccess.cs" />
+    <Compile Include="Migrations\202005251051410_IsPublicAccess.Designer.cs">
+      <DependentUpon>202005251051410_IsPublicAccess.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202005260749191_JitsiServerName.cs" />
+    <Compile Include="Migrations\202005260749191_JitsiServerName.Designer.cs">
+      <DependentUpon>202005260749191_JitsiServerName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006090720402_RestoreTrack.cs" />
+    <Compile Include="Migrations\202006090720402_RestoreTrack.Designer.cs">
+      <DependentUpon>202006090720402_RestoreTrack.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006090731110_TrackStatus.cs" />
+    <Compile Include="Migrations\202006090731110_TrackStatus.Designer.cs">
+      <DependentUpon>202006090731110_TrackStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006100723285_ExternalUserMeeting.cs" />
+    <Compile Include="Migrations\202006100723285_ExternalUserMeeting.Designer.cs">
+      <DependentUpon>202006100723285_ExternalUserMeeting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202006180653320_userIdForGlobalDoc.cs" />
+    <Compile Include="Migrations\202006180653320_userIdForGlobalDoc.Designer.cs">
+      <DependentUpon>202006180653320_userIdForGlobalDoc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202008191035055_CertificateThumbnail.cs" />
+    <Compile Include="Migrations\202008191035055_CertificateThumbnail.Designer.cs">
+      <DependentUpon>202008191035055_CertificateThumbnail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009080736423_asignmentdocumentorderno.cs" />
+    <Compile Include="Migrations\202009080736423_asignmentdocumentorderno.Designer.cs">
+      <DependentUpon>202009080736423_asignmentdocumentorderno.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202009110815033_documenturl.cs" />
+    <Compile Include="Migrations\202009110815033_documenturl.Designer.cs">
+      <DependentUpon>202009110815033_documenturl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010161255348_DocumentUrlChapter.cs" />
+    <Compile Include="Migrations\202010161255348_DocumentUrlChapter.Designer.cs">
+      <DependentUpon>202010161255348_DocumentUrlChapter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202010221025277_notification.cs" />
+    <Compile Include="Migrations\202010221025277_notification.Designer.cs">
+      <DependentUpon>202010221025277_notification.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202011111119276_docnotification.cs" />
+    <Compile Include="Migrations\202011111119276_docnotification.Designer.cs">
+      <DependentUpon>202011111119276_docnotification.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012191428569_standardUserTrainingLabel.cs" />
+    <Compile Include="Migrations\202012191428569_standardUserTrainingLabel.Designer.cs">
+      <DependentUpon>202012191428569_standardUserTrainingLabel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012291240589_CertificateTitleandCreatedon.cs" />
+    <Compile Include="Migrations\202012291240589_CertificateTitleandCreatedon.Designer.cs">
+      <DependentUpon>202012291240589_CertificateTitleandCreatedon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202102181257505_TrainingManualWebFrameName.cs" />
+    <Compile Include="Migrations\202102181257505_TrainingManualWebFrameName.Designer.cs">
+      <DependentUpon>202102181257505_TrainingManualWebFrameName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202102240948289_Certificatetype.cs" />
+    <Compile Include="Migrations\202102240948289_Certificatetype.Designer.cs">
+      <DependentUpon>202102240948289_Certificatetype.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106191222418_CustomerGroupDateCreated.cs" />
+    <Compile Include="Migrations\202106191222418_CustomerGroupDateCreated.Designer.cs">
+      <DependentUpon>202106191222418_CustomerGroupDateCreated.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107220803421_standardUsserGroup.cs" />
+    <Compile Include="Migrations\202107220803421_standardUsserGroup.Designer.cs">
+      <DependentUpon>202107220803421_standardUsserGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202108061025083_standardusergroupupdate.cs" />
+    <Compile Include="Migrations\202108061025083_standardusergroupupdate.Designer.cs">
+      <DependentUpon>202108061025083_standardusergroupupdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202109021236041_DocumentUsageStatusCoulmnAdded.cs" />
+    <Compile Include="Migrations\202109021236041_DocumentUsageStatusCoulmnAdded.Designer.cs">
+      <DependentUpon>202109021236041_DocumentUsageStatusCoulmnAdded.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202109201009161_CustomUserRole.cs" />
+    <Compile Include="Migrations\202109201009161_CustomUserRole.Designer.cs">
+      <DependentUpon>202109201009161_CustomUserRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202109231633432_StandardUserColumnAdded.cs" />
+    <Compile Include="Migrations\202109231633432_StandardUserColumnAdded.Designer.cs">
+      <DependentUpon>202109231633432_StandardUserColumnAdded.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202109300658323_CustomUserRoleTableUpdate.cs" />
+    <Compile Include="Migrations\202109300658323_CustomUserRoleTableUpdate.Designer.cs">
+      <DependentUpon>202109300658323_CustomUserRoleTableUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110010959423_CustomerRolesTAbleUpdated.cs" />
+    <Compile Include="Migrations\202110010959423_CustomerRolesTAbleUpdated.Designer.cs">
+      <DependentUpon>202110010959423_CustomerRolesTAbleUpdated.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110061405337_TrainingManualTableUpdate.cs" />
+    <Compile Include="Migrations\202110061405337_TrainingManualTableUpdate.Designer.cs">
+      <DependentUpon>202110061405337_TrainingManualTableUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110071758168_CustomerRolesColumnUpdate.cs" />
+    <Compile Include="Migrations\202110071758168_CustomerRolesColumnUpdate.Designer.cs">
+      <DependentUpon>202110071758168_CustomerRolesColumnUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110071828150_PolicyMemoTestChecklist.cs" />
+    <Compile Include="Migrations\202110071828150_PolicyMemoTestChecklist.Designer.cs">
+      <DependentUpon>202110071828150_PolicyMemoTestChecklist.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110120914090_publishstatusupdate.cs" />
+    <Compile Include="Migrations\202110120914090_publishstatusupdate.Designer.cs">
+      <DependentUpon>202110120914090_publishstatusupdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110130838038_updateforpublishstatus.cs" />
+    <Compile Include="Migrations\202110130838038_updateforpublishstatus.Designer.cs">
+      <DependentUpon>202110130838038_updateforpublishstatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110131338514_DocumentWorkflowAuditMessages.cs" />
+    <Compile Include="Migrations\202110131338514_DocumentWorkflowAuditMessages.Designer.cs">
+      <DependentUpon>202110131338514_DocumentWorkflowAuditMessages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110131512383_DocumentWorkflowAuditMessage.cs" />
+    <Compile Include="Migrations\202110131512383_DocumentWorkflowAuditMessage.Designer.cs">
+      <DependentUpon>202110131512383_DocumentWorkflowAuditMessage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202110161704085_CustomUserRoleTableUpdate1.cs" />
+    <Compile Include="Migrations\202110161704085_CustomUserRoleTableUpdate1.Designer.cs">
+      <DependentUpon>202110161704085_CustomUserRoleTableUpdate1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111111038499_CustomDocument.cs" />
+    <Compile Include="Migrations\202111111038499_CustomDocument.Designer.cs">
+      <DependentUpon>202111111038499_CustomDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202111300741122_course.cs" />
+    <Compile Include="Migrations\202111300741122_course.Designer.cs">
+      <DependentUpon>202111300741122_course.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112060705479_CustomDocumentUpdate.cs" />
+    <Compile Include="Migrations\202112060705479_CustomDocumentUpdate.Designer.cs">
+      <DependentUpon>202112060705479_CustomDocumentUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112150718461_CoursesUpdate.cs" />
+    <Compile Include="Migrations\202112150718461_CoursesUpdate.Designer.cs">
+      <DependentUpon>202112150718461_CoursesUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112231201389_assignedCourse-updated.cs" />
+    <Compile Include="Migrations\202112231201389_assignedCourse-updated.Designer.cs">
+      <DependentUpon>202112231201389_assignedCourse-updated.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112231505471_resolve.cs" />
+    <Compile Include="Migrations\202112231505471_resolve.Designer.cs">
+      <DependentUpon>202112231505471_resolve.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112231716471_AutoAssignWorkflow.cs" />
+    <Compile Include="Migrations\202112231716471_AutoAssignWorkflow.Designer.cs">
+      <DependentUpon>202112231716471_AutoAssignWorkflow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202112301644188_clean.cs" />
+    <Compile Include="Migrations\202112301644188_clean.Designer.cs">
+      <DependentUpon>202112301644188_clean.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202201070803257_customuserroletableupdated.cs" />
+    <Compile Include="Migrations\202201070803257_customuserroletableupdated.Designer.cs">
+      <DependentUpon>202201070803257_customuserroletableupdated.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202201101438497_schedulereports.cs" />
+    <Compile Include="Migrations\202201101438497_schedulereports.Designer.cs">
+      <DependentUpon>202201101438497_schedulereports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202201291236382_ScheduleReportParams.cs" />
+    <Compile Include="Migrations\202201291236382_ScheduleReportParams.Designer.cs">
+      <DependentUpon>202201291236382_ScheduleReportParams.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202202171059119_ADFlag.cs" />
+    <Compile Include="Migrations\202202171059119_ADFlag.Designer.cs">
+      <DependentUpon>202202171059119_ADFlag.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202202171105164_customdocumentid.cs" />
+    <Compile Include="Migrations\202202171105164_customdocumentid.Designer.cs">
+      <DependentUpon>202202171105164_customdocumentid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202202171128477_CustomDocumentFields.cs" />
+    <Compile Include="Migrations\202202171128477_CustomDocumentFields.Designer.cs">
+      <DependentUpon>202202171128477_CustomDocumentFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202202211336004_update_ParameterType_ScheduleReportParameter.cs" />
+    <Compile Include="Migrations\202202211336004_update_ParameterType_ScheduleReportParameter.Designer.cs">
+      <DependentUpon>202202211336004_update_ParameterType_ScheduleReportParameter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203011054581_update_database_field.cs" />
+    <Compile Include="Migrations\202203011054581_update_database_field.Designer.cs">
+      <DependentUpon>202203011054581_update_database_field.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203011408132_add_StatusColumn_Schedulermode.cs" />
+    <Compile Include="Migrations\202203011408132_add_StatusColumn_Schedulermode.Designer.cs">
+      <DependentUpon>202203011408132_add_StatusColumn_Schedulermode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203031301208_Added Schedule report Permissions.cs" />
+    <Compile Include="Migrations\202203031301208_Added Schedule report Permissions.Designer.cs">
+      <DependentUpon>202203031301208_Added Schedule report Permissions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203041016154_removed_chapters_from_CustomDocument.cs" />
+    <Compile Include="Migrations\202203041016154_removed_chapters_from_CustomDocument.Designer.cs">
+      <DependentUpon>202203041016154_removed_chapters_from_CustomDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203041710017_updated_DateTime_Policy.cs" />
+    <Compile Include="Migrations\202203041710017_updated_DateTime_Policy.Designer.cs">
+      <DependentUpon>202203041710017_updated_DateTime_Policy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203101836161_update_createdOn_Statndarduser.cs" />
+    <Compile Include="Migrations\202203101836161_update_createdOn_Statndarduser.Designer.cs">
+      <DependentUpon>202203101836161_update_createdOn_Statndarduser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203160927085_added_section_option_in_CustomDocument.cs" />
+    <Compile Include="Migrations\202203160927085_added_section_option_in_CustomDocument.Designer.cs">
+      <DependentUpon>202203160927085_added_section_option_in_CustomDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203161238469_added_section_option_in_TestQuestionTable.cs" />
+    <Compile Include="Migrations\202203161238469_added_section_option_in_TestQuestionTable.Designer.cs">
+      <DependentUpon>202203161238469_added_section_option_in_TestQuestionTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203161311447_Modified_section_option_in_CustomDocument.cs" />
+    <Compile Include="Migrations\202203161311447_Modified_section_option_in_CustomDocument.Designer.cs">
+      <DependentUpon>202203161311447_Modified_section_option_in_CustomDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203171827265_add_MemoChapterUserResult_add.cs" />
+    <Compile Include="Migrations\202203171827265_add_MemoChapterUserResult_add.Designer.cs">
+      <DependentUpon>202203171827265_add_MemoChapterUserResult_add.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203171841462_add_MemoChapter.cs" />
+    <Compile Include="Migrations\202203171841462_add_MemoChapter.Designer.cs">
+      <DependentUpon>202203171841462_add_MemoChapter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203171904484_update_ForeignKey_MemoChapterUserResult.cs" />
+    <Compile Include="Migrations\202203171904484_update_ForeignKey_MemoChapterUserResult.Designer.cs">
+      <DependentUpon>202203171904484_update_ForeignKey_MemoChapterUserResult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203180701326_add_TrainingManualChapterUserResult.cs" />
+    <Compile Include="Migrations\202203180701326_add_TrainingManualChapterUserResult.Designer.cs">
+      <DependentUpon>202203180701326_add_TrainingManualChapterUserResult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203180721196_add_TestChapterUserResult.cs" />
+    <Compile Include="Migrations\202203180721196_add_TestChapterUserResult.Designer.cs">
+      <DependentUpon>202203180721196_add_TestChapterUserResult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203181255294_Update_MemoChapterUserUploadResult.cs" />
+    <Compile Include="Migrations\202203181255294_Update_MemoChapterUserUploadResult.Designer.cs">
+      <DependentUpon>202203181255294_Update_MemoChapterUserUploadResult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203220449152_add_Conditinoal.cs" />
+    <Compile Include="Migrations\202203220449152_add_Conditinoal.Designer.cs">
+      <DependentUpon>202203220449152_add_Conditinoal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203220816293_update_Conditinoaltable_foreignKey.cs" />
+    <Compile Include="Migrations\202203220816293_update_Conditinoaltable_foreignKey.Designer.cs">
+      <DependentUpon>202203220816293_update_Conditinoaltable_foreignKey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203220829351_updateed_Conditinoaltable_foreignKey.cs" />
+    <Compile Include="Migrations\202203220829351_updateed_Conditinoaltable_foreignKey.Designer.cs">
+      <DependentUpon>202203220829351_updateed_Conditinoaltable_foreignKey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203220856474_updateed_Conditinoaltable_foreignKey_1.cs" />
+    <Compile Include="Migrations\202203220856474_updateed_Conditinoaltable_foreignKey_1.Designer.cs">
+      <DependentUpon>202203220856474_updateed_Conditinoaltable_foreignKey_1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203221148357_updateed_Conditinoaltable_dateTime.cs" />
+    <Compile Include="Migrations\202203221148357_updateed_Conditinoaltable_dateTime.Designer.cs">
+      <DependentUpon>202203221148357_updateed_Conditinoaltable_dateTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203231234599_add_AcrobatFields.cs" />
+    <Compile Include="Migrations\202203231234599_add_AcrobatFields.Designer.cs">
+      <DependentUpon>202203231234599_add_AcrobatFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203261401572_add_StandardUserAdobeFieldValues.cs" />
+    <Compile Include="Migrations\202203261401572_add_StandardUserAdobeFieldValues.Designer.cs">
+      <DependentUpon>202203261401572_add_StandardUserAdobeFieldValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202203261514565_update_StandardUserAdobeFieldValues.cs" />
+    <Compile Include="Migrations\202203261514565_update_StandardUserAdobeFieldValues.Designer.cs">
+      <DependentUpon>202203261514565_update_StandardUserAdobeFieldValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202204181123306_Standard_User_Department.cs" />
+    <Compile Include="Migrations\202204181123306_Standard_User_Department.Designer.cs">
+      <DependentUpon>202204181123306_Standard_User_Department.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206011150006_ProjectMerge.cs" />
+    <Compile Include="Migrations\202206011150006_ProjectMerge.Designer.cs">
+      <DependentUpon>202206011150006_ProjectMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206141024062_add_Mannual_review.cs" />
+    <Compile Include="Migrations\202206141024062_add_Mannual_review.Designer.cs">
+      <DependentUpon>202206141024062_add_Mannual_review.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206170925586_add_ForeignKey_review.cs" />
+    <Compile Include="Migrations\202206170925586_add_ForeignKey_review.Designer.cs">
+      <DependentUpon>202206170925586_add_ForeignKey_review.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206220900253_add_CustomDocumentMessageCenter.cs" />
+    <Compile Include="Migrations\202206220900253_add_CustomDocumentMessageCenter.Designer.cs">
+      <DependentUpon>202206220900253_add_CustomDocumentMessageCenter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206240632174_update_isSignOff.cs" />
+    <Compile Include="Migrations\202206240632174_update_isSignOff.Designer.cs">
+      <DependentUpon>202206240632174_update_isSignOff.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202206241031215_update_test_ChecklistisSignOff.cs" />
+    <Compile Include="Migrations\202206241031215_update_test_ChecklistisSignOff.Designer.cs">
+      <DependentUpon>202206241031215_update_test_ChecklistisSignOff.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207011239089_isSignOff.cs" />
+    <Compile Include="Migrations\202207011239089_isSignOff.Designer.cs">
+      <DependentUpon>202207011239089_isSignOff.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207081041483_update_isSignOff1.cs" />
+    <Compile Include="Migrations\202207081041483_update_isSignOff1.Designer.cs">
+      <DependentUpon>202207081041483_update_isSignOff1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202207081408051_addMore_isSignOff.cs" />
+    <Compile Include="Migrations\202207081408051_addMore_isSignOff.Designer.cs">
+      <DependentUpon>202207081408051_addMore_isSignOff.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202208260652450_RestoreDB.cs" />
+    <Compile Include="Migrations\202208260652450_RestoreDB.Designer.cs">
+      <DependentUpon>202208260652450_RestoreDB.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202208290701444_Update_Policy_Model.cs" />
+    <Compile Include="Migrations\202208290701444_Update_Policy_Model.Designer.cs">
+      <DependentUpon>202208290701444_Update_Policy_Model.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202209080543454_AddingTableForPolicyStdUserSide.cs" />
+    <Compile Include="Migrations\202209080543454_AddingTableForPolicyStdUserSide.Designer.cs">
+      <DependentUpon>202209080543454_AddingTableForPolicyStdUserSide.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202209130625457_UpdatingModels.cs" />
+    <Compile Include="Migrations\202209130625457_UpdatingModels.Designer.cs">
+      <DependentUpon>202209130625457_UpdatingModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202209131013530_UpdatingPolicyModels.cs" />
+    <Compile Include="Migrations\202209131013530_UpdatingPolicyModels.Designer.cs">
+      <DependentUpon>202209131013530_UpdatingPolicyModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202209131208100_UpdatingPolicyModelsNEW.cs" />
+    <Compile Include="Migrations\202209131208100_UpdatingPolicyModelsNEW.Designer.cs">
+      <DependentUpon>202209131208100_UpdatingPolicyModelsNEW.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202209270547441_Form_Section_Table.cs" />
+    <Compile Include="Migrations\202209270547441_Form_Section_Table.Designer.cs">
+      <DependentUpon>202209270547441_Form_Section_Table.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211161027148_FormFieldUserResults.cs" />
+    <Compile Include="Migrations\202211161027148_FormFieldUserResults.Designer.cs">
+      <DependentUpon>202211161027148_FormFieldUserResults.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211161037183_added_conditional_logic.cs" />
+    <Compile Include="Migrations\202211161037183_added_conditional_logic.Designer.cs">
+      <DependentUpon>202211161037183_added_conditional_logic.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211220711423_AddedAssignedId_InCDMessageCenter.cs" />
+    <Compile Include="Migrations\202211220711423_AddedAssignedId_InCDMessageCenter.Designer.cs">
+      <DependentUpon>202211220711423_AddedAssignedId_InCDMessageCenter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211231732552_AddedAssignedId_InDocumentUsage.cs" />
+    <Compile Include="Migrations\202211231732552_AddedAssignedId_InDocumentUsage.Designer.cs">
+      <DependentUpon>202211231732552_AddedAssignedId_InDocumentUsage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202211291303520_AddAssignedId-In-FormFieldUserResult.cs" />
+    <Compile Include="Migrations\202211291303520_AddAssignedId-In-FormFieldUserResult.Designer.cs">
+      <DependentUpon>202211291303520_AddAssignedId-In-FormFieldUserResult.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202212160711254_AddedCustomFields.cs" />
+    <Compile Include="Migrations\202212160711254_AddedCustomFields.Designer.cs">
+      <DependentUpon>202212160711254_AddedCustomFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Repository.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TransientReadRepositoryExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{bbbb998d-2c63-4093-98dc-6d5b452997d0}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain.Customer\Domain.Customer.csproj">
+      <Project>{6894940b-7242-4321-8ff2-c8ad228dd87c}</Project>
+      <Name>Domain.Customer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Domain\Domain.csproj">
+      <Project>{ca18cb88-47de-4df8-9592-6e9b4fb018ed}</Project>
+      <Name>Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Ramp.Contracts\Ramp.Contracts.csproj">
+      <Project>{B579989D-E0AA-4D68-9DBF-4B7FF6800D69}</Project>
+      <Name>Ramp.Contracts</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\201410280818248_initial.resx">
+      <DependentUpon>201410280818248_initial.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201410300748345_TrainingCategoriesLink.resx">
+      <DependentUpon>201410300748345_TrainingCategoriesLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201411031040520_TrainingGuideChapterToTrainingGuideLink.resx">
+      <DependentUpon>201411031040520_TrainingGuideChapterToTrainingGuideLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201411281312285_AccomodateMultipleChapterLinks.resx">
+      <DependentUpon>201411281312285_AccomodateMultipleChapterLinks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412011313493_ChapterLinksDependantOnChapters.resx">
+      <DependentUpon>201412011313493_ChapterLinksDependantOnChapters.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412031228095_ExpiryNotificationSentOn.resx">
+      <DependentUpon>201412031228095_ExpiryNotificationSentOn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201502190620331_DocumentFileToChapterUploads.resx">
+      <DependentUpon>201502190620331_DocumentFileToChapterUploads.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503130831310_CategoryMigration.resx">
+      <DependentUpon>201503130831310_CategoryMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503191551356_ChapterUploadSequence.resx">
+      <DependentUpon>201503191551356_ChapterUploadSequence.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503301420147_TestExpiryDateNullable.resx">
+      <DependentUpon>201503301420147_TestExpiryDateNullable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201503311157331_YoutubeLink.resx">
+      <DependentUpon>201503311157331_YoutubeLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507070321481_TestTrophy.resx">
+      <DependentUpon>201507070321481_TestTrophy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508171009034_FileUploadsMigration.resx">
+      <DependentUpon>201508171009034_FileUploadsMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511270926343_SplitViewForGuidesAndTests.resx">
+      <DependentUpon>201511270926343_SplitViewForGuidesAndTests.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601060947524_AddContentToChaperUpload.resx">
+      <DependentUpon>201601060947524_AddContentToChaperUpload.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601201149346_CustomerDataExtraction.resx">
+      <DependentUpon>201601201149346_CustomerDataExtraction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601280935500_AddPassPointsToTest.resx">
+      <DependentUpon>201601280935500_AddPassPointsToTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601281150234_SetTestPointsDefaultToZero.resx">
+      <DependentUpon>201601281150234_SetTestPointsDefaultToZero.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602031311291_CallaboratorsOnTrainingGuide.resx">
+      <DependentUpon>201602031311291_CallaboratorsOnTrainingGuide.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201602031349003_AssignMarksToQuestions.resx">
+      <DependentUpon>201602031349003_AssignMarksToQuestions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603041423071_QuestionUploads.resx">
+      <DependentUpon>201603041423071_QuestionUploads.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603111123230_FileUploadInQuestionAndChapterUpload.resx">
+      <DependentUpon>201603111123230_FileUploadInQuestionAndChapterUpload.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603171515478_CoverPictureFileUploadTrainingGuide.resx">
+      <DependentUpon>201603171515478_CoverPictureFileUploadTrainingGuide.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604051426160_TestResultUpdate.resx">
+      <DependentUpon>201604051426160_TestResultUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604070713480_VersionNumberOnTests.resx">
+      <DependentUpon>201604070713480_VersionNumberOnTests.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604121224058_TestResultExpansion.resx">
+      <DependentUpon>201604121224058_TestResultExpansion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604121313358_TestResultsTrophyData.resx">
+      <DependentUpon>201604121313358_TestResultsTrophyData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604130735405_LastEditDateTrainingGuide.resx">
+      <DependentUpon>201604130735405_LastEditDateTrainingGuide.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604261419124_TestCertificatesOnStandardUser.resx">
+      <DependentUpon>201604261419124_TestCertificatesOnStandardUser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604281257253_CustomConfiguration.resx">
+      <DependentUpon>201604281257253_CustomConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605161335046_IDNumber.resx">
+      <DependentUpon>201605161335046_IDNumber.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605171353062_RaceAndGender.resx">
+      <DependentUpon>201605171353062_RaceAndGender.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605191051338_TestReview.resx">
+      <DependentUpon>201605191051338_TestReview.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201605260718222_TestUserAnswer.resx">
+      <DependentUpon>201605260718222_TestUserAnswer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607131036593_AddFeedbackDomainObject.resx">
+      <DependentUpon>201607131036593_AddFeedbackDomainObject.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607131246397_AddDateToFeedback.resx">
+      <DependentUpon>201607131246397_AddDateToFeedback.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607131256470_AddUserIdToFeedback.resx">
+      <DependentUpon>201607131256470_AddUserIdToFeedback.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607131304371_AddReadsToFeedback.resx">
+      <DependentUpon>201607131304371_AddReadsToFeedback.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607201059338_ChangeFeedbackSubjectDataType.resx">
+      <DependentUpon>201607201059338_ChangeFeedbackSubjectDataType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607210751145_MaximumRewritesOnTest.resx">
+      <DependentUpon>201607210751145_MaximumRewritesOnTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607220709404_MaximumTestRewritesReachedOnResult.resx">
+      <DependentUpon>201607220709404_MaximumTestRewritesReachedOnResult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607271003209_AddBrowserToCustomerSurvey.resx">
+      <DependentUpon>201607271003209_AddBrowserToCustomerSurvey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201608101101154_UnassignedOnUsageStats.resx">
+      <DependentUpon>201608101101154_UnassignedOnUsageStats.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201608161236568_CKEUploadsOnTrainingGuideChapter.resx">
+      <DependentUpon>201608161236568_CKEUploadsOnTrainingGuideChapter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201608161340040_CascadeOnDeleteForCKEUpload.resx">
+      <DependentUpon>201608161340040_CascadeOnDeleteForCKEUpload.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609051050290_cascadeOnDeleteForTestuseranswer.resx">
+      <DependentUpon>201609051050290_cascadeOnDeleteForTestuseranswer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609300745134_TestVersion.resx">
+      <DependentUpon>201609300745134_TestVersion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609300746026_TestVersionData.resx">
+      <DependentUpon>201609300746026_TestVersionData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610061151588_TestFeedbackDataSubjectToId.resx">
+      <DependentUpon>201610061151588_TestFeedbackDataSubjectToId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610191448188_TestUserAnswer1.resx">
+      <DependentUpon>201610191448188_TestUserAnswer1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611031404309_FileUploads_Description.resx">
+      <DependentUpon>201611031404309_FileUploads_Description.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611090705221_TestUserAnswer_Missing_Migration_Issue.resx">
+      <DependentUpon>201611090705221_TestUserAnswer_Missing_Migration_Issue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611220608586_CustomerConfigurationUpdate.resx">
+      <DependentUpon>201611220608586_CustomerConfigurationUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611220611271_CustomerConfiguationData.resx">
+      <DependentUpon>201611220611271_CustomerConfiguationData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612091136294_ExtensionCustomColours.resx">
+      <DependentUpon>201612091136294_ExtensionCustomColours.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612190726533_RemoveCustomColor.resx">
+      <DependentUpon>201612190726533_RemoveCustomColor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702060903066_AddDefaultGroup.resx">
+      <DependentUpon>201702060903066_AddDefaultGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702162117093_StandardUserDisclaimerActivityLog_ORP_912.resx">
+      <DependentUpon>201702162117093_StandardUserDisclaimerActivityLog_ORP_912.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201703231139122_PlaybookPreviewType_ORP1040.resx">
+      <DependentUpon>201703231139122_PlaybookPreviewType_ORP1040.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704180725409_Sprint_9.resx">
+      <DependentUpon>201704180725409_Sprint_9.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705151119050_ManyUsersToManyTrainingActivities_ORP-1119.resx">
+      <DependentUpon>201705151119050_ManyUsersToManyTrainingActivities_ORP-1119.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708051145482_TestQuestion_Audio.resx">
+      <DependentUpon>201708051145482_TestQuestion_Audio.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708071644571_TrainingGuide_Printable.resx">
+      <DependentUpon>201708071644571_TrainingGuide_Printable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708071807388_TrainingTest_DisableQuestionRandomization.resx">
+      <DependentUpon>201708071807388_TrainingTest_DisableQuestionRandomization.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708080932358_TestAnswer_Position.resx">
+      <DependentUpon>201708080932358_TestAnswer_Position.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708100706077_TrainingTest_EmailSummaryOnCompletion.resx">
+      <DependentUpon>201708100706077_TrainingTest_EmailSummaryOnCompletion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801052227269_ORP-1183.resx">
+      <DependentUpon>201801052227269_ORP-1183.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804261401477_ORP_1239.resx">
+      <DependentUpon>201804261401477_ORP_1239.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804261448345_ORP_1255.resx">
+      <DependentUpon>201804261448345_ORP_1255.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201804300735424_ORP_1239_ORP_1255.resx">
+      <DependentUpon>201804300735424_ORP_1239_ORP_1255.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805230048483_ORP-1238.resx">
+      <DependentUpon>201805230048483_ORP-1238.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805231024564_ORP-1241_RenameCustomerRolesDescriptions.resx">
+      <DependentUpon>201805231024564_ORP-1241_RenameCustomerRolesDescriptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201805291436126_ORP-1245_RenameCustomerRolesDescription.resx">
+      <DependentUpon>201805291436126_ORP-1245_RenameCustomerRolesDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806081010526_ORP-1252_AssignedDocument_DocumentUsage.resx">
+      <DependentUpon>201806081010526_ORP-1252_AssignedDocument_DocumentUsage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806180853136_ORP-1243_StandardUserDisclaimerActivityLog_Deleted.resx">
+      <DependentUpon>201806180853136_ORP-1243_StandardUserDisclaimerActivityLog_Deleted.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807191947385_ORP-1239_TestMaximumAttempts.resx">
+      <DependentUpon>201807191947385_ORP-1239_TestMaximumAttempts.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808020701407_ORP-1238_DocumentCollaborators.resx">
+      <DependentUpon>201808020701407_ORP-1238_DocumentCollaborators.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808060830385_ORP-1238_PolicyResponse.resx">
+      <DependentUpon>201808060830385_ORP-1238_PolicyResponse.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808231306252_ORP-1281_DocumentUsage_Duration.resx">
+      <DependentUpon>201808231306252_ORP-1281_DocumentUsage_Duration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808271211569_ORP-1289_TestSession.resx">
+      <DependentUpon>201808271211569_ORP-1289_TestSession.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808271340078_ORP-1289_Test_OpenTest.resx">
+      <DependentUpon>201808271340078_ORP-1289_Test_OpenTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810031411044_ORP-1281_Test_Result_TimeTaken.resx">
+      <DependentUpon>201810031411044_ORP-1281_Test_Result_TimeTaken.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903251248300_TrainingActivity_FileUploads_FileUpload.resx">
+      <DependentUpon>201903251248300_TrainingActivity_FileUploads_FileUpload.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903251331436_TrainingActivity_FileUploads_FileUpload_CloneScript.resx">
+      <DependentUpon>201903251331436_TrainingActivity_FileUploads_FileUpload_CloneScript.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904051242132_DocumentTrainingLabelsCommaSeparatedString.resx">
+      <DependentUpon>201904051242132_DocumentTrainingLabelsCommaSeparatedString.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904051406405_TrainingActivityTrainingLabelsCommaSeparatedString.resx">
+      <DependentUpon>201904051406405_TrainingActivityTrainingLabelsCommaSeparatedString.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201906191206307_ORP-1390.resx">
+      <DependentUpon>201906191206307_ORP-1390.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907161330322_ORP-1347.resx">
+      <DependentUpon>201907161330322_ORP-1347.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201907191235576_ORP-1393_TestTimedByDefault.resx">
+      <DependentUpon>201907191235576_ORP-1393_TestTimedByDefault.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912030733399_fixdata.resx">
+      <DependentUpon>201912030733399_fixdata.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912210904075_CustomerSurveyDetail.resx">
+      <DependentUpon>201912210904075_CustomerSurveyDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912301547075_certificateuploadId.resx">
+      <DependentUpon>201912301547075_certificateuploadId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001101322342_added_noteAllow.resx">
+      <DependentUpon>202001101322342_added_noteAllow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001172115103_parentid.resx">
+      <DependentUpon>202001172115103_parentid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002030822105_addIsrecurring_coloumn.resx">
+      <DependentUpon>202002030822105_addIsrecurring_coloumn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003121146426_Add_IsGlobalAccessField.resx">
+      <DependentUpon>202003121146426_Add_IsGlobalAccessField.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003131033276_Add_AdditionalMsg_Field.resx">
+      <DependentUpon>202003131033276_Add_AdditionalMsg_Field.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003171051363_IsGlobalAccessed.resx">
+      <DependentUpon>202003171051363_IsGlobalAccessed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003181358091_Testsession.resx">
+      <DependentUpon>202003181358091_Testsession.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003181440481_TestResult.resx">
+      <DependentUpon>202003181440481_TestResult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003191427072_IsGlobalAccessed1.resx">
+      <DependentUpon>202003191427072_IsGlobalAccessed1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003201010263_DocumentId.resx">
+      <DependentUpon>202003201010263_DocumentId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003241405200_policyresponse.resx">
+      <DependentUpon>202003241405200_policyresponse.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004031244402_checklistchapterresult.resx">
+      <DependentUpon>202004031244402_checklistchapterresult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004101208569_datecompleted.resx">
+      <DependentUpon>202004101208569_datecompleted.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004181228299_trackedEnable.resx">
+      <DependentUpon>202004181228299_trackedEnable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004181319348_TrackedDate.resx">
+      <DependentUpon>202004181319348_TrackedDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004290719227_VirtaulClassroom.resx">
+      <DependentUpon>202004290719227_VirtaulClassroom.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005080920114_ReferenceId.resx">
+      <DependentUpon>202005080920114_ReferenceId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005181051500_AuditTrack.resx">
+      <DependentUpon>202005181051500_AuditTrack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005181131104_changesAudit.resx">
+      <DependentUpon>202005181131104_changesAudit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005191158309_documentType.resx">
+      <DependentUpon>202005191158309_documentType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005200912222_documentName.resx">
+      <DependentUpon>202005200912222_documentName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005251051410_IsPublicAccess.resx">
+      <DependentUpon>202005251051410_IsPublicAccess.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202005260749191_JitsiServerName.resx">
+      <DependentUpon>202005260749191_JitsiServerName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006090720402_RestoreTrack.resx">
+      <DependentUpon>202006090720402_RestoreTrack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006090731110_TrackStatus.resx">
+      <DependentUpon>202006090731110_TrackStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006100723285_ExternalUserMeeting.resx">
+      <DependentUpon>202006100723285_ExternalUserMeeting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202006180653320_userIdForGlobalDoc.resx">
+      <DependentUpon>202006180653320_userIdForGlobalDoc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202008191035055_CertificateThumbnail.resx">
+      <DependentUpon>202008191035055_CertificateThumbnail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009080736423_asignmentdocumentorderno.resx">
+      <DependentUpon>202009080736423_asignmentdocumentorderno.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202009110815033_documenturl.resx">
+      <DependentUpon>202009110815033_documenturl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010161255348_DocumentUrlChapter.resx">
+      <DependentUpon>202010161255348_DocumentUrlChapter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202010221025277_notification.resx">
+      <DependentUpon>202010221025277_notification.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202011111119276_docnotification.resx">
+      <DependentUpon>202011111119276_docnotification.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012191428569_standardUserTrainingLabel.resx">
+      <DependentUpon>202012191428569_standardUserTrainingLabel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012291240589_CertificateTitleandCreatedon.resx">
+      <DependentUpon>202012291240589_CertificateTitleandCreatedon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202102181257505_TrainingManualWebFrameName.resx">
+      <DependentUpon>202102181257505_TrainingManualWebFrameName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202102240948289_Certificatetype.resx">
+      <DependentUpon>202102240948289_Certificatetype.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106191222418_CustomerGroupDateCreated.resx">
+      <DependentUpon>202106191222418_CustomerGroupDateCreated.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107220803421_standardUsserGroup.resx">
+      <DependentUpon>202107220803421_standardUsserGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202108061025083_standardusergroupupdate.resx">
+      <DependentUpon>202108061025083_standardusergroupupdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109021236041_DocumentUsageStatusCoulmnAdded.resx">
+      <DependentUpon>202109021236041_DocumentUsageStatusCoulmnAdded.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109201009161_CustomUserRole.resx">
+      <DependentUpon>202109201009161_CustomUserRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109231633432_StandardUserColumnAdded.resx">
+      <DependentUpon>202109231633432_StandardUserColumnAdded.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109300658323_CustomUserRoleTableUpdate.resx">
+      <DependentUpon>202109300658323_CustomUserRoleTableUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110010959423_CustomerRolesTAbleUpdated.resx">
+      <DependentUpon>202110010959423_CustomerRolesTAbleUpdated.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110061405337_TrainingManualTableUpdate.resx">
+      <DependentUpon>202110061405337_TrainingManualTableUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110071758168_CustomerRolesColumnUpdate.resx">
+      <DependentUpon>202110071758168_CustomerRolesColumnUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110071828150_PolicyMemoTestChecklist.resx">
+      <DependentUpon>202110071828150_PolicyMemoTestChecklist.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110120914090_publishstatusupdate.resx">
+      <DependentUpon>202110120914090_publishstatusupdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110130838038_updateforpublishstatus.resx">
+      <DependentUpon>202110130838038_updateforpublishstatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110131338514_DocumentWorkflowAuditMessages.resx">
+      <DependentUpon>202110131338514_DocumentWorkflowAuditMessages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110131512383_DocumentWorkflowAuditMessage.resx">
+      <DependentUpon>202110131512383_DocumentWorkflowAuditMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110161704085_CustomUserRoleTableUpdate1.resx">
+      <DependentUpon>202110161704085_CustomUserRoleTableUpdate1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111111038499_CustomDocument.resx">
+      <DependentUpon>202111111038499_CustomDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202111300741122_course.resx">
+      <DependentUpon>202111300741122_course.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112060705479_CustomDocumentUpdate.resx">
+      <DependentUpon>202112060705479_CustomDocumentUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112150718461_CoursesUpdate.resx">
+      <DependentUpon>202112150718461_CoursesUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112231201389_assignedCourse-updated.resx">
+      <DependentUpon>202112231201389_assignedCourse-updated.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112231505471_resolve.resx">
+      <DependentUpon>202112231505471_resolve.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112231716471_AutoAssignWorkflow.resx">
+      <DependentUpon>202112231716471_AutoAssignWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202112301644188_clean.resx">
+      <DependentUpon>202112301644188_clean.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202201070803257_customuserroletableupdated.resx">
+      <DependentUpon>202201070803257_customuserroletableupdated.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202201101438497_schedulereports.resx">
+      <DependentUpon>202201101438497_schedulereports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202201291236382_ScheduleReportParams.resx">
+      <DependentUpon>202201291236382_ScheduleReportParams.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202171059119_ADFlag.resx">
+      <DependentUpon>202202171059119_ADFlag.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202171105164_customdocumentid.resx">
+      <DependentUpon>202202171105164_customdocumentid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202171128477_CustomDocumentFields.resx">
+      <DependentUpon>202202171128477_CustomDocumentFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202202211336004_update_ParameterType_ScheduleReportParameter.resx">
+      <DependentUpon>202202211336004_update_ParameterType_ScheduleReportParameter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203011054581_update_database_field.resx">
+      <DependentUpon>202203011054581_update_database_field.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203011408132_add_StatusColumn_Schedulermode.resx">
+      <DependentUpon>202203011408132_add_StatusColumn_Schedulermode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203031301208_Added Schedule report Permissions.resx">
+      <DependentUpon>202203031301208_Added Schedule report Permissions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203041016154_removed_chapters_from_CustomDocument.resx">
+      <DependentUpon>202203041016154_removed_chapters_from_CustomDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203041710017_updated_DateTime_Policy.resx">
+      <DependentUpon>202203041710017_updated_DateTime_Policy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203101836161_update_createdOn_Statndarduser.resx">
+      <DependentUpon>202203101836161_update_createdOn_Statndarduser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203160927085_added_section_option_in_CustomDocument.resx">
+      <DependentUpon>202203160927085_added_section_option_in_CustomDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203161238469_added_section_option_in_TestQuestionTable.resx">
+      <DependentUpon>202203161238469_added_section_option_in_TestQuestionTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203161311447_Modified_section_option_in_CustomDocument.resx">
+      <DependentUpon>202203161311447_Modified_section_option_in_CustomDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203171827265_add_MemoChapterUserResult_add.resx">
+      <DependentUpon>202203171827265_add_MemoChapterUserResult_add.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203171841462_add_MemoChapter.resx">
+      <DependentUpon>202203171841462_add_MemoChapter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203171904484_update_ForeignKey_MemoChapterUserResult.resx">
+      <DependentUpon>202203171904484_update_ForeignKey_MemoChapterUserResult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203180701326_add_TrainingManualChapterUserResult.resx">
+      <DependentUpon>202203180701326_add_TrainingManualChapterUserResult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203180721196_add_TestChapterUserResult.resx">
+      <DependentUpon>202203180721196_add_TestChapterUserResult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203181255294_Update_MemoChapterUserUploadResult.resx">
+      <DependentUpon>202203181255294_Update_MemoChapterUserUploadResult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203220449152_add_Conditinoal.resx">
+      <DependentUpon>202203220449152_add_Conditinoal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203220816293_update_Conditinoaltable_foreignKey.resx">
+      <DependentUpon>202203220816293_update_Conditinoaltable_foreignKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203220829351_updateed_Conditinoaltable_foreignKey.resx">
+      <DependentUpon>202203220829351_updateed_Conditinoaltable_foreignKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203220856474_updateed_Conditinoaltable_foreignKey_1.resx">
+      <DependentUpon>202203220856474_updateed_Conditinoaltable_foreignKey_1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203221148357_updateed_Conditinoaltable_dateTime.resx">
+      <DependentUpon>202203221148357_updateed_Conditinoaltable_dateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203231234599_add_AcrobatFields.resx">
+      <DependentUpon>202203231234599_add_AcrobatFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203261401572_add_StandardUserAdobeFieldValues.resx">
+      <DependentUpon>202203261401572_add_StandardUserAdobeFieldValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203261514565_update_StandardUserAdobeFieldValues.resx">
+      <DependentUpon>202203261514565_update_StandardUserAdobeFieldValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202204181123306_Standard_User_Department.resx">
+      <DependentUpon>202204181123306_Standard_User_Department.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206011150006_ProjectMerge.resx">
+      <DependentUpon>202206011150006_ProjectMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206141024062_add_Mannual_review.resx">
+      <DependentUpon>202206141024062_add_Mannual_review.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206170925586_add_ForeignKey_review.resx">
+      <DependentUpon>202206170925586_add_ForeignKey_review.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206220900253_add_CustomDocumentMessageCenter.resx">
+      <DependentUpon>202206220900253_add_CustomDocumentMessageCenter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206240632174_update_isSignOff.resx">
+      <DependentUpon>202206240632174_update_isSignOff.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202206241031215_update_test_ChecklistisSignOff.resx">
+      <DependentUpon>202206241031215_update_test_ChecklistisSignOff.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207011239089_isSignOff.resx">
+      <DependentUpon>202207011239089_isSignOff.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207081041483_update_isSignOff1.resx">
+      <DependentUpon>202207081041483_update_isSignOff1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202207081408051_addMore_isSignOff.resx">
+      <DependentUpon>202207081408051_addMore_isSignOff.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202208260652450_RestoreDB.resx">
+      <DependentUpon>202208260652450_RestoreDB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202208290701444_Update_Policy_Model.resx">
+      <DependentUpon>202208290701444_Update_Policy_Model.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209080543454_AddingTableForPolicyStdUserSide.resx">
+      <DependentUpon>202209080543454_AddingTableForPolicyStdUserSide.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209130625457_UpdatingModels.resx">
+      <DependentUpon>202209130625457_UpdatingModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209131013530_UpdatingPolicyModels.resx">
+      <DependentUpon>202209131013530_UpdatingPolicyModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209131208100_UpdatingPolicyModelsNEW.resx">
+      <DependentUpon>202209131208100_UpdatingPolicyModelsNEW.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202209270547441_Form_Section_Table.resx">
+      <DependentUpon>202209270547441_Form_Section_Table.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211161027148_FormFieldUserResults.resx">
+      <DependentUpon>202211161027148_FormFieldUserResults.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211161037183_added_conditional_logic.resx">
+      <DependentUpon>202211161037183_added_conditional_logic.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211220711423_AddedAssignedId_InCDMessageCenter.resx">
+      <DependentUpon>202211220711423_AddedAssignedId_InCDMessageCenter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211231732552_AddedAssignedId_InDocumentUsage.resx">
+      <DependentUpon>202211231732552_AddedAssignedId_InDocumentUsage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202211291303520_AddAssignedId-In-FormFieldUserResult.resx">
+      <DependentUpon>202211291303520_AddAssignedId-In-FormFieldUserResult.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202212160711254_AddedCustomFields.resx">
+      <DependentUpon>202212160711254_AddedCustomFields.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

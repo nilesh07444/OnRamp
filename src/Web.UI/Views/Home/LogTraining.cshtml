@@ -1,0 +1,102 @@
+﻿@using Web.UI.Areas.CustomerManagement.Controllers
+@using Web.UI.Areas.ManageTrainingGuides.Controllers
+@using Web.UI.Areas.ManageTrainingTest.Controllers
+@using Web.UI.Code.Extensions
+@using Web.UI.Controllers
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+
+    var EnabledTrainingActivityLoggingModule = false;
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany != null)
+    {
+        EnabledTrainingActivityLoggingModule = PortalContext.Current.UserCompany.EnableTrainingActivityLoggingModule;
+    }
+}
+<div class="row row-centered">
+    <div class="col-md-12 text-center col-centered">
+        <div class="form-group text-center">
+            <h1>LOG TRAINING</h1>
+        </div>
+    </div>
+</div>
+@if (EnabledTrainingActivityLoggingModule && (
+        Html.CanAccess<TrainingActivityController>(m => m.Index(null)) ||
+        Html.CanAccess<TagController>(a => a.Index()) ||
+        Html.CanAccess<ExternalTrainingProviderController>(a => a.Index(null))
+    ))
+{
+    <div class="row row-centered menu-row">
+        <div class="col-lg-12 col-centered">
+            @if (Html.CanAccess<ExternalTrainingProviderController>(a => a.Index(null)))
+            {
+                <div class="col-lg-4 col-centered menu-tile" id="external-training-provider-management">
+                    <a href="@Url.Action("Index", "ExternalTrainingProvider", new { Area = "" })">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.ManageExternalTrainingProviders], true)" class="img-responsive" />
+                        <h4>
+                            <span class="label label-default shade">
+                                External Training Providers Management
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+            @if (Html.CanAccess<TrainingActivityController>(m => m.Index(null)))
+            {
+                <div class="col-lg-4 col-centered menu-tile" id="training-activity-logging-management">
+                    <a href="@Url.Action("Index", "TrainingActivity", new { Area = "" })">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.ManageTrainingActivities], true)" class="img-responsive" />
+                        <h4>
+                            <span class="label label-default shade">
+                                Training Activity Logging Management
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+            @if (Html.CanAccess<TagController>(a => a.Index()))
+            {
+                <div class="col-lg-4 col-centered menu-tile" id="training-label-management">
+                    <a href="@Url.Action("Index", "TrainingLabel", new { Area = "" })">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.ManageTrainingLabels], true)" class="img-responsive" />
+                        <h4>
+                            <span class="label label-default shade">
+                                Training Label Management
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+<script>
+    tour.steps = [
+        {
+            target: 'external-training-provider-management',
+            placement: 'top',
+            title: 'External Training Providers Management',
+            content: 'Click here to add and manage a profile for all your external training providers.',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: '480'
+        },
+        {
+            target: 'training-activity-logging-management',
+            placement: 'top',
+            title: 'Training Activity Logging Management',
+            content: 'Click here to add and manage all your training activities.',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: '480'
+        },
+        {
+            target: 'training-label-management',
+            placement: 'top',
+            title: 'Training Label Management',
+            content: 'Click here to add custom tags to easily track and reference your training activities.',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: '480'
+        }
+    ];
+</script>

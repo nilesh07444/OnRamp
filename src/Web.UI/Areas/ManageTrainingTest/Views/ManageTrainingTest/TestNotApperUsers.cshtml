@@ -1,0 +1,111 @@
+﻿@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.TestNotApperUsersViewModel
+@{
+    Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<br />
+<br />
+<br />
+<br />
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Tests Not Taken
+            </div>
+
+            <div class="panel-body">
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        @Html.Label("Tests")
+                        @Html.DropDownListFor(m => m.SelectedTest, Model.DropDownForTest.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select Test", new { @class = "form-control" })
+                    </div>
+                </div>
+
+                <div class="form-group col-lg-3">
+                    <div class="input-group date">
+                        <label></label>
+                        <div class="form-group input-group" style="width: 281px;">
+                            <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="View" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="" style="display: none; margin: 0px 18px 16px 14px;" id="ChartDiv">
+                    <div class="panel-body" id="TableData">
+                        <div class="col-lg-12" style="display: none; text-align: center;" id="divNoData">
+                            <label id="lblNoData">No Data Found</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+    });
+</script>
+
+<script type="text/javascript">
+    $("#btnView").click(function () {
+        //
+        $('#LoadingImageDiv').show();
+        //if ($('#SelectedTest').val() == null || $('#SelectedTest').val() == "") {
+        //    $('#LoadingImageDiv').hide();
+        //    notif({
+        //        msg: "<b>Error :</b> Please select Test ",
+        //        type: "error",
+        //    });
+        //}
+        //else
+        var testidtemp;
+        if ($('#SelectedTest').val() == null || $('#SelectedTest').val() == "") {
+            testidtemp = "00000000-0000-0000-0000-000000000000";
+        } else {
+            testidtemp = $('#SelectedTest').val();
+        }
+        //alert($('#SelectedTest').val());
+        {
+            //Bind Test userd List
+            $.ajax({
+                type: "POST",
+                url: "@(Url.Action("TestNotApperUsersData", "ManageTrainingTest", "ManageTrainingTest"))",
+                data: {
+                    //testId: $('#SelectedTest').val()
+                    testId: testidtemp
+                },
+                success: function (data) {
+                    //
+                    $('#LoadingImageDiv').hide();
+                    $('#ChartDiv').hide();
+                    $('#divNoData').hide();
+                    if (data.length == 0) {
+                        //$('#dataTables-example_wrapper').hide();
+                        //$('#divTestData').attr("display", "none");
+                        $('#ChartDiv').fadeIn();
+                        $('#divNoData').show();
+                    } else {
+                        $('#TableData').empty();
+                        $('#TableData').append(data);
+                        $('#ChartDiv').fadeIn();
+                    }
+                    if (_adjustPageFooter)
+                        _adjustPageFooter();
+                },
+                error: function (data) {
+                    $('#LoadingImageDiv').hide();
+                }
+            });
+        }
+    });
+</script>

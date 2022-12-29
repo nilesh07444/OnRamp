@@ -1,0 +1,136 @@
+﻿@model Ramp.Contracts.ViewModel.MeetingViewModel
+
+@{
+    ViewBag.Title = "MyVirtualClassrooms";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+
+<style>
+    .pending {
+        background-color: #ffa500;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .document-icon {
+        max-width: 60px;
+    }
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-sm-12 ">
+            <div class="panel panel-info">
+                <div class="panel-heading clearfix" style="line-height: 34px;">
+                    My Virtual Meeting Rooms
+                </div>
+
+                <div class="table-responsive" id="divMeeting">
+                    @Html.Partial("~/Views/Document/_VirtualClassList.cshtml", Model)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4" style="padding-top: 4px">
+                    Show <select id="ddlShowEntry">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select> entries
+                </div>
+                <div class="pull-right">
+                    <ul class="pagination" style="margin: 0 15px 20px 0;">
+                        <li id="prevPageCss"><a href="#">&larr; Previous</a></li>
+                        @for (int i = Model.Paginate.StartPage; i <= Model.Paginate.EndPage; i++) {
+                            <li class="PageCss" id="@(i)"><a href="#">@(i)</a></li>
+                        }
+
+                        <li id="nextPageCss"><a href="#">Next &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="pull-right" style="padding-top: 6px; margin-right: 2em;">Showing <span>@(Model.Paginate.FirstPage)</span> to <span>@(Model.Paginate.LastPage) </span> of <span>@Model.Paginate.TotalItems</span> entries</div>
+
+                <input type="hidden" value="@Model.Paginate.StartPage" id="hdnStartPage" />
+                <input type="hidden" value="@Model.Paginate.EndPage" id="hdnEndPage" />
+                <input type="hidden" value="@Model.Paginate.IsLastPage" id="hdnIsLastPage" />
+            </div>
+        </div>
+    </div>
+</div>
+@if (ViewBag.InprogressMeetings != null && ((List<Ramp.Contracts.ViewModel.VirtualClassModel>)ViewBag.InprogressMeetings).Count() > 0) {
+    <div class="modal fade" id="InprogressMeetingModal" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Virtual Meeting Rooms in progress</h4>
+                </div>
+                <div class="modal-body" id="divInprogressMeeting">
+                    @Html.Partial("~/Views/Document/_InprogressMeetings.cshtml", (List<Ramp.Contracts.ViewModel.VirtualClassModel>)ViewBag.InprogressMeetings)
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<script>
+    $(function () {
+      @if (ViewBag.InprogressMeetings != null && ((List<Ramp.Contracts.ViewModel.VirtualClassModel>)ViewBag.InprogressMeetings).Count()>0) {
+            @: $('#InprogressMeetingModal').modal('show');
+      }
+
+        $('#liVirtualClassroom').addClass('active');
+        /**************this one will fire once user select the page size***************/
+        $(document).on('change', "#ddlShowEntry", function () {
+            fnGetMeetings();
+
+        });
+
+        $(document).on('click', '#btnSearch', function () {
+            fnGetMeetings();
+        });
+
+        /**********once user hit the next button**********/
+        $(document).on('click', '#nextPageCss', function () {
+            fnGetMeetings();
+        });
+        /***********when user hit the previous button************/
+        $(document).on('click', '#prevPageCss', function () {
+            fnGetMeetings();
+        });
+
+    });
+      function fnGetMeetings() {
+
+         var searchText = $('#txtSearch').val();
+            pageIndex = $('.PageCss.active').attr('id');
+            if (pageIndex === null) {
+                pageIndex = 1;
+            }
+            pageSize = $("#ddlShowEntry").val();
+            startPage = $('#hdnStartPage').val();
+            endPage = $('#hdnEndPage').val();
+            var meeting = $.get("@Url.Action("FilterMeeting", "Document", new { Area = "" })", {
+                searchText: '', pageIndex: parseInt(pageIndex) - 1, pageSize: pageSize, startPage: startPage, endPage: endPage
+
+                });
+
+            meeting.done(function (data) {
+            $('#divMeeting').html(data);
+                });
+            meeting.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+
+    }
+
+</script>

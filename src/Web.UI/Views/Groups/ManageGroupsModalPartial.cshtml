@@ -1,0 +1,351 @@
+﻿@using Web.UI.Code.Extensions
+<div id="manageGroupsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with:options.modals.manageGroups" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" ><span aria-hidden="true" onclick="closeGroup();">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Manage Groups</h4>
+            </div>
+            <div class="modal-body">
+                <div style="max-width: 300px;">
+                    <div class="input-group">
+                        <input type="search" id="groupSearch" placeholder="Search" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="groupSearchClear" class="btn btn-default">
+                                <span class="fa fa-close"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+                <br />
+                <div id="tree"></div>
+            </div>
+            <div class="modal-footer" style="text-align: center">
+                To manage Groups, right-click a group and select an option. <br />
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #jstree-marker, .vakata-context {
+        z-index: 1100;
+    }
+    #manageGroupsModal {
+        overflow-x: auto;
+    }
+    #manageGroupsModal .modal-dialog {
+        display: table;
+    }
+   
+</style>
+
+<script>
+    $(function() {
+        var tree = $('#tree');
+        var to = false;
+        $('#groupSearch').keyup(function() {
+            if (to) {
+                clearTimeout(to);
+            }
+            to = setTimeout(function() {
+                    var value = $('#groupSearch').val();
+                    tree.jstree(true).search(value);
+                },
+                250);
+        });
+        $('#groupSearchClear').click(function(e) {
+            $('#groupSearch').val('')
+                .trigger('keyup').focus();
+        });
+
+        tree.jstree({
+            core: {
+                data: {
+                    url: '@Url.Action("JsTreeWithGroups", "Group", new { Area = "" })'
+                },
+                multiple: false,
+                check_callback: function(operation, node, node_parent, node_position, more) {
+                    if (operation === 'move_node') {
+                        if (node.text === 'Default') {
+                            return false;
+                        }
+                        if (node.type !== 'default' && node_parent.type === 'default') {
+                            if (node_parent.text === 'Groups') {
+                                return false;
+                            }
+                            return true;
+                        }
+                        if (node.type === 'default' && node_parent.type === 'default') {
+                            return true;
+                        }
+                        return false;
+                    } else if (operation === 'delete_node') {
+                        var descendants = $.map(node.children_d,
+                            function(id) {
+                                return $('#tree').jstree(true).get_node(id);
+                            });
+                        if (containsDocument(descendants)) {
+                            notif({
+                                msg: 'Groups that contain sub-groups cannot be deleted.',
+                                type: 'error'
+                            });
+                            return false;
+                        }
+                        return true;
+                    }
+                }
+            },
+            contextmenu: {
+                items: function(node) {
+                    var tree = $('#tree').jstree(true);
+                    if (node.type === 'default') {
+                        if (node.text === 'Groups' || node.text === 'Default') {
+                            return {
+                                createGroup: {
+                                    label: 'Create',
+                                    action: createGroup
+                                }
+                            };
+                        }
+                        return {
+                            renameGroup: {
+                                label: 'Rename',
+                                action: function(obj) {
+                                    tree.edit(node);
+                                }
+                            },
+                            deleteItem: {
+                                label: 'Delete',
+                                action: function(obj) {
+                                    bootbox.confirm(
+                                        'Are you sure you want to delete the "' + node.text + '" group?',
+                                        function(result) {
+                                            if (result) tree.delete_node(node);
+                                        });
+                                }
+                            },
+                            createGroup: {
+                                label: 'Create',
+                                action: createGroup
+                            }
+                        }
+                    } else {
+                        return {};
+                    }
+
+                    function createGroup(obj) {
+                        tree.create_node(node,
+                            {
+                                text: generateTitle(),
+                                id: generateUUID()
+                            });
+                    }
+
+                    function generateTitle() {
+                        var newNodeTitle = "New Group";
+                        var newNum = 1;
+                        var tree = $('#tree').jstree(true);
+                        var nodes = $.map(tree.get_node('#').children_d,
+                            function(id) {
+                                return tree.get_node(id);
+                            });
+                        var unnamedCategories = $.grep(nodes,
+                            function(node) {
+                                var pattern = /^New Group(?: \(\d+\))?$/;
+                                return node.type === 'default' && pattern.test(node.text);
+                            });
+                        if (unnamedCategories.length > 0) {
+                            var categoryNumbers = $.map(unnamedCategories,
+                                function(node) {
+                                    if (node.text === newNodeTitle) return 1;
+                                    var pattern = /^New Group \((\d+)\)$/;
+                                    var match = pattern.exec(node.text);
+                                    var num = parseInt(match[1], 10);
+                                    return num;
+                                });
+                            newNum = lowestMissing(categoryNumbers);
+                        }
+
+                        if (newNum === 1) {
+                            return newNodeTitle;
+                        }
+                        return newNodeTitle + ' (' + newNum + ')';
+                    }
+
+                    function lowestMissing(arr) {
+                        arr.sort(function (a, b) { return a - b; });
+                        var max = arr[arr.length - 1];
+                        if (arr.length === max) return max + 1;
+                        for (var i = 1; i < max; i++) {
+                            if (arr.indexOf(i) === -1) {
+                                return i;
+                            }
+                        }
+                    }
+                }
+            },
+            sort: function(a, b) {
+                var n1 = this.get_node(a);
+                var n2 = this.get_node(b);
+
+                if (n1.type === 'default' && n1.type === n2.type) { // folders
+                    return (n1.text > n2.text) ? 1 : -1;
+                } else if (n1.type === 'default' || n2.type === 'default') {
+                    return (n1.type !== 'default') ? 1 : -1; // folder first
+                } else {
+                    return (n1.text > n2.text) ? 1 : -1;
+                }
+            },
+            types: {
+                user: {
+                    icon: 'glyphicon glyphicon-user category-icon'
+                },
+                default: {
+                    icon: 'glyphicon glyphicon-plus-sign category-icon'
+                }
+            },
+            plugins: ['search', 'sort', 'dnd', 'contextmenu', 'types']
+        });
+
+        tree
+            .on('create_node.jstree',
+                function(event, data) {
+                    var node = $.extend(true, {}, data.node);
+                    if (isUnique(node)) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("Create", "Group", new { Area = "" })',
+                            data: { title: node.text, id: node.id, parentId: node.parent }
+                        }).done(function(data) {
+                            var tree = $('#tree').jstree(true);
+                            tree.edit(node.id);
+                            notif({
+                                msg: 'Your group has been created successfully.',
+                                type: 'success'
+                            });
+                        }).fail(function(xhr, status) {
+                            notif({
+                                msg: 'Your group could not be created. Please try again.',
+                                type: 'error'
+                            });
+                            refreshTree();
+                        });
+                    } else {
+                        notif({
+                            msg: 'Group "' + node.text + '" already exists.',
+                            type: 'error'
+                        });
+                        refreshTree();
+                    }
+                })
+            .on('rename_node.jstree',
+                function(event, data) {
+                    var node = $.extend(true, {}, data.node);
+                    if (data.text === data.old) return;
+                    if (isUnique(node)) {
+                        $.ajax({
+                            type: 'PUT',
+                            url: '@Url.Action("Rename", "Group", new { Area = "" })',
+                            data: { id: node.id, title: node.text, parentId: node.parent}
+                        }).done(function(data) {
+                            notif({
+                                msg: 'Successfully renamed group.',
+                                type: 'success'
+                            });
+                        }).fail(function(xhr, status) {
+                            notif({
+                                msg: 'Failed to rename group.',
+                                type: 'error'
+                            });
+                            refreshTree();
+                        });
+                    } else {
+                        notif({
+                            msg: 'Group ' + node.text + ' already exists.',
+                            type: 'error'
+                        });
+                        refreshTree();
+                    }
+                })
+            .on('delete_node.jstree',
+                function(event, data) {
+                    $.ajax({
+                        method: 'DELETE',
+                        url: '@Url.Action("Delete", "Group", new { Area = "" })',
+                        data: { id: data.node.id }
+                    }).done(function(data) {
+                        notif({
+                            msg: 'Successfully deleted group.',
+                            type: 'success'
+                        });
+                    }).fail(function(xhr, status) {
+                        refreshTree();
+                    });
+                })
+            .on('move_node.jstree',
+                function(event, data) {
+                    $('#tree').jstree(true)._open_to(data.node.id);
+                    var node = $.extend(true, {}, data.node);
+                    if (data.old_parent !== data.parent) {
+                        $.ajax({
+                            method: 'PUT',
+                            url: '@Url.Action("UpdateNodeParent", "Group", new { Area = "" })',
+                            data: { id: data.node.id, parentId: data.parent, type: data.node.type }
+                        }).done(function(data) {
+                            notif({
+                                msg: 'Your group has been moved successfully.',
+                                type: 'success'
+                            });
+                        }).fail(function(xhr, status) {
+                            notif({
+                                msg: 'Your group could not be moved. Please try again.',
+                                type: 'error'
+                            });
+                            refreshTree();
+                        });
+                    }
+                })
+            .on('open_node.jstree',
+                function(event, data) {
+                    if (_adjustPageFooter) _adjustPageFooter();
+                });
+    });
+
+    function refreshTree() {
+        $('#tree').jstree(true).refresh();
+    };
+
+    function isUnique(node) {
+        var tree = $('#tree').jstree(true);
+        var collection = tree.get_node('#').children_d;
+        collection = $.map(collection,
+            function(id) {
+                return tree.get_node(id);
+            });
+        for (var i = 0; i < collection.length; i++) {
+            if (node.id === collection[i].id || collection[i].type !== 'default') continue;
+            var current = collection[i].text;
+            current = current.toLowerCase().replace(' ', '').trim();
+            if (current.indexOf('\n') > 0) {
+                current = current.substring(0, current.indexOf('\n'));
+            }
+            if (node.text.toLowerCase().replace(' ', '').trim() === current) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function containsDocument(collection) {
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].type !== 'default') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+</script>

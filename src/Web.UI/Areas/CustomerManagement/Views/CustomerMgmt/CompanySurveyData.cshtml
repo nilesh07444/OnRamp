@@ -1,0 +1,125 @@
+﻿@using Ramp.Contracts.ViewModel
+@model List<Ramp.Contracts.ViewModel.CompanyViewModel>
+
+@{
+    Layout = null;
+}
+<div class="table-responsive">
+    <table id="dataTables-example" class="table table-striped table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Provisional</th>
+                <th>Average Rating</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CompanyViewModel company in Model)
+            {
+                <tr>
+                    <td>@company.CompanyName</td>
+                    <td>@company.ProvisionalAccountName</td>
+                    <td>
+                        <input id='@(company.CompanyName)' value="@(company.AverageRatingByCompany)" disabled="disabled" class="CompanyAverageRating form-control" name="Rating" data-min="0" data-max="5" data-step="1" data-size="xs" style="display: none;">
+                    </td>
+                    <td>
+                        <button class="btn btn-info btn-sm CompanySurveyDetails" id="@(company.Id)" style="cursor: pointer">
+                            <i class="fa fa-book"></i>  Details
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="CompanyUsersDiv">
+    <div class="panel-heading">
+        <span>Customer Users Rating stats</span>
+        <span class="pull-right"><a style="color:white" class="exportToCSV" href='#'>Export To CSV</a></span>
+    </div>
+    <div class="panel-body" id="CompanyUsersTableData">
+        <div class="col-lg-12" style="display: none; text-align: center;" id="CompanyUsersdivNoData">
+            <label id="lblNoData">No Data Found</label>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+
+        $(".CompanyAverageRating").rating();
+        $('.CompanySurveyDetails').click(function () {
+            $('#LoadingImageDiv').show();
+            var companyId = $(this).attr('Id');
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("CompanyUsersRatingData","CustomerMgmt",new { Area = "CustomerManagement" })",
+                data: {
+                    customerCompanyId: companyId,
+                    fromDate: $('#inputFromDate').val(),
+                    toDate: $('#inputToDate').val(),
+                },
+                success: function (data) {
+                    $('#LoadingImageDiv').hide();
+                    $('#CompanyUsersDiv').hide();
+                    $('#CompanyUsersdivNoData').hide();
+                    if (data.length == 0) {
+                        $('#CompanyUsersDiv').fadeIn();
+                        $('#CompanyUsersdivNoData').show();
+                    } else {
+                        $('#CompanyUsersTableData').empty();
+                        $('#CompanyUsersTableData').append(data);
+                        $('#CompanyUsersDiv').fadeIn();
+                    }
+                    $(".CompanyUserRatings").rating();
+                    $('.CompanyUserSurveyDetails').click(function () {
+                        $('#LoadingImageDiv').show();
+                        var userId = $(this).attr('Id');
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action("CompanyUsersHistoryRatingData", "CustomerMgmt", new { Area = "CustomerManagement" })",
+                            data: {
+                                    userId: userId,
+                            fromDate: $('#inputFromDate').val(),
+                            toDate: $('#inputToDate').val(),
+                            },
+                            success: function (data) {
+
+                                $('#LoadingImageDiv').hide();
+                                $('#CompanyUsersHistoryDiv').hide();
+                                $('#CompanyUsersHistoryNoDataDiv').hide();
+
+                                    if (data.length == 0) {
+                                    $('#CompanyUsersHistoryDiv').fadeIn();
+                                    $('#CompanyUsersHistoryNoDataDiv').show();
+                                    } else {
+                                    $('#CompanyUsersHistoryTableData').empty();
+                                    $('#CompanyUsersHistoryTableData').append(data);
+                                    $('#CompanyUsersHistoryDiv').fadeIn();
+                                    }
+                                },
+                            error: function (data) {
+                                $('#LoadingImageDiv').hide();
+                                }
+                            });
+                    });
+                },
+                error: function (data) {
+                    $('#LoadingImageDiv').hide();
+                }
+            });
+        });
+        $('.exportToCSV').click(function () {
+            window.location = '@Url.Action("CompanyUserHistoryratingsDataToCSV", "CustomerMgmt", new { Area = "CustomerManagement"})?customerCompanyId='
+                 + $('.CompanySurveyDetails').attr('Id') + '&fromDate=' + $('#inputFromDate').val() + '&toDate=' + $('#inputToDate').val();
+        });
+        
+    });
+</script>

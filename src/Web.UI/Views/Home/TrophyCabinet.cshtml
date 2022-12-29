@@ -1,0 +1,102 @@
+﻿@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Web.UI.Code.Extensions
+@using System.Threading
+
+@model List<Ramp.Contracts.ViewModel.TestResultViewModel>
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+<div class="row">
+
+    @if (Thread.CurrentPrincipal.IsInStandardUserRole())
+    {
+        <div class="col-md-12 text-center">
+            <h3 class="page-header"><b>Welcome to your Trophy Cabinet!</b></h3>
+            <div class="row row-centered">
+                @if (Model.Any())
+                {
+                    var rows = Model.Count / 4;
+                    for (var i = 0; i <= rows; i++)
+                    {
+                        <div class="row">
+                            <div class="col-lg-12">
+                                @for (var j = (i * 4); j < (4 + (4 * i)); j++)
+                                {
+                                    if (j <= Model.Count - 1)
+                                    {
+
+                                        var testpass = Model[j];
+
+                                        <div class="col-lg-3 col-centered" style="text-align: center; vertical-align: top;" id="TrophyCab">
+
+                                            <a href="javscript:Void(0)" style="text-decoration: none" id="OnHoverId" value="@(testpass.persentage + "_" + testpass.MarkScored + "_" + testpass.MarksOutOff + "_" + testpass.PassPoints)">
+                                                <input type="hidden" id="Result" value="@testpass.Result" />
+                                                <input type="hidden" id="Persentage" value="@testpass.TestResultPers" />
+                                                <input type="hidden" id="MakesObtain" value="@testpass.MarkScored" />
+                                                <input type="hidden" id="MakesOutOff" value="@testpass.MarksOutOff" />
+                                                <input type="hidden" id="Points" value="@testpass.PassPoints" />
+                                                @if (testpass.IsTrophyPic == false)
+                                                {
+                                                    <img src="@(Url.Content("~/Content/images/Trophy5.png"))" style="display: block; margin: 0 auto; max-height: 175px;" class="img-responsive" id="standardPlayBooks" />
+                                                }
+                                                else
+                                                {
+                                                    <img src="@(Url.Content("~/Content/TrophyPicDir/Temp/" + testpass.TrophyPicName))" style="display: block; margin: 0 auto; max-height: 175px;" class="img-responsive" id="standardPlayBooks" />
+                                                }
+                                                <h4>
+                                                    <span class="label label-default shade">
+                                                        @testpass.TestTitle
+                                                    </span>
+                                                </h4>
+                                            </a>
+                                        </div>
+
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <h4> You have not passed any tests yet -your trophy will display here when you have passed your first test. </h4>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+
+<script type="text/javascript">
+
+    $("#TrophyCab a").hover(
+  function (e) {
+
+      var names = $(this).attr('value');
+      //alert(names);
+      var name = names.split('_');
+      //var Result = $(this).find($('#Result').val());
+      //var Persentage = $('#Persentage').val();
+      //var MakesObtain = $('#MakesObtain').val();
+      //var MakesOutOff = $('#MakesOutOff').val();
+      //$(this).css("color", "#27B899");
+      $(this).tooltip({
+          'show': true,
+          'placement': 'top',
+          'title': "Result : Passed , Mark : " + name[1] + "/" + name[2] + ", Percentage : " + name[0] + " %,Points : " + name[3],
+
+      });
+
+      $(this).tooltip('show');
+
+  },
+  function () {
+      $(this).css("color", "");
+  }
+);
+</script>

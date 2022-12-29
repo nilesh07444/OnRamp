@@ -1,0 +1,25 @@
+﻿ 
+@using Web.UI.Code.Extensions
+@using Common.Web
+@using Domain.Customer
+@using Common.Enums
+
+@using System.Threading
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+
+    }
+
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    
+}
+
+<h1>View Acrobat Report</h1>

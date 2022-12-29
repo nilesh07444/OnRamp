@@ -1,0 +1,126 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Ramp.Contracts.QueryParameter.ExternalTrainingProvider
+@using Web.UI.Code.Extensions
+@model  ExternalTrainingProviderReportModel
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <h3>External Training Providers Report</h3>
+        <hr />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="form-group">
+            <label class="control-label">Description</label>
+        </div>
+        <div class="well well-sm">
+            The external training providers report allows you to list all training providers and their BEE certifications.<br />
+            You can filter based on providers which do not have certificates so that these provider records can be updated, and you can export all content to Excel and to PDF
+        </div>
+        <hr />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <span>Parameters</span>
+            </div>
+            <div class="panel-body" data-bind="with:$root.query">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="input-group col-sm-12">
+                                <div class="col-sm-2">
+                                    <input type="checkbox" data-bind="checked:ShowOnlyCompaniesWithMissingCertificates"/>
+                                </div>
+                                <div class="col-sm-10">
+                                    <span>Show Companies with missing Certificates</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <button type="submit" class="btn btn-primary" data-bind="click:$root.submit.bind()">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="height: 55px;">
+                <div style="display:inline-block;width:100%">
+                    <div class="pull-left" style="padding-top:7px">
+                        Results
+                    </div>
+                    <div class="dropdown pull-right" style="padding-top:7px">
+                        <span class="dropdown-toggle" role="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            Export
+                            <span class="caret"></span>
+                        </span>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                            <li><a data-bind="click:$root.download.excel.bind()">Excel</a></li>
+                            <li><a data-bind="click:$root.download.pdf.bind()">Pdf</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" data-bind="with:data">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Contact Number</th>
+                            <th>Contact Person</th>
+                            <th>BEE Status</th>
+                            <th>Cerificate for <span data-bind="text : new Date().getUTCFullYear()"></span></th>
+                        </tr>
+                        </thead>
+                        <!-- ko if:ko.unwrap(FilteredResults).length > 0-->
+                        <tbody data-bind="foreach:FilteredResults">
+                        <tr>
+                            <td data-bind="text:CompanyName"></td>
+                            <td data-bind="text:ContactNumber"></td>
+                            <td data-bind="text:ContactPerson"></td>
+                            <td data-bind="text:BEEStatusLevel"></td>
+                            <td data-bind="foreach:BEECertificates">
+                                <!-- ko with:Upload -->
+                                <a data-bind="attr:{href:Url}" target="_blank"><span data-bind="text:Description"></span></a>
+                                 <!-- /ko -->
+                            </td>
+                        </tr>
+                        </tbody>
+                        <!-- /ko -->
+                        <!-- ko ifnot: ko.unwrap(FilteredResults).length > 0 -->
+                        <tbody>
+                        <tr>
+                            <td colspan="6">
+                                <strong>No Results</strong>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <!-- /ko -->
+                    </table>
+
+                </div>
+            </div>
+        </div>
+        <hr />
+    </div>
+</div>
+<script>
+    var vm = new app.data.reportController(@Html.ToJson(Model), @Html.ToJson(ViewBag.Links as IDictionary<string,string>),@Html.ToJson(new ExternalTrainingProviderListQuery()));
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>

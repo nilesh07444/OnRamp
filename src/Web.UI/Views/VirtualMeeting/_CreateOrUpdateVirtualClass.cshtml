@@ -1,0 +1,303 @@
+﻿@model Ramp.Contracts.ViewModel.VirtualClassModel
+
+<script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+<link href="~/Content/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+
+<style>
+    .requiredTxt {
+        border: solid red;
+    }
+
+    input, select {
+        max-width: 100%;
+    }
+
+    .required {
+        color: red;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+    .cursor {
+        cursor: pointer;
+    }
+
+    .switches {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+}
+
+        .switches input {
+         display: none;
+        }
+
+    .sliders {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .sliders:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .sliders {
+  
+    }
+
+
+
+    input:checked + .sliders:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .sliders.round {
+        border-radius: 0.7em;
+    }
+
+        .sliders.round:before {
+            border-radius: 50%;
+        }
+
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel-info">
+
+
+            <div class="panel-body">
+                @using (Ajax.BeginForm("CreateOrUpdateVirtualClass", "VirtualMeeting", new AjaxOptions { OnComplete = "fnVirtualClass()", HttpMethod = "POST", UpdateTargetId = "dvVirtaulClassRoomId" }, new { @id = "frmVirtualClassroom" })) {
+
+                    @Html.HiddenFor(m => m.Id)
+                    @Html.HiddenFor(m=>m.IsPublicAccess)
+                    @Html.HiddenFor(m=>m.JoinMeetingLink)
+                    @Html.HiddenFor(m=>m.JoinPublicLink)
+                    <div class="col-md-12">
+                        <h4>Please enter in your Virtual Meeting details below: </h4>
+                    </div>
+
+                    <div class="col-md-8">
+
+                        @* don't remove below line of code this is used for disable the autofill textboxes *@
+                        <div style="display:none; overflow: none; height: 0px;background: transparent;" data-description="dummyPanel for Chrome auto-fill issue">
+                            <input type="text" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyUsername"></input>
+                            <input type="password" style="height:0;background: transparent; color: transparent;border: none;" data-description="dummyPassword"></input>
+                        </div>
+                        <br />
+                        <i>All required fields are marked with a <span class="required">*</span></i>
+
+                        <div class="form-group">
+
+                            <br />
+
+
+                            <div class="form-group">
+                                <span class="required">*</span> <span>Virtual Meeting Name: </span>
+                                <label class="control-label pull-right">
+                                    <span id="spnDescriptionLength">0</span> / 25
+                                </label>
+
+                                @Html.TextBoxFor(m => m.VirtualClassRoomName, new { @maxlength = "25", @class = "form-control requiredClass", @id = "txtVirtualClassRoomName", @autocomplete = "none", style = "min-width: 100%" })
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
+                            <span class="required">*</span> <span>Description: </span>
+
+                            @Html.TextAreaFor(m => m.Description, new { @class = "form-control requiredClass max-width-none", @id = "txtDescription", @autocomplete = "off", style = "min-width: 100%" })
+                        </div>
+
+                        <div class="form-group">
+                            <span class="required">*</span> <span>Start Date & Time: </span>
+                            <div class="input-group date" id='datetimepicker6'>
+                                @Html.TextBoxFor(m => m.StartDate, new { @class = "form-control requiredClass", @id = "txtStartDate", @autocomplete = "off" })
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar" id="startdatetoggle"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <span class="required">*</span> <span>End Date & Time: </span>
+                            <div class="input-group date" id='datetimepicker7'>
+                                @Html.TextBoxFor(m => m.EndDate, new { @class = "form-control requiredClass", @id = "txtEndDate", @autocomplete = "off" })
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar" id="endatetoggle"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <br>
+
+                        <div class="form-group">
+                            <label class="switches">
+                                <input type="checkbox" name="IsPublicAccess" id="chkIsPublicAccess" />
+                                <span class="sliders round"></span>
+                            </label>
+                            <span>Enable Public Access</span>
+                        </div>
+
+                        <br>
+
+                        <div class="form-group">
+                            <input type="submit" onclick="return checkValidation();" id="btnSubmit" value="Next" class="btn btn-primary" />
+                        </div>
+                    </div>
+
+                }
+            </div>
+                </div>
+    </div>
+</div>
+<script>
+    @if (Model.IsPublicAccess) {
+        @: $('#chkIsPublicAccess').attr('checked', 'checked');
+    } else {
+         @: $('#chkIsPublicAccess').removeAttr('checked', 'checked');
+    }
+
+    $('#txtEndDate').datetimepicker({
+        format: "yyyy-mm-dd hh:ii",
+        autoclose: true,
+        todayBtn: true,
+        pickerPosition: "top-right"
+    });
+    $('#txtStartDate').datetimepicker({
+        format: "yyyy-mm-dd hh:ii",
+        autoclose: true,
+        todayBtn: true,
+        pickerPosition: "top-right"
+    });
+
+
+    function checkValidation() {
+        var check = true;
+        if ($('#chkIsPublicAccess').is(':checked')) {
+            $('#IsPublicAccess').val(true);
+            
+        } else {
+            $('#IsPublicAccess').val(false);
+           
+        }
+        var hostname = window.location.origin;
+        $('#JoinPublicLink').val(hostname + "/public/meeting/");
+        $('#JoinMeetingLink').val(hostname+ '@Url.Action("VirtualMeeting", "Document")');
+
+        $('.requiredClass').each(function () {
+            var val = $(this).val();
+            if (val === '' || val === null || val === undefined) {
+                $(this).addClass('requiredTxt');
+                check = false;
+            } else {
+                $(this).removeClass('requiredTxt');
+            }
+
+        });
+        if (!check) {
+            notif({
+                msg: "<b>Error :</b> Please ensure that all fields that are required are filled in.",
+                type: "error",
+                multiline: true
+            });
+        }
+        var from = $("#txtStartDate").val();
+        var to = $("#txtEndDate").val();
+
+        if (from != "" && from != null && to != null && to != "") {
+
+            if (Date.parse(from) > Date.parse(to)) {
+                notif({
+                    msg: "<b>Error :</b> Please ensure that your start date and time is before your end date and time.",
+                    type: "error",
+                    multiline: true
+                });
+                check = false;
+            }
+
+        }
+
+        $('#EndDate').val($('#txtEndDate').val());
+        $('#StartDate').val($('#txtStartDate').val());
+        return check;
+    }
+
+    //Except only numbers for textbox
+    function onlyNumbers(event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+
+    $(function () {
+        $('#txtPassword').val('');
+
+        $('#txtVirtualClassRoomName').keyup(function () {
+            var len = $(this).val().length;
+            $('#spnDescriptionLength').text(len);
+        });
+
+        $('.passwordCss').click(function () {
+            var role = $(this).attr('role');
+            $('#hdnPasswordProtection').val(role);
+            if (role === 'true' || role === 'True' || role == true) {
+                $('#divPassword').show();
+            } else {
+                $('#divPassword').hide();
+                $('#txtPassword').val('');
+            }
+
+            $('.passwordCss').each(function () {
+                if ($(this).hasClass('btn-primary')) {
+                    $(this).addClass('btn -default');
+                    $(this).removeClass('btn-primary');
+
+                }
+                else {
+                    $(this).addClass('btn-primary');
+                    $(this).removeClass('btn-default');
+                }
+            });
+
+
+        });
+
+        //$('.requiredClass').blur(function () {
+        //    var val = $(this).val();
+        //    if (val === '' || val === null || val === undefined) {
+        //        $(this).addClass('requiredTxt');
+
+        //    } else {
+        //        $(this).removeClass('requiredTxt');
+        //    }
+
+        //});
+    });
+</script>
+

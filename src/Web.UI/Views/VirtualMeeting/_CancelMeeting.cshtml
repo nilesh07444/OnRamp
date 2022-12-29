@@ -1,0 +1,40 @@
+﻿
+@model Ramp.Contracts.ViewModel.VirtualClassModel
+<div class="row">
+    <div class="col-md-12">
+
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+
+                    <th>Virtual Meeting Room Title</th>
+                    <th>No of users</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td>
+                        @Model.VirtualClassRoomName
+
+                    </td>
+                    <td>
+                        @ViewData["Participants"]
+                    </td>
+
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <textarea id="txtAdditionalNote" placeholder="Add an additional message" class="additionalMsgCss" rows="4" style="max-width: 550px;" cols="100"></textarea>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <input type="hidden" id="hdnDocumentId" value="@Model.Id" />
+</div>
+
+
+

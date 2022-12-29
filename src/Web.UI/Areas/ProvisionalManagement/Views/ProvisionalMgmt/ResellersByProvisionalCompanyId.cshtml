@@ -1,0 +1,16 @@
+﻿@using Ramp.Contracts.ViewModel
+@model List<UserViewModel>
+
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = null;
+}
+@if (Model.Any())
+{
+    <option value="">Select User</option>
+    foreach (var userViewModel in Model)
+    {
+        <option value="@(userViewModel.Id)">@userViewModel.FirstName</option>
+    }
+
+}

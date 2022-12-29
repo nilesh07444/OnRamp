@@ -1,0 +1,79 @@
+﻿@model Ramp.Contracts.ViewModel.VirtualClassModel
+<div class="panel panel-default">
+
+    <div class="panel-body collapse in  document-panelbody">
+        <div class="row">
+            <div class="col-md-9">
+                <div class="form-group">
+                    <strong>Virtual Meeting Name: </strong>
+                    <div class="input-group">
+                        <span>@Model.VirtualClassRoomName</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <strong>Description: </strong>
+                    <div class="input-group">
+                        <span>@Model.Description</span>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Password)) {
+                    <div class="form-group">
+                        <strong>Password</strong>
+                        <div class="input-group">
+                            <span>@Model.Password</span>
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    <strong>Start Date/Time: </strong>
+                    <div class="input-group">
+                        <span>@Model.StartDate</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <strong>End Date/Time:  </strong>
+                    <div class="input-group">
+                        <span>@Model.EndDate</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <strong>Number of participants: </strong>
+                    <div class="input-group">
+                        <span>@ViewData["participants"]</span>
+                    </div>
+                </div>
+                <div class="form-group" id="dvExternalUser" style="display:none;">
+                    <strong>Number of External participants: </strong>
+                    <div class="input-group">
+                        <span id="spnExternalParticipants"></span>
+                    </div>
+                </div>
+                @if (Model.IsPublicAccess) {
+                    <div class="form-group">
+                        <strong>Public Access: </strong>
+                        <div class="input-group">
+                            <span id="spnPublicLink">Yes</span>
+                        </div>
+                    </div>
+                }
+               
+            </div>
+        </div>
+    </div>
+    <input type="hidden" id="hdnUserIds" />
+</div>
+<script>
+    $(function () {
+              
+        $('#hdnUserIds').val('').val('@ViewData["UserIds"]');
+        var externalUsers = $('#hdnRecipientEmails').val();
+        if (externalUsers != "" && externalUsers != null && externalUsers!=undefined && externalUsers.split(",").length>0) {
+            $('#dvExternalUser').show();
+            $('#spnExternalParticipants').text(externalUsers.split(",").length);
+        } else {
+            $('#dvExternalUser').hide();
+        }
+        
+
+    });
+</script>

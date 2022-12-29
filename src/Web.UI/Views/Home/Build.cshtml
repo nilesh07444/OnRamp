@@ -1,0 +1,67 @@
+﻿@using Web.UI.Areas.Categories.Controllers
+@using Web.UI.Areas.ManageTrainingGuides.Controllers
+@using Web.UI.Areas.ManageTrainingTest.Controllers
+@using Web.UI.Controllers
+@using Web.UI.Code.Extensions
+@{ 
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<div class="row row-centered">
+    <div class="col-lg-12 col-centered text-center">
+        <div class="form-group text-center">
+            <h1>BUILD</h1>
+        </div>
+    </div>
+</div>
+@if (Html.CanAccess<DocumentController>(a => a.Index(null)))
+{
+    <div class="row row-centered menu-row">
+        <div class="col-lg-12 col-centered">
+            @if (Html.CanAccess<DocumentController>(a => a.Index(null)))
+            {
+                <div class="col-md-6 col-centered menu-tile" id="manage-document-library">
+                    <a href="@Url.Action("Index", "Document", new {Area = ""})">
+                        <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.ManagePlaybookLibrary], true)" class="img-responsive" id="managePlyBooks"/>
+                        <h4>
+                            <span class="label label-default shade">
+                                Manage Document Library
+                            </span>
+                        </h4>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+<script>
+    tour.steps =
+         [
+          {
+              target: 'manage-categories',
+              title: 'Manage Categories',
+              content: 'Create categories for your Playbooks so you can easily manage your Playbooks as a unit. Example categories - Induction Playbooks, Health and Safety Playbooks, Marketing Department Playbooks. You are an administrator - only administrators can create, edit and remove categories of Playbooks.',
+              placement: 'top',
+              xOffset: 'center',
+              arrowOffset: 'center',
+              width: '480'
+          },
+
+         {
+             target: 'manage-document-library',
+             placement: 'top',
+             title: 'Manage Document Library',
+             content: 'Click here to create your first document.<br/>You can also view, edit and delete existing Documents here. You are an administrator - only administrators can create, edit and remove Documents.',
+             xOffset: 'center',
+             arrowOffset: 'center',
+             width: '480'
+         },
+         {
+             target: 'manage-test-library',
+             placement: 'top',
+             title: 'Manage Test Library',
+             content: 'Click here to create a test for an existing playbook.<br/>You can also view, edit and delete existing tests here. You are an administrator - only administrators can create, edit and delete tests.',
+             xOffset: 'center',
+             arrowOffset: 'center',
+             width: '480'
+         }];
+</script>

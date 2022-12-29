@@ -1,0 +1,505 @@
+﻿@using Web.UI.Code.Extensions
+@using Web.UI.Controllers
+@using Ramp.Security.Authorization
+@using System.Threading
+@model Ramp.Contracts.ViewModel.CompanyViewModelLong
+@{
+    var url = Url.Action("ExpiryDate", "CustomerMgmt", new { Area = "" });
+}
+<style>
+    .customer-logo {
+        max-height: 100px;
+    }
+
+    .form-group, .input-group, .form-control {
+        max-width: none;
+        width: 100%;
+    }
+</style>
+<script type="text/javascript">
+
+    var path = "@Url.Action("ExpiryDate", "CustomerMgmt", new { Area = "CustomerManagement" })"
+</script>
+@using (Html.BeginForm("CreateOrUpdateCustomerCompany", "CustomerMgmt", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="panel panel-info">
+        <div class="panel-heading"> Create Customer Company </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-4">
+                    @Html.ValidationSummary(true)
+                    @Html.HiddenFor(model => model.CompanyViewModel.Id)
+                    @Html.HiddenFor(model => model.CompanyViewModel.IsLock)
+                    @Html.HiddenFor(model => model.CompanyViewModel.YearlySubscription, new { @id = "YearlySubscription" })
+                    @Html.HiddenFor(model => model.CompanyList)
+
+                    <div class="form-group">
+                        @Html.Label("Client System Name")
+                        @Html.TextBoxFor(model => model.CompanyViewModel.ClientSystemName, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.ClientSystemName)
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Company Account type")
+                        @{
+                            var domainsList = new SelectList(new[]
+                            {
+                                                                new SelectListItem { Text = "Yearly", Value = "1"},
+                                                                new SelectListItem { Text = "Monthly", Value ="0"},
+
+                                                            }, "Value", "Text");
+                        }
+                        @Html.DropDownListFor(m => m.CompanyViewModel.IsYearly, domainsList, new { @class = "form-control", @id = "IsYearly" })
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Company Name")
+                        @if (!string.IsNullOrEmpty(Model.CompanyViewModel.CompanyName))
+                        {
+                            @Html.TextBoxFor(model => model.CompanyViewModel.CompanyName, new { @class = "form-control", @readonly = "readonly" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(model => model.CompanyViewModel.CompanyName, new { @class = "form-control" })
+                        }
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.CompanyName)
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Default User Expire Days")
+                        @Html.TextBoxFor(model => model.CompanyViewModel.DefaultUserExpireDays, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.DefaultUserExpireDays)
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Expire Date")
+                        <div class="input-group date">
+                            @Html.TextBoxFor(model => model.CompanyViewModel.ExpiryDate, new { Value = Model.CompanyViewModel.ExpiryDate.HasValue ? Model.CompanyViewModel.ExpiryDate.Value.ToString("yyyy-MM-dd HH:mm") : null, @class = "form-control", @id = "ExpiryDate" })
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    @if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+                    {
+                        <div class="form-group">
+                            @Html.Label("Icon Set")
+                            @Html.DropDownListFor(model => model.CompanyViewModel.SelectedIconSet, Model.CompanyViewModel.IconSets, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.CompanyViewModel.SelectedIconSet)
+                        </div>
+                    }
+                    <div class="form-group">
+                        @Html.Label("Layer Sub-Domain")
+                        <div class="form-group input-group">
+                            @if (!string.IsNullOrWhiteSpace(Model.CompanyViewModel.LayerSubDomain))
+                            {
+                                @Html.TextBoxFor(model => model.CompanyViewModel.LayerSubDomain, new { @class = "form-control", @readonly = "readonly" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(model => model.CompanyViewModel.LayerSubDomain, new { @class = "form-control" })
+                            }
+                            <span class="input-group-addon" style="">.@AppSettings.Urls.DomainSuffix</span>
+                        </div>
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.LayerSubDomain)
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        @Html.Label("Bundle")
+                        @Html.DropDownListFor(m => m.CompanyViewModel.SelectedBundle, Model.CompanyViewModel.Bundles.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+                        @*@Html.ValidationMessageFor(model => model.CompanyViewModel.SelectedBundle)*@
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Physical Address")
+                        @Html.TextBoxFor(model => model.CompanyViewModel.PhysicalAddress, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.PhysicalAddress)
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Postal Address")
+                        @Html.TextBoxFor(model => model.CompanyViewModel.PostalAddress, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.PostalAddress)
+                    </div>
+                    @if (Thread.CurrentPrincipal.IsInResellerRole())
+                    {
+                        <div class="form-group">
+                            @Html.Label("Provisional Account Link")
+                            @Html.DropDownListFor(m => m.CompanyViewModel.SelectedProvisionalAccountLink, Model.CompanyViewModel.Companies.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.CompanyViewModel.SelectedProvisionalAccountLink)
+                        </div>
+                    }
+                    else
+                    {
+                        if (Session["IS_COMPANY_EDITED"] != null && Convert.ToBoolean(Session["IS_COMPANY_EDITED"]))
+                        {
+                            @Html.HiddenFor(x => x.CompanyViewModel.SelectedProvisionalAccountLink)
+                        }
+                    }
+                    <div class="form-group">
+                        @Html.Label("Telephone Number")
+                        @Html.TextBoxFor(model => model.CompanyViewModel.TelephoneNumber, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.TelephoneNumber)
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Website Address")
+                        @Html.TextBoxFor(model => model.CompanyViewModel.WebsiteAddress, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CompanyViewModel.WebsiteAddress)
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        @Html.Label("Upload Login Image")
+                        @if (Session["IS_COMPANY_EDITED"] != null && (bool)Session["IS_COMPANY_EDITED"] && Model.CompanyViewModel.CustomerConfigurations.Count > 0)
+                        {
+                            if (Model.CompanyViewModel.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.LoginLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                            {
+                                var loginImage = Model.CompanyViewModel.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.LoginLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).Last().UploadModel;
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="col-sm-8">
+                                            @Html.TextBoxFor(m => m.CompanyViewModel.LoginLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                            @Html.HiddenFor(m => m.CompanyViewModel.DeleteLoginLogo)
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <button class="btn btn-danger" type="button" onclick="$('#CompanyViewModel_LoginLogo_Placeholder').attr('src', null); $('#CompanyViewModel_DeleteLoginLogo').val(true);">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <img class="img-responsive customer-logo center-block" id="CompanyViewModel_LoginLogo_Placeholder" src="data:image/png;base64,@Convert.ToBase64String(loginImage.Data)" />
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.CompanyViewModel.LoginLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+
+                            }
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(m => m.CompanyViewModel.LoginLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                        }
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Upload Login Logo")
+
+                        @if (Session["IS_COMPANY_EDITED"] != null && (bool)Session["IS_COMPANY_EDITED"] && Model.CompanyViewModel.CustomerConfigurations.Count > 0)
+                        {
+                            if (Model.CompanyViewModel.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                            {
+                                var dashboardImage = Model.CompanyViewModel.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).Last().UploadModel;
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="col-sm-8">
+                                            @Html.TextBoxFor(m => m.CompanyViewModel.CompanyLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                            @Html.HiddenFor(m => m.CompanyViewModel.DeleteDashboardLogo)
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <button class="btn btn-danger" type="button" onclick="$('#CompanyViewModel_DashboardLogo_Placeholder').attr('src', null); $('#CompanyViewModel_DeleteDashboardLogo').val(true);">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <img class="img-responsive customer-logo center-block" id="CompanyViewModel_DashboardLogo_Placeholder" src="data:image/png;base64,@Convert.ToBase64String(dashboardImage.Data)" />
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.CompanyViewModel.CompanyLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                            }
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(m => m.CompanyViewModel.CompanyLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                        }
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Upload Footer Logo")
+
+                        @if (Session["IS_COMPANY_EDITED"] != null && (bool)Session["IS_COMPANY_EDITED"] && Model.CompanyViewModel.CustomerConfigurations.Count > 0)
+                        {
+                            if (Model.CompanyViewModel.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.FooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                            {
+                                var footerImage = Model.CompanyViewModel.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.FooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).Last().UploadModel;
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="col-sm-8">
+                                            @Html.TextBoxFor(m => m.CompanyViewModel.FooterLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                            @Html.HiddenFor(m => m.CompanyViewModel.DeleteFooterLogo)
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <button class="btn btn-danger" type="button" onclick="$('#CompanyViewModel_FooterLogo_Placeholder').attr('src', null); $('#CompanyViewModel_DeleteFooterLogo').val(true);">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <img class="img-responsive customer-logo center-block" id="CompanyViewModel_FooterLogo_Placeholder" src="data:image/png;base64,@Convert.ToBase64String(footerImage.Data)" />
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.CompanyViewModel.FooterLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+
+                            }
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(m => m.CompanyViewModel.FooterLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                        }
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Upload Notification Header Logo")
+
+                        @if (Session["IS_COMPANY_EDITED"] != null && (bool)Session["IS_COMPANY_EDITED"] && Model.CompanyViewModel.CustomerConfigurations.Count > 0)
+                        {
+                            if (Model.CompanyViewModel.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.NotificationHeaderLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                            {
+                                var notificationHeaderImage = Model.CompanyViewModel.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.NotificationHeaderLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).Last().UploadModel;
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="col-sm-8">
+                                            @Html.TextBoxFor(m => m.CompanyViewModel.NotificationHeaderLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                            @Html.HiddenFor(m => m.CompanyViewModel.DeleteNotificationHeaderLogo)
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <button class="btn btn-danger" type="button" onclick="$('#CompanyViewModel_NotificationHeaderLogo_Placeholder').attr('src', null); $('#CompanyViewModel_DeleteNotificationHeaderLogo').val(true);">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <img class="img-responsive customer-logo center-block" id="CompanyViewModel_NotificationHeaderLogo_Placeholder" src="data:image/png;base64,@Convert.ToBase64String(notificationHeaderImage.Data)" />
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.CompanyViewModel.NotificationHeaderLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+
+                            }
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(m => m.CompanyViewModel.NotificationHeaderLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                        }
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Upload Notification Footer Logo")
+
+                        @if (Session["IS_COMPANY_EDITED"] != null && (bool)Session["IS_COMPANY_EDITED"] && Model.CompanyViewModel.CustomerConfigurations.Count > 0)
+                        {
+                            if (Model.CompanyViewModel.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.NotificationFooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                            {
+                                var notificationFooterImage = Model.CompanyViewModel.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.NotificationFooterLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).Last().UploadModel;
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="col-sm-8">
+                                            @Html.TextBoxFor(m => m.CompanyViewModel.NotificationFooterLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                                            @Html.HiddenFor(m => m.CompanyViewModel.DeleteNotificationFooterLogo)
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <button class="btn btn-danger" type="button" onclick="$('#CompanyViewModel_NotificationFooterLogo_Placeholder').attr('src', null); $('#CompanyViewModel_DeleteNotificationFooterLogo').val(true);">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <img class="img-responsive customer-logo center-block" id="CompanyViewModel_NotificationFooterLogo_Placeholder" src="data:image/png;base64,@Convert.ToBase64String(notificationFooterImage.Data)" />
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.CompanyViewModel.NotificationFooterLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+
+                            }
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(m => m.CompanyViewModel.NotificationFooterLogo, new { type = "file", accept = "image/*", @class = "btn btn-default", @style = "max-width:none;width:100%;" })
+                        }
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.AutoExpire, new { @style = "display: initial; width:10%;" })
+                        @Html.Label("Auto Expire")
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.IsChangePasswordFirstLogin, new { @style = "display: initial; width:10%;" })
+                        @Html.Label("Change Password on first login", new { })
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.IsSendWelcomeSMS, new { @style = "display: initial; width:10%;" })
+                        @Html.Label("Enable SMS notfications")
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.EnableTrainingActivityLoggingModule, new { @style = "display: initial; width:10%;" })
+                        @Html.Label("Enable Training Activity Logging Module")
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.EnableRaceCode, new { @style = "display:initial;width:10%;" })
+                        @Html.Label("Enable Race Code")
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.EnableChecklistDocument, new { @style = "display:initial;width:10%;" })
+                        @Html.Label("Enable Checklist Document")
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.EnableCategoryTree, new { @style = "display:initial;width:10%;" })
+                        @Html.Label("Enable category tree for standard users")
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.EnableGlobalAccessDocuments, new { @style = "display:initial;width:10%;" })
+                        @Html.Label("Enable document global access")
+                    </div>
+
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.ShowCompanyNameOnDashboard, new { @style = "display:initial;width:10%;" })
+                        @Html.Label("Show company name on dashboard")
+                    </div>
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.EnableVirtualClassRoom, new { @style = "display:initial;width:10%;", @id = "txtEnableVirtualClassRoom" })
+                        @Html.Label("Enable Virtual Classroom")
+                    </div>
+                    <div class="form-group" id="divJitsiServer">
+                        @Html.Label("Jitsi Server")
+                        @Html.TextBoxFor(m => m.CompanyViewModel.JitsiServerName, new { @class = "form-control" })
+                    </div>
+                    @*neeraj*@
+                    <div class="form-group">
+                        @Html.CheckBoxFor(model => model.CompanyViewModel.ActiveDirectoryEnabled, new { @style = "display:initial;width:10%;", @id = "txtActiveDirectoryEnabled" })
+                        @Html.Label("Enable Active Directory")
+                    </div>
+                    <div class="form-group" id="adDetails">
+                        @Html.Label("Domains")
+                        @Html.TextBoxFor(m => m.CompanyViewModel.Domain, new { @class = "form-control" })
+
+                        @Html.Label("Port")
+                        @Html.TextBoxFor(m => m.CompanyViewModel.Port, new { @class = "form-control" })
+
+                        @Html.Label("User Name")
+                        @Html.TextBoxFor(m => m.CompanyViewModel.UserName, new { @class = "form-control" })
+
+                        @Html.Label("Password")
+                        @Html.PasswordFor(m => m.CompanyViewModel.Password, new { @class = "form-control" })
+                    </div>
+                    @*neeraj*@
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <input type="submit" value="Save" class="submit btn btn-default" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
+<script type="text/javascript">
+
+    var virtaulClass = "@Model.CompanyViewModel.EnableVirtualClassRoom";
+    var adEnabled = "@Model.CompanyViewModel.ActiveDirectoryEnabled";
+    $(function () {
+        if (virtaulClass === 'true' || virtaulClass === 'True' || virtaulClass === true) {
+            $('#divJitsiServer').show();
+
+        } else {
+            $('#divJitsiServer').hide();
+        }
+
+        /************this one used to manage the Virtual Classroom ***************/
+        $('#txtEnableVirtualClassRoom').change(function () {
+            if ($(this).is(':checked')){
+                $('#divJitsiServer').show();
+            }else {
+                $('#divJitsiServer').hide();
+            }
+
+        });
+
+        //neeraj
+        if (adEnabled === 'true' || adEnabled === 'True' || adEnabled === true) {
+            $('#adDetails').show();
+
+        } else {
+            $('#adDetails').hide();
+        }
+
+        $("#txtActiveDirectoryEnabled").change(function() {
+            console.log('fff ', $(this).is(':checked'))
+            if ($(this).is(':checked')) {
+                $('#adDetails').show();
+            } else {
+                $('#adDetails').hide();
+            }
+        })
+        //neeraj
+
+        var yearly = $("#IsYearly").val();
+        if (yearly == "1") {
+            $('#YearlySubscription').val(true);
+        }
+        else {
+
+            $('#YearlySubscription').val(false);
+        }
+
+        $('#ExpiryDate').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm'
+        });
+
+    });
+
+    if ('@Thread.CurrentPrincipal.IsInResellerRole()' == 'True') {
+        if ('@Session["IS_COMPANY_EDITED"]' == 'False') {
+            $.each($('#CompanyViewModel_SelectedPackage').find('option'), function () {
+                if ($(this).html().toLowerCase().replace(' ', '') == 'onramp5') {
+                    $('#CompanyViewModel_SelectedPackage').val($(this).val());
+                }
+                else {
+                    $(this).remove();
+                }
+            });
+        } else {
+            $.each($('#CompanyViewModel_SelectedPackage').find('option'), function () {
+                if ($(this).attr('selected')) {
+                    $('#CompanyViewModel_SelectedPackage').val($(this).val());
+                }
+                else {
+                    $(this).remove();
+                }
+            });
+        }
+        $('#ExpiryDate').attr('disabled', 'disabled');
+        $('#ExpiryDate').val("");
+        $('#CompanyViewModel_DefaultUserExpireDays').val(30);
+    }
+    $("#IsYearly").change(function () {
+
+        if ($('option:selected', this).val() == "1") {
+
+            $('#YearlySubscription').val(true);
+            // ajax call
+
+            var yearly = $('option:selected', this).val()
+
+            var actionUrl = path;
+
+            // var actionUrl = "/ExpiryDate?yearly=" + yearly;
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: { yearly: yearly },
+                success: function (data) {
+                    $('#ExpiryDate').val(data);
+                },
+                error: function (data) {
+                }
+            });
+
+            // end ajax call
+
+        }
+        else {
+            $('#YearlySubscription').val(false);
+
+            var yearly = "0"
+            var actionUrl = path;
+            // var actionUrl = "/ExpiryDate?yearly=" + yearly;
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: { yearly: yearly },
+                success: function (data) {
+                    $('#ExpiryDate').val(data);
+                },
+                error: function (data) {
+                }
+            });
+
+        }
+
+    });
+</script>

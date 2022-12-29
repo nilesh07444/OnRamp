@@ -1,0 +1,119 @@
+﻿@model List<Ramp.Contracts.ViewModel.UserModelShort>
+
+
+<div class="row">
+
+    <input type="hidden" id="hdnGroupIds" value="@ViewData["ids"]" />
+
+    <div class="col-lg-12">
+
+        <div style="max-height: 250px;overflow:scroll;">
+            <table id="tblAssignUsers" class="table table-striped table-bordered">
+                <br>
+                <thead>
+                    <tr>
+                        <th style="min-width: 20px;">
+                            <input type="text" id="txtSearchUser" style="display:none;" placeholder="Search Users" class="form-control" />
+                        </th>
+                        <th style="min-width: 20px;">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tblUserList">
+                    @Html.Partial("~/Views/VirtualMeeting/_AssignUserList.cshtml", Model)
+
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+
+        var max = 70;
+
+        $('#txtSearchUser').hide();
+        /***************this for search the user in table*****************/
+        $('#txtSearchUser').keyup(function () {
+            var searchText = $(this).val();
+            var check = $('#hdnCheck').val();
+            if (check == null || check == "" || check === undefined)
+                check = true;
+             var virtualClass = $.post("@Url.Action("GetUserList", "VirtualMeeting", new { Area = "" })", {
+                 groupIds: $('#hdnGroupIds').val(),
+                 searchText: searchText,
+                 check:check
+                });
+
+        virtualClass.done(function (data) {
+            assignAddUsers = [];
+            $("#tblUserList").html(data);
+
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        virtualClass.always(function () {
+
+                });
+        });
+
+
+        /***********************this will fire once hit the Assign all user click********************/
+        //$('#chkAssignAll').click(function () {
+        //    if ($(this).is(':checked')) {
+        //        $('.UserCss').each(function () {
+        //            $(this).attr('checked', 'checked');
+        //            assignUsers.push($(this).attr('id'));
+        //            console.log(assignUsers);
+        //        });
+
+        //    } else {
+
+        //        $('.UserCss').each(function () {
+        //            $(this).removeAttr('checked', 'checked');
+        //            assignUsers.pop($(this).attr('id'));
+        //            console.log(assignUsers);
+        //        });
+        //    }
+        //});
+        /*****************this will get id once saperated checkbox clicked and ristric to select not more than 70 ********************/
+        
+            $(document).on('change', '.UserCss', function () {
+            if ($(this).is(':checked')) {
+                assignAddUsers.push($(this).attr('id'));
+                assignAddUsers = $.unique(assignAddUsers);
+            } else {
+                assignAddUsers.pop($(this).attr('id'));
+                assignAddUsers = $.unique(assignAddUsers);
+                }
+                if ( assignAddUsers.length>=max) {
+                    $('#btnAssignUser').attr('disabled', 'disabled');
+                    notif({
+                    msg: "<b>Warning :</b> You are limited to only select a maximum number 70 participants.",
+                    type: "error",
+                         multiline: true
+                });
+                } else {
+                    
+                    $('#btnAssignUser').removeAttr('disabled', 'disabled');
+                }
+            //if ($("input[name=chk]:checked").length == max) {
+            //    $("input[name=chk]").attr('disabled', 'disabled');
+            //    $("input[name=chk]:checked").removeAttr('disabled');
+            //    notif({
+            //        msg: "<b>Warning :</b> You are limited to only select a maximum number 70 participants.",
+            //        type: "error",
+            //             multiline: true
+            //    });
+            //} else {
+            //    $("input[name=chk]").removeAttr('disabled');
+            //}
+
+        });
+
+    });
+</script>

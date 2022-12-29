@@ -1,0 +1,410 @@
+﻿@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+
+@model Ramp.Contracts.ViewModel.UserActivityStatsViewModel
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Areas/ProvisionalManagement/Views/../../../Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Areas/ProvisionalManagement/Views/../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<style type="text/css">
+    #errmsg {
+        color: red;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        @*<h1 class="page-header">@ViewBag.Title</h1>*@
+        <h1 class="page-header">Customer Expiry Date Report</h1>
+        @Html.Label("Description :")
+        <div class="form-group input-group">
+            <p>
+                Use this report to view a historical audit trail of a user’s activities in the OnRAMP System.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">@ViewBag.Title</div>
+
+            <div class="panel-body">
+                @if (Thread.CurrentPrincipal.IsInResellerRole() || Thread.CurrentPrincipal.IsInGlobalAdminRole())
+                {
+                    
+
+                    @*<div class="col-lg-2" id="divProvisionalCompany">
+                            <div class="form-group">
+                                <label>Provisional Company</label>
+                                @Html.DropDownListFor(m => m.SelectedProvisionalCompanyId, Model.ProvisionalCompanyDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select User", new { @class = "form-control", @id = "SelectedCompanyId" })
+                            </div>
+                        </div>*@
+
+                    <div class="col-lg-2" id="divCustomerCompany">
+                        <div class="form-group">
+                            <label>Customer Company</label>
+                            @Html.DropDownListFor(m => m.SelectedCustomerCompanyId, Model.CustomerCompanyDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select Company", new { @class = "form-control", @id = "SelectedCustomerCompanyId" })
+                            @*<select id="SelectedCustomerCompanyId" name="SelectedCustomerCompanyId" class="form-control cke_required" data-val="true" data-val-required="Please select customer company"></select>*@
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2" id="">
+                        <div class="form-group">
+                            <label>Expire in X Days</label>
+                            @Html.TextBoxFor(m => m.ExpiringInXdays, new { @class = "form-control", id = "ExpireInXDays" })
+                            &nbsp;<span id="errmsg"></span>
+                            @*<select id="SelectedCustomerCompanyId" name="SelectedCustomerCompanyId" class="form-control cke_required" data-val="true" data-val-required="Please select customer company"></select>*@
+                        </div>
+                    </div>
+
+
+
+
+
+                    @*<div class="col-lg-2" id="divUser">
+                            <div class="form-group">
+                                <label>User</label>
+                                <select id="SelectedUserId" name="SelectedUserId" class="form-control cke_required" data-val="true" data-val-required="Please select User"></select>
+                            </div>
+                        </div>*@
+                }
+
+                @*@if (sessionInfo != null && sessionInfo.IsInRole("CustomerAdmin"))
+                    {
+                        <div class="col-lg-2">
+                            <div class="form-group">
+                                <label>User</label>
+                                @Html.DropDownListFor(m => m.SelectedUserId, Model.UserDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select User", new { @class = "form-control" })
+                            </div>
+                        </div>
+                    }*@
+
+                    @*@if (sessionInfo != null && sessionInfo.IsInRole("Reseller"))
+                        {
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label>Customer Company</label>
+                                    @Html.DropDownListFor(m => m.SelectedCustomerCompanyId, Model.CustomerCompanyDropDown.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), "Select User", new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label>User</label>
+                                    <select id="SelectedUserId" name="SelectedUserId" class="form-control cke_required" data-val="true" data-val-required="Please select User "></select>
+                                </div>
+                            </div>
+                        }*@
+
+                    @*<div class="form-group col-lg-2">
+                            <div class="input-group date" id='FromDate'>
+                                @Html.Label("From Date")
+                                <div class="form-group input-group">
+                                    <input type='text' id="inputFromDate" class="form-control" />
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-lg-2">
+                            <div class="input-group date" id='ToDate'>
+                                @Html.Label("To Date")
+                                <div class="form-group input-group">
+                                    <input type='text' id="inputToDate" class="form-control" />
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>*@
+
+                    <div class="form-group col-lg-2">
+                        <div class="input-group date" id='ToDate'>
+                            @Html.Label("Account Type")
+                            <div class="form-group input-group">
+                                @{
+                                    var domainsList = new SelectList(new[]
+                                        {
+                                             //new SelectListItem { Text = "--Select--", Value = "2"},
+                                            new SelectListItem { Text = "Yearly", Value = "1"},
+                                              new SelectListItem { Text = "Monthly", Value ="0"},
+
+                                        }, "Value", "Text");
+                                }
+
+                                @Html.DropDownListFor(m => m.IsYearly, domainsList, "Select", new { @class = "form-control", @id = "ddlIsYearly",@style ="border-radius: 4px;" })
+
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                    @*<div class="form-group col-lg-2">
+                        <div class="input-group date" id='ToDate'>
+                            @Html.Label("Is Monthly")
+                            <div class="form-group input-group">
+                                <input type='checkbox' id="IsMonthly" />
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-2">
+                        <div class="input-group date" id='ToDate'>
+                            @Html.Label("Is Yearly")
+                            <div class="form-group input-group">
+                                <input type='checkbox' id="IsYearly" value="" />
+
+                            </div>
+                        </div>
+                    </div>*@
+
+                    <div class="form-group col-lg-2">
+                        <div class="input-group date" id='ToDate'>
+                            @Html.Label("Auto Expire")
+                            <div class="form-group input-group">
+                                <input type='checkbox' id="IsAutoExpire" value="" />
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-lg-2">
+                        <div class="input-group date">
+                            <label></label>
+                            <div class="form-group input-group">
+                                <input type="button" id="btnView" class="btn btn-primary" name="btnView" value="View Report" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="ActivityDiv">
+                    <div class="panel-heading">
+                        Company Expire
+                    </div>
+                    <div class="panel-body" id="UserActivitiesData">
+                        <div class="col-lg-12" style="display: none; text-align: center;" id="divNoData">
+                            <label id="lblNoData">No Data Found</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //  $('#ToDate').datetimepicker();
+            //  $('#FromDate').datetimepicker();
+
+            $("#ExpireInXDays").keypress(function (e) {
+                //if the letter is not digit then display error and don't type anything
+                if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+                    //display error message
+                    $("#errmsg").html("Digits Only").show().fadeOut("slow");
+                    return false;
+                }
+            });
+
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        $("#btnView").click(function () {
+            
+         //   var companyId = $('#SelectedCustomerCompanyId').val();
+            // IsMonthly = $('#IsMonthly').prop('checked');
+           // var IsYearly = $('#IsYearly').prop('checked');
+            //  var ExpireInXDays = $('#ExpireInXDays').val();
+            var IsMonthly;
+            var IsYearly;
+            var AccountType = $('#ddlIsYearly').val();
+            if (AccountType == "") {
+                // company not selected
+                IsMonthly = false;
+                IsYearly = false;
+            }
+            if (AccountType == "1") {
+                // yearly company
+                IsMonthly = false;
+                IsYearly = true;
+            }
+            if (AccountType == "0") {
+                // monthly company
+                IsMonthly = true;
+                IsYearly = false;
+            }
+
+
+            $('#LoadingImageDiv').show();
+            $.ajax({
+                type: "POST",
+                url: "@(Url.Action("GetCustomerExpiryDateReport", "ProvisionalMgmt", "ProvisionalManagement"))",
+                data: {
+                    companyId: $('#SelectedCustomerCompanyId').val(),
+
+                    //IsMonthly: $('#IsMonthly').prop('checked'),
+                  //  IsYearly: $('#IsYearly').prop('checked'),
+                    IsMonthly: IsMonthly,
+                    IsYearly: IsYearly,
+
+                    ExpireInXDays: $('#ExpireInXDays').val(),
+                    IsAutoExpire: $('#IsAutoExpire').prop('checked'),
+                },
+                success: function (data) {
+                    
+                    $('#LoadingImageDiv').hide();
+                    $('#ActivityDiv').hide();
+                    $('#divNoData').hide();
+                    if (data.length == 0) {
+                        $('#ActivityDiv').fadeIn();
+                        $('#divNoData').show();
+                    } else {
+                        $('#ActivityDiv').fadeIn();
+                        $('#UserActivitiesData').empty();
+                        $('#UserActivitiesData').append(data);
+                        // ShowTable(activityList);
+                        var colorArray = [
+                            'rgb(77, 167, 77)', 'rgb(37, 119, 181)', 'rgb(167, 179, 188)', '#62CBB2', '#AACB62', '#D58281',
+                            '#CBC062', '#71D0AC', '#85C2D6', '#CE94DB', '#9A94DB', '#BCA3E0', '#8DCD6A', '#71D087', '#A271D0', '#75A8D1', '#85D6D3',
+                            '#B89EFF', '#7C70FF', '#2974FF', '#4DB5FF', '#4DEDFF', '#8FCBFF', '#8FEEFF', '#00ADAD', '#00BD32', '#0077C7', '#0044B3', '#24FFD3'
+                        ];
+                    }
+                },
+                error: function (data) {
+                    $('#LoadingImageDiv').hide();
+                }
+            });
+
+
+
+            @*if (company != "") {
+
+                if (frmDateInstance != "Invalid Date" && toDateInstance != "Invalid Date") {
+                    if (frmDateInstance > toDateInstance) {
+                        $('#LoadingImageDiv').hide();
+                        notif({
+                            msg: "<b>Error :</b> From date cannot be greater than To Date ",
+                            type: "error",
+                        });
+
+                    }
+                    else {
+                        $.ajax({
+                            type: "POST",
+                            url: "@(Url.Action("GetCustomerExpiryDateReport", "ProvisionalMgmt", "ProvisionalManagement"))",
+                            data: {
+                                companyId: $('#SelectedCustomerCompanyId').val(),
+                                fromDate: $('#inputFromDate').val(),
+                                toDate: $('#inputToDate').val(),
+                            },
+                            success: function (data) {
+                                
+                                $('#LoadingImageDiv').hide();
+                                $('#ActivityDiv').hide();
+                                $('#divNoData').hide();
+                                if (data.length == 0) {
+                                    $('#ActivityDiv').fadeIn();
+                                    $('#divNoData').show();
+                                } else {
+                                    $('#ActivityDiv').fadeIn();
+                                    $('#UserActivitiesData').empty();
+                                    $('#UserActivitiesData').append(data);
+                                    // ShowTable(activityList);
+                                    var colorArray = [
+                                        'rgb(77, 167, 77)', 'rgb(37, 119, 181)', 'rgb(167, 179, 188)', '#62CBB2', '#AACB62', '#D58281',
+                                        '#CBC062', '#71D0AC', '#85C2D6', '#CE94DB', '#9A94DB', '#BCA3E0', '#8DCD6A', '#71D087', '#A271D0', '#75A8D1', '#85D6D3',
+                                        '#B89EFF', '#7C70FF', '#2974FF', '#4DB5FF', '#4DEDFF', '#8FCBFF', '#8FEEFF', '#00ADAD', '#00BD32', '#0077C7', '#0044B3', '#24FFD3'
+                                    ];
+                                }
+                            },
+                            error: function (data) {
+                                $('#LoadingImageDiv').hide();
+                            }
+                        });
+                    }
+                }
+
+                else {
+                    $('#LoadingImageDiv').hide();
+                    notif({
+                        msg: "<b>Error :</b> Please select Date ",
+                        type: "error",
+                    });
+
+                }
+            }
+            else {
+
+                $('#LoadingImageDiv').hide();
+                notif({
+                    msg: "<b>Error :</b> Please select provisional company ",
+                    type: "error",
+                });
+            }*@
+
+        });
+
+
+        function ShowTable(data) {
+            var parentTableDiv = $('<div class="table-responsive">');
+            var parentTable = $('<table class="table table-hover">');
+            var thead = $('<thead>');
+            var headTr = $('<tr>');
+            var headCompanyNameTh = $('<th>');
+            var headTotalLoginPercentageTh = $('<th>');
+
+            //Add heading to table
+            headCompanyNameTh.append("Company");
+            headTotalLoginPercentageTh.append("Percentage");
+
+            //Append headings to <tr> tag
+            headTr.append(headCompanyNameTh);
+            headTr.append(headTotalLoginPercentageTh);
+
+            //Append headTr to <thead> tag
+            thead.append(headTr);
+
+            //Append thead to <table> tag
+            parentTable.append(thead);
+
+            //Append parentTable to table <div> tag
+            parentTableDiv.append(parentTable);
+            var tableBody = $('<tbody>');
+            for (var i = 0; i < data.length; i++) {
+                var innerTr = $('<tr>');
+                var innerUserNameTd = $('<td>');
+                innerUserNameTd.append(data[i].CompanyName);
+                var innerTotalLoginsTd = $('<td>');
+                innerTotalLoginsTd.append(data[i].CompanyLoginPercentage);
+                innerTr.append(innerUserNameTd);
+                innerTr.append(innerTotalLoginsTd);
+                tableBody.append(innerTr);
+            }
+            parentTable.append(tableBody);
+
+            $('#UserActivitiesData').empty();
+            $('#UserActivitiesData').append(parentTableDiv);
+        }
+    </script>

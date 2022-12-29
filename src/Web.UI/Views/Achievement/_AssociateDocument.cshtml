@@ -1,0 +1,81 @@
+﻿@model IEnumerable<Ramp.Contracts.ViewModel.DocumentListModel>
+@using Web.UI.Code.Extensions;
+
+<style>
+    .document-icon {
+        max-width: 25px;
+    }
+</style>
+
+<div class="col-lg-12">
+    <p>The documents listed below are linked to the certificate</p>
+    <br>
+
+    <div class="panel panel-info">
+        <div class="panel-heading clearfix" style="line-height: 24px;">
+            Document List
+        </div>
+
+
+        <table class="dataTable table-hover table-fixed">
+            <thead>
+                <tr>
+                    <th style="width:50px;">Type</th>
+                    <th>Title</th>
+                </tr>
+            </thead>
+            @if (Model.ToList().Count > 0)
+            {
+                <tbody>
+                    @foreach (var item in Model.ToList())
+                    {
+                        <tr>
+                            @if (Convert.ToString(item.DocumentType) == "Test")
+                            {
+                                <td>
+                                    <img class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                </td>
+                            }
+                            else if (Convert.ToString(item.DocumentType) == "Memo")
+                            {
+                                <td>
+                                    <img class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                </td>
+                            }
+                            else if (Convert.ToString(item.DocumentType) == "Policy")
+                            {
+                                <td>
+                                    <img class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                </td>
+                            }
+                            else if (Convert.ToString(item.DocumentType) == "TrainingManual")
+                            {
+                                <td>
+                                    <img class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <img class="img-circle center-block document-icon" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)" />
+                                </td>
+                            }
+                            <td>
+                                @item.Title
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            }
+            else
+            {
+                <tbody>
+                    <tr>
+                        No Associated Document Found
+                    </tr>
+                </tbody>
+            }
+        </table>
+
+    </div>
+</div>

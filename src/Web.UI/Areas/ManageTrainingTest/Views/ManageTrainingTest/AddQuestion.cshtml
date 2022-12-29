@@ -1,0 +1,488 @@
+﻿@{
+    int questionNumber = ViewBag.Number;
+    int index = ViewBag.Index;
+    bool AssignMarksToQuestions = ViewBag.AssignMarksToQuestions;
+}
+
+<script src="@Url.Content("~/Scripts/jquery.browser.min.js")"></script>
+
+
+<div class="col-lg-12 AddQuestion">
+    <div class="panel panel-info question">
+        <input id="QuestionNumberPartial" type="hidden" value="@(index)">
+        <input id="QuestionsOptionNumber" type="hidden" value="5">
+        <input class="isDeleted" id="QuestionsList_0__IsDeleted" name="QuestionsList[@(index)].IsDeleted" type="hidden" value="False">
+        <button style="padding-right: 10px; padding-top: 8px;"
+                type="button" class="close removeChapterButton" id="removeChapter@(index)">
+            <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+        </button>
+        <div class="panel-heading"> Question @questionNumber</div>
+        <div class="panel-body">
+            <div class="row">
+
+                <div class="col-lg-12">
+                    <input class="CorrectAnswer form-control required" style="visibility: hidden" name="QuestionsList[@(index)].CorrectAnswer" id="QuestionsList[@(index)].CorrectAnswer" data-val-required="Please Select an Answer">
+                    <div class="col-lg-3" id="AddQuestion">
+                        @Html.Label("Enter your test question here")
+                        <textarea class="form-control input-validation-error required" cols="20" data-val-required="Please Enter Question"
+                                  id="QuestionsList[@(index)].TestQuestion" name="QuestionsList[@(index)].TestQuestion" rows="2" style="height: 110px"></textarea>
+                        <span class="field-validation-error" data-valmsg-for="QuestionsList[@(index)].TestQuestion"
+                              data-valmsg-replace="true">
+                            <span for="QuestionsList[@(index)].TestQuestion" class=""></span>
+                        </span>
+                    </div>
+
+                    <div class="col-lg-5" style="margin-top: -11px;">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width: 70%" id="PosibleAnswerId">Enter possible answers here</th>
+                                    <th id="CorrectAnswerId">
+                                        Correct Answer
+                                    </th>
+                                </tr>
+                            </thead>
+                        </table>
+                        <div class="list-group" style="height: 118px; margin-top: -20px; overflow-x: hidden;">
+                            <table class="table table-striped">
+                                <tbody class="AppendMoreOptions">
+                                    @for (int j = 0; j < 5; j++)
+                                    {
+                                        <tr>
+                                            <td style="border-top: none; padding: 5px 5px 0px 19px;">
+                                                <input type="text" class="form-control" id="QuestionsList[@(index)].TestAnswerList[@(j)].Option" name="QuestionsList[@(index)].TestAnswerList[@(j)].Option" />
+                                            </td>
+                                            <td style="border-top: none; padding: 5px 5px 0px 0px;">
+                                                <input onclick="return CheckRadio(this)" type="radio" name="optionsRadios@(index)" />
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <span class="field-validation-error" data-valmsg-for="QuestionsList[@(index)].CorrectAnswer"
+                              data-valmsg-replace="true">
+                            <span for="QuestionsList[@(index)].CorrectAnswer" class=""></span>
+                        </span>
+
+                        <button type="button" class="btn btn-success btn-xs AnswersButton" style="float: right; margin-top: 5px; width: 115px;" id="AddMoreAnswerOption">
+                            Add more answers
+                        </button>
+
+
+                    </div>
+
+                    <div class="col-lg-1 markDiv" @(AssignMarksToQuestions == true ? "" : "hidden")>
+                        @Html.Label("Marks")
+                        <input type="text" class="form-control input-validation-error required markInput" cols="20" data-val-required="Please enter a mark"
+                               id="QuestionsList[@(index)].AnswerWeightage" name="QuestionsList[@(index)].AnswerWeightage" value="1" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');"/>
+                        <span class="field-validation-error" data-valmsg-for="QuestionsList[@(index)].AnswerWeightage" data-val-number=""
+                              data-valmsg-replace="true">
+                            <span for="QuestionsList[@(index)].AnswerWeightage" class=""></span>
+                        </span>
+                    </div>
+
+                    <div class="col-lg-3" id="collapse@(index)">
+                        <input id="QuestionsList[@(index)].ImageFile" name="QuestionsList[@(index)].ImageFile" class="imagefile" type="hidden" value="" />
+                        <input id="QuestionsList[@(index)].VideoFile" name="QuestionsList[@(index)].VideoFile" class="videofile" type="hidden" value="" />
+
+                        <div><strong id="UploadMultimedia">Upload multimedia for this question</strong></div>
+                        <label class="lbForInputType" data-corners="false" data-mini="true" data-inline="true" data-role="button" style="border-radius: 4px; cursor: pointer; float: left;
+margin-bottom: 0px !important; vertical-align: text-bottom;" for="ImageFile_@(index)">
+                            <img src="@Url.Content("~/Content/images/imgDoc.png")" />
+                        </label>
+                        <input id="ImageFile_@(index)" type="file" accept="image/*" style="float: left; opacity: 0; width: 0px;" data-corners="false" data-mini="true"
+                               data-inline="true" data-role="button"  onchange="return CheckFileType('Img', this); ">
+                        <br />
+
+                        <label class="lbForInputType" data-corners="false" data-mini="true" data-inline="true" data-role="button" style="border-radius: 4px;
+ cursor: pointer; float: left; margin-bottom: 0px !important; margin-top: -20px; vertical-align: text-bottom;" for="VideoFile_@(index)">
+                            <img src="@Url.Content("~/Content/images/videoDoc.png")" />
+                        </label>
+                        <input id="VideoFile_@(index)" type="file" accept=".mp4" style="float: left; opacity: 0; width: 0px;" data-corners="false" data-mini="true"
+                               data-inline="true" data-role="button"  onchange="return CheckFileType('Video', this); ">
+                        <br />
+                        <div class="UploadedDocs">
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div style="margin-bottom: 20px"></div>
+                        <table role="presentation" class="table table-striped">
+                            <tbody class="TableImage_@(index)"></tbody>
+                        </table>
+                        <table role="presentation" class="table table-striped">
+                            <tbody class="TableVideo_@(index)"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- The template to display files available for upload -->
+<script id="template-upload" type="text/x-tmpl">
+    {% for (var i=0, file; file=o.files[i]; i++) { %}
+    <tr class="template-upload">
+        <td>
+            <span class="preview"></span>
+        </td>
+        <td>
+            <p class="name">{%=file.name%}</p>
+            <strong class="error text-danger"></strong>
+        </td>
+        <td>
+            <p class="size">Processing...</p>
+            <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress-bar progress-bar-success" style="width:0%;"></div>
+            </div>
+        </td>
+        <td>
+            {% if (!i && !o.options.autoUpload) { %}
+            <button class="btn btn-primary start" disabled>
+                <i class="glyphicon glyphicon-upload"></i>
+                <span>Start</span>
+            </button>
+            {% } %}
+            {% if (!i) { %}
+            <button class="btn btn-warning cancel">
+                <i class="glyphicon glyphicon-ban-circle"></i>
+                <span>Cancel</span>
+            </button>
+            {% } %}
+        </td>
+    </tr>
+    {% } %}
+</script>
+
+<script id="template-download" type="text/x-tmpl">
+    {% for (var i=0, file; file=o.files[i]; i++) { %}
+    <tr class="template-download">
+        <td>
+            <span class="preview">
+                {% if (file.thumbnailUrl) { %}
+                <a href="{%=file.url%}" title="{%=file.name%}" download="{%=file.name%}" data-gallery>
+                    <img style="width:80px; height:61px" src="{%=file.thumbnailUrl%}">
+                </a>
+                {% } %}
+            </span>
+        </td>
+        <td>
+            <p class="name">
+                {% if (file.url) { %}
+                <a href="{%=file.url%}" title="{%=file.name%}" download="{%=file.name%}" {%=file.thumbnailUrl?'data-gallery':'file.thumbnailUrl'%}>{%=file.name%}</a>
+                {% } else { %}
+                <span>{%=file.name%}</span>
+                {% } %}
+            </p>
+            {% if (file.error) { %}
+            <div><span class="label label-danger">Error</span> {%=file.error%}</div>
+            {% } %}
+        </td>
+        <td>
+            <span class="size">{%=o.formatFileSize(file.size)%}</span>
+        </td>
+        <td>
+            {% if (file.deleteUrl) { %}
+            <button class="btn btn-danger delete" data-type="{%=file.deleteType%}" data-url="{%=file.deleteUrl%}" {% if (file.deletewithcredentials) { %} data-xhr-fields='{"withCredentials":true}' {% } %}>
+                <i class="glyphicon glyphicon-trash"></i>
+                <span>Delete</span>
+            </button>
+            @* <input type="checkbox" name="delete" value="1" class="toggle">*@
+            {% } else { %}
+            ><button class="btn btn-warning cancel">
+                <i class="glyphicon glyphicon-ban-circle"></i>
+                <span>Cancel</span>
+            </button>
+            {% } %}
+        </td>
+    </tr>
+    {% } %}
+</script>
+
+<div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+
+<script type="text/javascript">
+    function CheckRadio(parameters) {
+        var selectedAnswer = $(parameters).parent().parent().find('input').val();
+
+        if (selectedAnswer == '')
+            return false;
+
+        $(parameters).parent().parent().parent().parent().parent().parent().parent().find('.CorrectAnswer').val(selectedAnswer);
+    }
+
+    $(function() {
+        var detectBrowser = $.browser;
+
+        if (detectBrowser.name == "unknown" || (detectBrowser.name == "msie" && detectBrowser.versionNumber == "8")) {
+            $(".lbForInputType").click(function() {
+                $(this).next().click();
+            });
+        }
+
+        $('.AnswersButton').click(function() {
+            var questionsOptionNumber = $('#QuestionsOptionNumber').val();
+            $('#QuestionsOptionNumber').val(parseInt(questionsOptionNumber) + 1);
+            var tr = $('<tr>');
+            var childTdAnswer = $('<td style="border-top: none; padding: 5px 5px 0px 19px;">');
+            var childTdOption = $('<td style="border-top: none; padding: 5px 5px 0px 0px;">');
+            var answerOptionTextBox = $('<input type="text" class="form-control "' +
+                + 'id="QuestionsList[@(index)].TestAnswerList[' + questionsOptionNumber + '].Option" name="QuestionsList[@(index)].TestAnswerList[' + questionsOptionNumber + '].Option" />');
+            var corrrectOptionInputRadio = $(' <input onchange=" return CheckRadio(this) " type="radio" name="optionsRadios@(index)" />');
+
+            childTdAnswer.append(answerOptionTextBox);
+            childTdOption.append(corrrectOptionInputRadio);
+            tr.append(childTdAnswer);
+            tr.append(childTdOption);
+            $(this).parent().find('.AppendMoreOptions').append(tr);
+        });
+
+        var imageContainer = '.TableImage_' + @(index);
+        var videoContainer = '.TableVideo_' + @(index);
+
+        $('#ImageFile_' + @(index)).fileupload({
+            // Uncomment the following to send cross-domain cookies:
+            //xhrFields: {withCredentials: true},
+            autoUpload: true,
+            url: 'SaveChapterUpload',
+            type: 'POST',
+            maxNumberOfFiles: 1,
+            filesContainer: imageContainer,
+            disableImageResize: /Android(?!.*Chrome)|Opera/
+                .test(window.navigator.userAgent),
+            acceptFileTypes: /(\.|\/)(gif|jpeg|jpg|png|bmp|mp4)$/i,
+            maxRetries: 100,
+            retryTimeout: 500,
+            start: function(e, data) {
+
+                $("#SaveTrainingTestButton").addClass("disabled");
+            },
+            stop: function(e, data) {
+                $("#SaveTrainingTestButton").removeClass("disabled");
+            },
+            failed:function(e, data) {
+                $(e.target).parents('.question').find('.imagefile').val('');
+            },
+            destroyed: function(e, data) {
+                $(e.target).parents('.question').find('.imagefile').val('');
+            }
+        });
+
+        $('#ImageFile_' + @(index)).bind('fileuploaddone', function(e, data) {
+            $(this).parent().find('.imagefile').val(data.files[data.files.length - 1].name);
+        });
+
+        $('#ImageFile_' + @(index)).bind('fileuploadadd', function(e, data) {
+            var id = data.fileInput[0].id;
+            var index = id;
+            index = index.substring(index.indexOf('_') + 1, 255);
+            index = index.substring(0, index.indexOf('_'));
+            var name = data.files[data.files.length - 1].name;
+            var extensions = 'png,jpeg,jpg,gif,bmp';
+            var valid = false;
+
+            var existingUploads = $(imageContainer).find('tr').length;
+
+            if (existingUploads > 0) {
+                notif({
+                    msg: "<b>Error :</b> You are only allowed to upload 1 image.",
+                    type: "error"
+                });
+                return false;
+            }
+
+            var ext = extensions.split(',');
+            for (var x = 0; x < ext.length; x++) {
+                if (name.substr(name.lastIndexOf('.') + 1, 5).toUpperCase() == ext[x].toUpperCase()) {
+                    valid = true;
+                }
+            }
+
+            if (!valid){
+                data.files.splice(index,1);
+                notif({
+                    msg: "<b>Error :</b> File type invalid.",
+                    type: "error"
+                });
+                return false;
+            }
+
+            return true;
+        });
+
+        $('#VideoFile_' + @(index)).fileupload({
+            maxNumberOfFiles: 1,
+            autoUpload: true,
+            type: 'POST',
+            url: 'SaveChapterUpload',
+            filesContainer: videoContainer,
+            disableImageResize: /Android(?!.*Chrome)|Opera/
+            .test(window.navigator.userAgent),
+            acceptFileTypes: /(\.|\/)(mp4)$/i,
+            maxRetries: 100,
+            retryTimeout: 500,
+            start: function (e, data) {
+                $("#SaveTrainingTestButton").addClass("disabled");
+            },
+            stop: function (e, data) {
+                $("#SaveTrainingTestButton").removeClass("disabled");
+            },
+            failed:function(e, data) {
+                $(e.target).parents('.question').find('.videofile').val('');
+            },
+            destroyed: function(e, data) {
+                $(e.target).parents('.question').find('.videofile').val('');
+            }
+        });
+
+        $('#VideoFile_' + @(index)).bind('fileuploaddone', function(e, data) {
+            $(this).parent().find('.videofile').val(data.files[data.files.length - 1].name);
+        });
+
+        $('#VideoFile_' + @(index)).bind('fileuploadadd', function(e, data) {
+            var id = data.fileInput[0].id;
+            var index = id;
+            index = index.substring(index.indexOf('_') + 1, 255);
+            index = index.substring(0, index.indexOf('_'));
+            var name = data.files[data.files.length - 1].name;
+            var extensions = 'mp4';
+            var valid = false;
+
+            var existingUploads = $(videoContainer).find('tr').length;
+
+            if (existingUploads > 0) {
+                notif({
+                    msg: "<b>Error :</b> You are only allowed to upload 1 video.",
+                    type: "error"
+                });
+                return false;
+            }
+
+            var ext = extensions.split(',');
+            for (var x = 0; x < ext.length; x++) {
+                if (name.substr(name.lastIndexOf('.') + 1, 5).toUpperCase() == ext[x].toUpperCase()) {
+                    valid = true;
+                }
+            }
+
+            if (!valid){
+                data.files.splice(index,1);
+                notif({
+                    msg: "<b>Error :</b> File type invalid.",
+                    type: "error"
+                });
+                return false;
+            }
+
+            return true;
+        });
+    });
+
+    function RemoveSavedData(data) {
+
+        var selectedFileName = data.url.substring(data.url.lastIndexOf('\\') + 1);
+
+        var imagefile = data.url.substring(data.url.lastIndexOf('\\') + 1);
+
+        var fileExt = imagefile.substring(imagefile.lastIndexOf('.') + 1);
+
+        var id = data.context.parent().attr('class').split('_');
+
+        var requiredId;
+
+        if (fileExt == 'mp4' || fileExt == 'MP4') {
+            requiredId = "QuestionsList[" + id[1] + "].VideoFile";
+
+        } else {
+            requiredId = "QuestionsList[" + id[1] + "].ImageFile";
+        }
+        var requiredElement = document.getElementById(requiredId);
+        $(requiredElement).attr('value', "");
+    }
+
+
+    function CheckFileType(filetype, id) {
+
+        var fup = document.getElementById(id.id);
+        var fileName = fup.value;
+        var selectedFileName = fileName.substring(fileName.lastIndexOf('\\') + 1);
+
+        var ext = fileName.substring(fileName.lastIndexOf('.') + 1);
+
+        var elementToAppend = $('<div class="alert alert-info" style="float: left;width:100%;padding: 3px;">');
+        var innerDivForFileName = $('<div class="ellipse" style="color: #285596; float: left; margin: 3px 0px 0px 12px; width: 83%;">');
+        var button = $('<button type="button" style="margin: 0px 1px 0px 0px;" class="close" data-dismiss="alert"><span class="close" aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>');
+        innerDivForFileName.append(selectedFileName);
+        elementToAppend.append(innerDivForFileName);
+        elementToAppend.append(button);
+        switch (filetype) {
+            case "Doc":
+                if (ext.toUpperCase() == "DOC" || ext.toUpperCase() == "DOCX") {
+                    return true;
+                } else {
+                    notif({
+                        msg: "<b>Error :</b> Please select Doc / Docx file to upload.",
+                        type: "error",
+                    });
+                    return false;
+                }
+                break;
+            case "Excel":
+                if (ext.toUpperCase() == "XLS" || ext.toUpperCase() == "XLSX") {
+                    return true;
+                } else {
+                    notif({
+                        msg: "<b>Error :</b> Please select xls / xlsx file to upload.",
+                        type: "error",
+                    });
+                    return false;
+                }
+                break;
+            case "Pp":
+                if (ext.toUpperCase() == "PPT" || ext.toUpperCase() == "PPTX") {
+                    return true;
+                } else {
+                    notif({
+                        msg: "<b>Error :</b> Please select ppt / pptx file to upload.",
+                        type: "error",
+                    });
+                    return false;
+                }
+                break;
+            case "Img":
+                if (ext.toUpperCase() == "PNG" || ext.toUpperCase() == "JPEG" || ext.toUpperCase() == "JPG" || ext.toUpperCase() == "GIF" || ext.toUpperCase() == "BMP") {
+                    return true;
+                } else {
+                    notif({
+                        msg: "<b>Error :</b> Please select image file to upload.",
+                        type: "error",
+                    });
+                    return false;
+                }
+                break;
+            case "Video":
+                if (ext.toUpperCase() == "MP4" || ext.toUpperCase() == "AVI" || ext.toUpperCase() == "WMV" || ext.toUpperCase() == "MOV" || ext.toUpperCase() == "MPEG") {
+                    return true;
+                } else {
+                    notif({
+                        msg: "<b>Error :</b> Please select video file to upload.",
+                        type: "error",
+                    });
+                    return false;
+                }
+        }
+    }
+
+
+</script>

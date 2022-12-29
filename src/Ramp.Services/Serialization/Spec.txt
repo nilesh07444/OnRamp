@@ -1,0 +1,77 @@
+Format of the binary serialization:
+
+GraphVerion - 1 byte
+Root node - instance value	- sizeof(int)
+
+Number of instance types - sizeof(int)
+
+~Instance Types
+		- Type Name Descriptor length (t) - sizeof(int)
+		- Full Type Name - sizeof(t)
+
+Number of instance mappings - sizeof(int)
+
+~Instances mappings
+	Instance Id - sizeof(int)
+		- Instance Type ID (2 bytes)
+		
+		// these mappings are sequential to the locations of where the records are
+		// located on the stream.
+
+~Instances data
+	Instance ID -	[accessible by location; no descriptor is required]
+		- Member Count	- 1 byte
+		
+		- foreach (int member = 0; i < membercount; i++) {
+			sizeof(int) (x) - specifies bytes to read to retrieve for the name
+			"x" bytes - read from previous reading, complete name of member index
+			1 byte (y) - type of data to proceed for the member
+			
+			if (y == 0) {
+				// this is a complex data type and hence, we do a double loop back
+				// on the instance data/mappings
+				instance Id reference to - sizeof(int)
+			}
+			else {
+				// the value of the data is a simple data type. The type can be derived
+				// from y. If it is a fixed length type, then those bytes will be read.
+				// If it is a variable length simple data type, then the size is encoded
+				// as the header for next byte sequence
+			}
+		}
+
+=====================================================
+
+System.Void							x			1
+System.Char							x			101
+
+Simple numeric
+-----------------
+System.Boolean						x			3
+System.Int16						x			13
+System.Int32						x			11
+System.Int64						x			15
+System.UInt16						x			14
+System.UInt32						x			12
+System.UInt64						x			16
+System.Byte							x			8
+System.SByte						x			9
+
+Advanced numeric
+-----------------
+System.Decimal						x			19
+System.Single						x			25
+System.Double						x			26
+System.DateTime						x			31
+System.TimeSpan						x			30
+System.Guid							x			20
+
+
+System.Enum							x			140
+
+
+System.String						x			100
+
+System.Array						x			200
+System.Collection.IList				x			201
+System.Collection.IDictionary		x			202

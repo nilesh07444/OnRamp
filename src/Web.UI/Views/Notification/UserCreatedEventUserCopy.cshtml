@@ -1,0 +1,72 @@
+﻿@using Microsoft.Owin.Security
+@model Ramp.Contracts.Events.CustomerManagement.UserCreatedEvent
+
+@{
+    Layout = null;
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath = Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var loginLink = AppSettings.Urls.ResolveUrl("~Account/LogOff", Model.CompanyViewModel);
+    var loginLinkDescription = AppSettings.Urls.ResolveUrl("~",Model.CompanyViewModel);
+    var supportEmailLink = "support@onramp.training";
+    var notificationheader = "#27b899";
+    var notificationfooter = "#27b899";
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany.LayerSubDomain != null) {
+        notificationheader = PortalContext.Current.UserCompany.CustomColours.HeaderColour;
+        notificationfooter = PortalContext.Current.UserCompany.CustomColours.FooterColour;
+    }
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <style>
+
+    .headerstyle {
+     background: @notificationheader;
+     height:40px;
+    }
+    .footerstyle {
+        background: @notificationfooter;
+        height: 40px;
+    }
+
+    </style>
+
+</head>
+<body>
+    <div class="headerstyle"></div>
+    <br />
+    <br />
+    <p>
+        Hello <b>@Model.UserViewModel.FirstName</b>,
+    </p>
+    <p>Welcome to @Model.CompanyViewModel.CompanyName OnRamp application!</p>
+
+    @if (!Model.CompanyViewModel.ActiveDirectoryEnabled)
+    {
+        <p>A user profile has been created for you as follows:</p>
+        <table>
+            <tr><td><b>Username:</b></td><td>@Model.UserViewModel.EmailAddress</td></tr>
+            <tr><td><b>Password:</b></td><td>@Model.UserViewModel.Password</td></tr>
+        </table>
+    }
+
+
+
+    @if (!Model.CompanyViewModel.ActiveDirectoryEnabled)
+    {
+        <p style="text-align: center"><a href="@loginLink" class="btnLogin">Click here to login</a></p>
+    }
+    else
+    {
+        <p>Please log onto the Onramp portal via your web browser to access your content</p>
+    }
+
+    <br />
+    <br />
+    <div class="footerstyle"></div>
+</body>
+</html>

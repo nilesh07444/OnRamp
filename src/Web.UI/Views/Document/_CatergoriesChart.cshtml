@@ -1,0 +1,172 @@
+﻿@using Web.UI.Models
+@model ChartViewModel
+
+<style>
+    .chart {
+        width: 100%;
+        margin: 35px auto;
+
+    }
+
+    .apexcharts-legend {
+        justify-content: center;
+    }
+</style>
+
+<div class="row hidden-sm">
+    <div class="col-sm-4 hidden-sm">
+
+        <div class="col-sm-12">
+
+            <div class=" panel panel-info">
+                <div class="panel-heading clearfix" style="line-height: 34px;">
+                    Document Assignment Counter
+                </div>
+                <div class="panel-body">
+                    <i style="font-size:12px;">The chart below represents the documents that have been sent base on type.</i>
+
+                    <div id="divCategorychart" class="chart center">
+                    </div>
+
+                </div>
+            </div>
+
+            </div>
+
+        </div>
+        <div class="col-sm-4 hidden-sm">
+            <div class="col-sm-12">
+
+                <div class=" panel panel-info " style="overflow-x:auto;">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        Document Capacity
+                    </div>
+                    <div class="panel-body">
+                        <i style="font-size:12px;">The chart below represents that are in your library based on type.</i>
+                        <div id="divDocumentchart" class="chart">
+                        </div>
+
+                    </div>
+                </div>
+
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="col-sm-12">
+                    <div class=" panel panel-info">
+                        <div class="panel-heading clearfix" style="line-height: 34px;">
+                            Document Status
+                        </div>
+                        <div class="panel-body">
+                            <i style="font-size:12px;">The chart below represents the documents that are in your library based on status.</i>
+                            <div id="divStatuschart" class="chart">
+                            </div>
+
+                        </div>
+                    </div>
+
+                    </div>
+
+
+                </div>
+            </div>
+
+<script>
+
+    var options = {
+        series: JSON.parse('@Html.Raw(Json.Encode(Model.Categories))'),
+        chart: {
+               height: 180,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(Model.Name))'),
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+        legend: {
+            position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#divCategorychart"), options);
+    chart.render();
+
+     var docoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(Model.Count))'),
+        chart: {
+               height: 180,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(Model.Type))'),
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+        legend: {
+            position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+        }
+    };
+    var docchart = new ApexCharts(document.querySelector("#divDocumentchart"), docoptions);
+    docchart.render();
+
+    var statusoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(Model.StatusCount))'),
+        chart: {
+            height: 180,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(Model.Status))'),
+       responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+        legend: {
+            position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+        }
+    };
+    var statuschart = new ApexCharts(document.querySelector("#divStatuschart"), statusoptions);
+    statuschart.render();
+</script>

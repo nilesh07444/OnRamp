@@ -1,0 +1,215 @@
+﻿@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.AssignTestToUsersOrGroupViewModel
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header"> Assign Tests</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="alert alert-success" style="padding: 9px 4px 10px 14px;">
+                            <span><input onchange=" return CheckRadio(this) " value="Group" type="radio" name="optionsRadios" checked="" /> Group</span>
+                            <span><input onchange=" return CheckRadio(this) " value="User" type="radio" name="optionsRadios" /> Users</span>
+                        </div>
+                        <input type="hidden" id="SelectedValue" value="Group" />
+                        <div class="panel panel-info " id="GroupDiv">
+                            <div class="panel-heading">
+                                <i class="fa fa-check fa-fw"></i> Select Group
+                            </div>
+                            <div class="panel-body">
+                                @foreach (GroupViewModel group in Model.Groups)
+                                {
+                                    <div class="alert alert-success" style="padding: 2px 4px 4px 10px;">
+                                        @group.Title
+                                        <input type="checkbox" name="GroupCheckbox" value="@(group.GroupId)" style="cursor: pointer; float: right;" />
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="panel panel-info" id="UsersDiv" style="display: none">
+                            <div class="panel-heading">
+                                <i class="fa fa-check fa-fw"></i> Select Users
+                            </div>
+                            <div class="panel-body">
+                                @foreach (UserViewModel user in Model.CustomerStandardUsers)
+                                {
+                                    <div class="alert alert-success" style="padding: 2px 4px 4px 10px;">
+                                        @((user.FirstName != user.LastName) ? String.Format("{0} {1}", user.FirstName, user.LastName) : user.FirstName)
+                                        <input type="checkbox" value="@(user.Id)" name="userCheckbox" style="float: right" />
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6" id="TrainingTestsDiv">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <i class="fa fa-check fa-fw"></i> Select Tests
+                            </div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    @foreach (TrainingTestViewModel test in Model.TrainingTests)
+                                    {
+                                        <a href="#" class="list-group-item">
+                                            <i class="fa fa-tasks fa-fw"></i> @test.TestTitle
+                                            <span class="pull-right text-muted small">
+                                                <input type="checkbox" value="@(test.TrainingTestId)" name="TrainingTestcheckbox" style="float: right" />
+                                            </span>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <button type="button" onclick=" AssignTest() " class="btn btn-primary pull-right">Assign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function CheckRadio(parameters) {
+        var selectedRadio = $(parameters).val();
+
+        if (selectedRadio == "Group") {
+            $('#UsersDiv').hide();
+            $('#GroupDiv').show();
+            $('#SelectedValue').val("Group");
+        }
+        if (selectedRadio == "User") {
+            $('#GroupDiv').hide();
+            $('#UsersDiv').show();
+            $('#SelectedValue').val("User");
+        }
+    }
+
+    function AssignTest() {
+        $('#LoadingImageDiv').show();
+        var model = new Object();
+        model.Groups = new Array();
+        model.CustomerStandardUsers = new Array();
+        model.TrainingTests = new Array();
+
+        var selectedTests = $('#TrainingTestsDiv').find('input');
+        $(selectedTests).each(function () {
+            if ($(this).is(":checked")) {
+                var test = new Object();
+                test.TrainingTestId = $(this).val();
+                model.TrainingTests.push(test);
+            }
+        });
+        if (model.TrainingTests.length != "0") {
+            var selectedValue = $('#SelectedValue').val();
+            if (selectedValue == "" || selectedValue == undefined) {
+                $('#LoadingImageDiv').hide();
+                notif({
+                    msg: "<b>Error :</b> Whoops. Please select Users or group.",
+                    type: "error",
+                });
+            } else {
+                if (selectedValue == "User") {
+                    var selectedUsers = $('#UsersDiv').find("input");
+                    model.SelectedOption = "User";
+                    $(selectedUsers).each(function () {
+                        if ($(this).is(":checked")) {
+                            var user = new Object();
+                            user.Id = $(this).val();
+                            model.CustomerStandardUsers.push(user);
+                        }
+                    });
+                    if (model.CustomerStandardUsers.length != "0") {
+                        $.ajax({
+                            type: "POST",
+                            url: "@(Url.Action("AssignTestsToUsersOrGroup", "ManageTrainingTest", "ManageTrainingTest"))",
+                            data: {
+                                model: JSON.stringify(model),
+                            },
+                            success: function (data) {
+                                $('#LoadingImageDiv').hide();
+                                notif({
+                                    msg: "<b>Success :</b> Test/Tests assigned to User/Users.",
+                                    type: "success",
+                                });
+                            },
+                            error: function (data) {
+                                $('#LoadingImageDiv').hide();
+                                notif({
+                                    msg: "<b>Error :</b> Something went wrong. Please try again.",
+                                    type: "error",
+                                });
+                            }
+                        });
+                    } else {
+                        $('#LoadingImageDiv').hide();
+                        notif({
+                            msg: "<b>Error :</b> Please select User/Users.",
+                            type: "error",
+                        });
+                    }
+                }
+                if (selectedValue == "Group") {
+                    model.SelectedOption = "Group";
+                    var selectedGroups = $('#GroupDiv').find("input");
+                    $(selectedGroups).each(function () {
+                        if ($(this).is(":checked")) {
+                            var group = new Object();
+                            group.GroupId = $(this).val();
+                            model.Groups.push(group);
+                        }
+                    });
+                    if (model.Groups.length != "0") {
+                        $.ajax({
+                            type: "POST",
+                            url: "@(Url.Action("AssignTestsToUsersOrGroup", "ManageTrainingTest", "ManageTrainingTest"))",
+                            data: {
+                                model: JSON.stringify(model),
+                            },
+                            success: function (data) {
+                                $('#LoadingImageDiv').hide();
+                                notif({
+                                    msg: "<b>Success :</b> Test/Tests assigned to Group/Groups.",
+                                    type: "success",
+                                });
+                            },
+                            error: function (data) {
+                                $('#LoadingImageDiv').hide();
+                                notif({
+                                    msg: "<b>Error :</b> Something went wrong. Please try again.",
+                                    type: "error",
+                                });
+                            }
+                        });
+                    } else {
+                        $('#LoadingImageDiv').hide();
+                        notif({
+                            msg: "<b>Error :</b> Please select Group/Groups.",
+                            type: "error",
+                        });
+                    }
+                }
+            }
+        } else {
+            $('#LoadingImageDiv').hide();
+            notif({
+                msg: "<b>Error :</b> Please select Test/Tests.",
+                type: "error",
+            });
+        }
+    }
+</script>

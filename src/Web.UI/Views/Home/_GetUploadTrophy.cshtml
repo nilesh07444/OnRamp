@@ -1,0 +1,77 @@
+﻿@model  Ramp.Contracts.ViewModel.UploadTrophyViewModel
+ 
+ 
+
+@*
+<script src="~/Scripts/bootstrap.min.js"></script>*@
+    @*<div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">Trophy Gallery</h1>
+
+        </div>
+    </div>*@ 
+    
+    <div class="row">
+        <div class="col-md-12">
+            <h3 class="page-header" style="text-align: center; margin-top: -10px;">Please Select Trophy for Test</h3>
+
+        </div>
+        <div class="col-lg-12">
+
+            @if (Model.uploadedList.Any())
+            {
+
+                foreach (var FileName in Model.uploadedList)
+                {
+                    //var path = (Url.Content("~/Content/TrophyPic/" + FileName ));
+
+                    //if (File.Exists(path))
+                    //{
+
+                    <div class="col-lg-2 col-centered" style="height: 184px; margin-bottom: 10px; text-align: center;">
+
+                        <a href="javascript:void(0)" id="selectedPicTrophy" style="text-decoration: none" onclick="setTrophyName(this, event)" class="testClass" title="@FileName">
+
+                            <img src="@(Url.Content("~/Content/TrophyPicDir/" + FileName))" style="display: block; margin: 0 auto; height: 80Px;" class="img-responsive" id="standardPlayBooks" />
+
+ 
+                        </a>
+                    </div>
+                }
+                //}
+            }
+            else
+            {
+
+                     <p> Default Trophy  !! </p>
+                
+                <div class="col-lg-2 col-centered" style="height: 184px; margin-bottom: 10px; text-align: center;">
+
+                    <a href="javascript:void(0)" id="selectedPicTrophy" style="text-decoration: none" onclick="setTrophyName(this, event)" class="testClass" title="Trophy5.png">
+
+                        <img src="@(Url.Content("~/Content/images/Trophy5.png"))" style="display: block; margin: 0 auto; height: 80Px;" class="img-responsive" id="standardPlayBooks" />
+
+
+
+                    </a>
+                    </div>
+            }
+
+        </div>
+
+    </div>
+ @*<script type="text/javascript">
+
+     
+
+     $("a").on('click', function (e) {
+         
+         event.preventDefault();
+             var PicName = $(this).attr('title');
+             $('#TestTrophyId').val(PicName);
+         //$('#myModal').modal('toggle');
+             ($(this).parent().parent().parent().parent().parent().parent().parent()).modal('hide');
+           //  $('#myModal').modal('hide');
+         });
+    
+</script>*@

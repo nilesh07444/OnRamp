@@ -1,0 +1,29 @@
+﻿@model Ramp.Contracts.ViewModel.JsTreeModel
+@using Web.UI.Helpers
+<style>
+    .hoverBackground {
+        background-color: #e7f4f9 !important;
+        display: block;
+        text-shadow: 1px 1px 1px silver;
+    }
+</style>
+<script src="~/Scripts/jstree.js"></script>
+
+<script type="text/javascript">
+
+    $(".textDemo").hover(function () {
+        $(".textDemo").removeClass("hoverBackground");
+        $(this).addClass("hoverBackground");
+        var widthPar = $($(this).parent()).width(); // width of parent li
+        // var widthPar = $($($(this).parent()).parent()).width(); //Width of parent ul
+        $(this).width(widthPar);
+    });
+</script>
+
+<div class="dropdown" style="width:50px;">
+    <a id="dLabel" value="@Model.attr.id" role="button" data-toggle="dropdown" class="btn btn-primary" href="javascript:void(0)">
+        @Model.data <span class="caret"></span>
+    </a>
+
+    @Html.StateDropDownListFor(Model)
+</div>

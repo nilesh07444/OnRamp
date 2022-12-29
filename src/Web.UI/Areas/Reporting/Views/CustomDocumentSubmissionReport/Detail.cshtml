@@ -1,0 +1,397 @@
+﻿@using System.Threading
+@using Domain.Customer
+@using Web.UI.Code.Extensions
+
+@model Ramp.Contracts.ViewModel.AcrobatFieldDetailsViewModel
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Acrobat Field Detail
+        <a href="javascript:void(0)" class="pull-right export" style="cursor: pointer"><b><u>Export</u></b></a>
+    </div>
+    <table class="table">
+        <tr>
+            <th>Title</th>
+            <td>@Model.DocumentTitle</td>
+        </tr>
+        <tr>
+            <th class="col-md-2">Generated Date</th>
+            <td>@Model.GeneratedDate.ToString("d")</td>
+        </tr>
+        @*<tr>
+            <th>Date Range</th>
+            <td>@Model.FromDate.ToString("d") - @Model.ToDate.ToString("d")</td>
+        </tr>*@
+        <tr>
+            <th>Document</th>
+            <td>@(VirtuaCon.EnumUtility.GetFriendlyName<DocumentType>(Model.DocumentType))</td>
+        </tr>
+
+
+    </table>
+</div>
+
+<div class="panel panel-info">
+    <div class="panel-heading">Acrobat Fields</div>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                @foreach (var columndata in Model.AcrobatTableModel)
+                {
+                    var fieldSplit = columndata.FieldName.Split('|');
+                    foreach (var columns in fieldSplit)
+                    {
+                        <th>@columns</th>
+                    }
+                }
+            </tr>
+        </thead>
+        @foreach (var rowdata in Model.AcrobatTableModel)
+        {
+            <tr>
+                <td>@(rowdata.FirstName + " " + rowdata.LastName) </td>
+                @{var fieldSplit = rowdata.FieldValue.Split('|');
+                    foreach (var rows in fieldSplit)
+                    {
+                        <td>@rows</td>
+                    }
+                }
+            </tr>
+        }
+    </table>
+</div>
+
+<div class="modal fade" id="exportModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Export</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select the field you would like to export</p>
+                <div class="row">
+                    <form id="test">
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Interacion Report Detail
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="irGeneratedDate" value="irGeneratedDate" class="CommonCssValue" checked id="irGeneratedDate" />
+                                        <span>Generated Date</span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="irDocument" value="irDocument" id="irDocument" />
+                                        <span>Document</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" class="CommonCssValue" name="irTitle" value="irTitle" id="irTitle" />
+                                        <span>Title</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Assigned Interaction
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="aiName" value="aiName" class="CommonCssValue" checked id="aiName" />
+                                        <span>Name</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="aiId" class="CommonCssValue" checked value="aiId" id="aiId" />
+                                        <span>Id Number</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="aiGroup" class="CommonCssValue" value="aiGroup" checked id="aiGroup" />
+                                        <span>Group</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="aiStatus" class="CommonCssValue" value="aiStatus" checked id="aiStatus" />
+                                        <span>Status</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="aiViewDate" class="CommonCssValue" value="aiViewDate" checked id="aiViewDate" />
+                                        <span>Viewed Date</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="aiDuration" class="CommonCssValue" value="aiDuration" checked id="aiDuration" />
+                                        <span>Duration</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    Global Document Interaction
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiName" value="gdiName" class="CommonCssValue" checked id="gdiName" />
+                                        <span>Name</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiId" class="CommonCssValue" checked value="gdiId" id="gdiId" />
+                                        <span>Id Number</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiGroup" class="CommonCssValue" value="gdiGroup" checked id="gdiGroup" />
+                                        <span>Group</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiStatus" class="CommonCssValue" value="gdiStatus" checked id="gdiStatus" />
+                                        <span>Status</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiViewedDate" class="CommonCssValue" value="gdiViewedDate" checked id="gdiViewedDate" />
+                                        <span>Viewed Date</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="checkbox" name="gdiDuraion" class="CommonCssValue" value="gdiDuraion" checked id="gdiDuraion" />
+                                        <span>Duration</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button type="button" href="javascript:download()" class="exportReport btn btn-primary" data-exportformid="test">Export</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function download(params) {
+            //alert("paramaaaa" + params)
+            var url = '@Url.Action("DownloadDetailEXCEL", "InteractionReport")' +
+                window.location.href.substring(window.location.href.indexOf("?"));
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+            request.onload = function () {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                }
+            }
+            request.onreadystatechange = function () {
+                if (this.readyState === 4) {
+                    $('#LoadingImageDiv').hide();
+                }
+            };
+            $('#LoadingImageDiv').show();
+            request.send();
+
+    }
+
+    //new code
+    $(".export").on('click',
+        function () {
+            //alert("sdfsdfsd")
+            $("#exportModal").modal('show');
+            userId = $(this).attr('id');
+            //if (userId !== 'All')
+            //    $('#UserId').val(userId)
+
+            //var filterArray = new Array();
+            //$('.CommonCss').each(function () {
+            //    if ($(this).is(':checked')) {
+            //        filterArray.push($(this).attr('name'));
+            //        $('#ToggleFilter').val(filterArray.join());
+            //    }
+            //});
+
+            //var formId = $(this).data('exportformid');
+            //var form = $('#' + formId);
+            //var params = form.serialize();
+            //download(params);
+        });
+
+ $(".exportReport").on('click',
+        function () {
+           //alert("8888")
+            if (userId !== 'All')
+                $('#UserId').val(userId)
+
+            var filterArray = new Array();
+            //$('.CommonCss').each(function () {
+            //    if ($(this).is(':checked')) {
+            //        filterArray.push($(this).attr('name'));
+            //        $('#ToggleFilter').val(filterArray.join());
+            //    }
+            //});
+
+            $('.CommonCssValue').each(function () {
+                if ($(this).is(':checked')) {
+                    filterArray.push($(this).attr('name'));
+                    $('#ToggleFilter').val(filterArray.join());
+                }
+            });
+            //
+            var formId = $(this).data('exportformid');
+            var form = $('#' + formId);
+            var params = form.serialize();
+            download(params);
+            $("#exportModal").modal('hide');
+        });
+
+    $(".exportAll").on('click',
+        function () {
+            var id = $(this).attr('id');
+            if (id !== 'All')
+                $('#UserId').val(id)
+
+            var filterArray = new Array();
+            $('.CommonCss').each(function () {
+                if ($(this).is(':checked')) {
+                    filterArray.push($(this).attr('name'));
+                    $('#ToggleFilter').val(filterArray.join());
+                }
+            });
+
+            var formId = $(this).data('exportformid');
+            var form = $('#' + formId);
+            var params = form.serialize();
+            download(params);
+        });
+
+    $('#chkEmployeeCode').click(function () {
+        if ($(this).is(":checked")) {
+            $('.EmployeeCodeCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.EmployeeCodeCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+
+
+    $('#chkUser').click(function () {
+        if ($(this).is(":checked")) {
+            $('.UserCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.UserCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+    $('#chkCategory').click(function () {
+        if ($(this).is(":checked")) {
+            $('.CategoryCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.CategoryCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+    $('#chkDocumentType').click(function () {
+        if ($(this).is(":checked")) {
+            $('.DocumentTypeCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.DocumentTypeCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+    $('#chkTitle').click(function () {
+        if ($(this).is(":checked")) {
+            $('.TitleCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.TitleCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+    $('#chkDate').click(function () {
+        if ($(this).is(":checked")) {
+            $('.DateCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.DateCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+    $('#chkAccess').click(function () {
+        if ($(this).is(":checked")) {
+            $('.AccessCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.AccessCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+    $('#chkResult').click(function () {
+        if ($(this).is(":checked")) {
+            $('.ResultCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.ResultCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+    $('#chkPoints').click(function () {
+        if ($(this).is(":checked")) {
+            $('.PointsCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.PointsCss').each(function () {
+                $(this).hide();
+            });
+        }
+    });
+
+
+</script>

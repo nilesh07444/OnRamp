@@ -1,0 +1,221 @@
+﻿@using Web.UI.Code.Extensions
+@using System.Threading
+@model Ramp.Contracts.ViewModel.EditUserProfileViewModel
+
+@{
+
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    ViewBag.HelpContext = "22";
+}
+
+<style>
+    .required {
+        color: red;
+    }
+
+    .requiredTxt {
+        border: solid red;
+    }
+</style>
+
+@using (Html.BeginForm("EditMyProfile", "Account")) {
+
+    <div class="row">
+        <div class="col-lg-12">
+
+            <div class="row">
+                @Html.ValidationSummary(true)
+                @Html.HiddenFor(model => model.Id)
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <span style="color:red">*</span>   @Html.Label("Full Name")
+                        @Html.TextBoxFor(model => model.FullName, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.FullName)
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <span style="color:red">*</span>  @Html.Label("Password")
+                        @Html.PasswordFor(model => model.Password, new { @class = "form-control" })
+                        <span style="color:red;display:none;" id="spnPasswordlength">The password must be at least 6 characters long.</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                @Html.Label("Email Address")
+                                @Html.TextBoxFor(model => model.EmailAddress, new { @class = "form-control", @readonly = "true" })
+                                @Html.ValidationMessageFor(model => model.EmailAddress)
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                @Html.Label("Confirm Password")
+                                @Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control" })
+                                <span style="color:red;display:none;"  id="txtErrorForPwd">The password and confirm password do not match.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                @Html.Label("ID Number")
+                                @Html.TextBoxFor(model => model.IDNumber, new { @class = "form-control", @readonly = "readonly" })
+                            </div>
+                        </div>
+
+
+
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                @Html.Label("Mobile Number")
+                                @Html.TextBoxFor(model => model.MobileNumber, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.MobileNumber)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        @if (Thread.CurrentPrincipal.IsInAdminRole() && Model.DropDownForGroup != null)
+                        {
+
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    @Html.Label("Group Allocation")
+                                    @Html.DropDownListFor(m => m.GroupList, Model.DropDownForGroup.ToSelectList(a => a.Value, a => a.Text, a => a.Selected), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                        }
+
+                        @if (Thread.CurrentPrincipal.IsInStandardUserRole())
+                        {
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            @Html.Label("Employee No")
+                            @Html.TextBoxFor(model => model.EmployeeNo, new { @class = "form-control", @readonly = "true" })
+                            @Html.ValidationMessageFor(model => model.EmployeeNo)
+                        </div>
+                    </div>
+                                }
+
+
+                        </div>
+                    </div>
+                                <div class="modal-footer">
+
+
+
+                                    <intput type="button" class="btn btn-default" data-dismiss="" onclick="javascript: closeProfileModal()">Close</intput>
+                                    <input type="submit" value="Update" class="btn btn-primary" onclick="return checkValidation();" />
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                }
+                        <script>
+
+                            function checkPassword() {
+                                var pwd = $("#Password").val();
+                                var cpwd = $("#ConfirmPassword").val();
+                                $("#txtErrorForPwd").hide();
+                                if (pwd && cpwd) {
+                                    if (pwd !== cpwd) {
+                                        $("#txtErrorForPwd").show();
+                                        return false
+                                    } else {
+                                        $("#txtErrorForPwd").hide();
+                                        return true;
+                                    }
+                                }
+                            }
+                            function checkPwdLength() {
+                                if ($("#Password").val()!=="" && $("#Password").val().length < 6) {
+                                    $('#spnPasswordlength').show();
+
+                                } else {
+                                    $('#spnPasswordlength').hide();
+                                }
+                            }
+
+                            function checkValidation() {
+                                var check = true;
+                                var name = $('#FullName').val();
+                                if (name === '' || name === null) {
+                                    $('#FullName').addClass('requiredTxt');
+                                   
+                                    check= false;
+                                } else {
+                                    $('#FullName').removeClass('requiredTxt');
+                                }
+                                var pass = $('#Password').val();
+                                if (pass === '' || pass === null) {
+                                    $('#Password').addClass('requiredTxt');
+
+                                    check = false;
+                                } else {
+                                    $('#Password').removeClass('requiredTxt');
+                                }
+                                var cpwd = $("#ConfirmPassword").val();
+                                if (cpwd === '' || cpwd === null) {
+                                    $('#ConfirmPassword').addClass('requiredTxt');
+
+                                    check = false;
+                                } else {
+                                    $('#ConfirmPassword').removeClass('requiredTxt');
+                                }
+
+                                $("#txtErrorForPwd").hide();
+                                var pwd = $("#Password").val();
+                                var cpwd = $("#ConfirmPassword").val();
+                                $("#txtErrorForPwd").hide();
+                                if (pwd && cpwd) {
+                                    if (pwd !== cpwd) {
+                                        $("#txtErrorForPwd").show();
+                                        check= false;
+                                    } else {
+                                        $("#txtErrorForPwd").hide();
+                                    }
+                                }
+                                if ($("#Password").val() !== "" && $("#Password").val().length < 6) {
+                                    $('#spnPasswordlength').show();
+                                    check = false;
+
+                                } else {
+                                    $('#spnPasswordlength').hide();
+                                }
+                                if (!check) {
+                                    notif({
+                                        msg: "<b>Error :</b> Whoops. please check required fields.",
+                                        type: "error"
+                                    });
+                                }
+                                return check;
+                            }
+
+                            $(function () {
+                                $("#Password").blur(function () {
+                                    checkPwdLength();
+                                });
+                                $('#FullName').blur(function () {
+                                    var name = $(this).val();
+                                    if (name === '' || name === null) {
+                                        $(this).addClass('requiredTxt');
+                                    } else {
+                                        $(this).removeClass('requiredTxt');
+                                    }
+                                });
+
+                            });
+                        </script>

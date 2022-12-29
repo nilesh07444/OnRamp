@@ -1,0 +1,1705 @@
+﻿@model IPaged<Ramp.Contracts.ViewModel.DocumentListModel>
+@using Ramp.Security.Authorization
+@using Common.Collections
+@using Common.Web
+@using Web.UI.Code.Extensions
+@using Common.Enums
+@using System.Threading
+@using Domain.Customer
+@using Web.UI.Models
+@using Ramp.Contracts.Security
+@{
+    Layout = "../Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var roles = SessionManager.GetRolesForCurrentlyLoggedInUser().ToList();
+    var userId = Thread.CurrentPrincipal.GetId();
+}
+
+<style>
+
+    .template-tile {
+        font-size: 10px;
+        overflow: hidden;
+        text-align: left;
+    }
+
+    .templates-window img {
+        max-height: 70px;
+        max-width: 100px;
+    }
+
+    .template-tile:hover {
+        text-decoration: none;
+    }
+
+    .template-tile strong {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis
+    }
+
+    .template-tile .aligner {
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+    }
+
+    .templates-window {
+        overflow-y: auto;
+        max-height: 50vh;
+    }
+
+        .templates-window > div > div {
+            height: 72px;
+            width: 102px;
+            box-shadow: 2px 1px lightgrey;
+            white-space: nowrap;
+        }
+
+    .form-horizontal .control-label {
+        text-align: left;
+    }
+
+    .document-icon {
+        max-width: 60px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .not-selected {
+        zoom: 1;
+        filter: alpha(opacity=50);
+        -ms-opacity: 0.5;
+        opacity: 0.5;
+    }
+
+        .not-selected:hover {
+            filter: alpha(opacity=100);
+            -ms-opacity: 1;
+            opacity: 1;
+            -ms-transition: all .15s ease-in-out;
+            -o-transition: all .15s ease-in-out;
+            -webkit-transition: all .15s ease-in-out;
+            transition: all .15s ease-in-out;
+            -ms-transform: scale(1.1);
+            -webkit-transform: scale(1.1);
+            transform: scale(1.1)
+        }
+
+    .no-underline:hover {
+        text-decoration: none;
+    }
+
+    .btn-option {
+        margin-bottom: 5px;
+    }
+
+    .caret-decending {
+        transform: rotate(-180deg);
+        color: darkgreen
+    }
+
+    th.sortable {
+        cursor: pointer;
+    }
+
+    .no-border > td {
+        border: none !important;
+    }
+
+    .search {
+        display: none;
+    }
+
+    .fancybox-inner {
+        overflow: hidden !important;
+    }
+
+    .play-circle {
+        font-size: 64px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -36px;
+        margin-left: -36px;
+    }
+
+        .play-circle:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+
+    .video-thumbnail {
+        -moz-filter: opacity(50%);
+        -webkit-filter: opacity(50%);
+        filter: opacity(50%);
+    }
+
+
+    .Draft {
+        background-color: #ffa500;
+        color: #ffffff !important;
+        border-radius: 8px;
+        width: 100%
+    }
+
+    .Approved {
+        background-color: #00cc00;
+        color: #ffffff !important;
+        border-radius: 8px;
+    }
+
+    .Declined {
+        background-color: #c40000;
+        color: #ffffff !important;
+        border-radius: 8px;
+    }
+
+    .Wait {
+        background-color: #ffa500;
+        color: #ffffff !important;
+        border-radius: 8px;
+    }
+
+    .status {
+        width: 100%;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 5px;
+    }
+
+    .dropdown-menu {
+        overflow: inherit !important;
+    }
+</style>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<link href="~/Content/apex/apexcharts.css" rel="stylesheet" />
+<script src="~/Scripts/apex/apexcharts.js"></script>
+
+@*<script src="~/Scripts/jquery-1.10.2.min.js"></script>*@
+<script src="~/Scripts/bootstrap.bundle.min.js"></script>
+<script src="~/Scripts/bootstrap.js"></script>
+
+<div class="row hidden-sm hidden-xs">
+    <div class="col-sm-4">
+
+        @if (ViewData["Chart"] != null && ((ChartViewModel)ViewData["Chart"]).Categories.Any())
+        {
+            <div class="col-sm-12">
+
+                <div class=" panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        Document Distribution Chart
+
+                    </div>
+                    <div class="panel-body">
+                        <i style="font-size:13px;">This represents the types of documents that have been allocated to users in your portal.</i><br />
+                        <br />
+                        <div id="divCategorychart" class="chart center">
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        }
+
+    </div>
+
+
+    <div class="col-sm-4">
+        @if (ViewData["Chart"] != null && ((ChartViewModel)ViewData["Chart"]).StatusCount.Any())
+        {
+            <div class="col-sm-12">
+                <div class=" panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        @if (!Thread.CurrentPrincipal.IsInRole(Role.ContentCreator) && !Thread.CurrentPrincipal.IsInRole(Role.ContentApprover))
+                        {<span>Document Status Chart</span>}
+                        @if (Thread.CurrentPrincipal.IsInRole(Role.ContentCreator))
+                        {<span>Document Creator status</span>}
+                        @if (Thread.CurrentPrincipal.IsInRole(Role.ContentApprover))
+                        {<span>Document Approval status</span>}
+                    </div>
+                    <div class="panel-body">
+                        <i style="font-size:13px;">This chart represents the status of all the documents in your library.</i><br />
+                        <br />
+                        @if (!Thread.CurrentPrincipal.IsInRole(Role.ContentCreator) && !Thread.CurrentPrincipal.IsInRole(Role.ContentApprover))
+                        {
+                            <div id="divStatuschart" class="chart">
+                            </div>
+                        }
+                        @if (Thread.CurrentPrincipal.IsInRole(Role.ContentCreator))
+                        {<div id="contentCreatorChart" class="chart">
+                            </div>}
+                        @if (!Thread.CurrentPrincipal.IsInRole(Role.ContentCreator) && Thread.CurrentPrincipal.IsInRole(Role.ContentApprover))
+                        {<div id="contentApproverChart" class="chart">
+                            </div>}
+                    </div>
+                </div>
+
+            </div>
+        }
+
+
+    </div>
+    <div class="col-sm-4">
+        @if (ViewData["Chart"] != null && ((ChartViewModel)ViewData["Chart"]).Count.Any())
+        {
+            <div class="col-sm-12">
+
+                <div class=" panel panel-info " style="overflow-x:auto;">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        Document Capacity Chart
+                    </div>
+                    <div class="panel-body">
+                        <i style="font-size:13px;">This chart represents the types of documents that are in your library.</i><br />
+                        <br />
+                        <div id="divDocumentchart" class="chart">
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="col-sm-2">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class=" panel panel-info " data-bind="with:$root.category.menu" style="overflow-x:auto;">
+                        <div class="panel-heading clearfix" style="line-height: 34px;">
+                            Categories
+                            @if (Thread.CurrentPrincipal.IsInRole(Role.CustomerAdmin) || Thread.CurrentPrincipal.IsInRole(Role.ContentCreator) || Thread.CurrentPrincipal.IsInRole(Role.ContentAdmin))
+                            {
+
+                                <div class="pull-right">
+                                    <a id="mc" data-bind="click:$root.modals.manageCategories.open.bind()" style="border-left: solid 1px; padding-left: 0.5em; cursor: pointer; color: white"><i class="glyphicon glyphicon-pencil"></i></a>
+                                </div>
+
+                            }
+                        </div>
+                        <div class="panel-body">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search" style="max-width:unset" data-bind="textInput:match" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" data-bind="click:$root.category.handlers.clear.bind()"><span class="fa fa-close"></span></button>
+                                </span>
+                            </div>
+                        </div>
+                        <div id="categoryTree" data-bind="jstreeWithSearch:options,jstreeOptions: {plugins:['search', 'types'], types: {default: {icon: 'glyphicon glyphicon-plus-sign category-icon'}}},valueProperty:selected,filterProperty:match" style="min-height:800px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-10 ">
+
+            <div class=" panel panel-info">
+                <div class="panel-heading clearfix" style="line-height: 32px;">
+                    Document Library
+                    @if (!roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentCreator.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString()))
+                    {
+                        <a data-bind="click:$root.modals.newDocument.open.bind(), attr: { title: ko.unwrap($root.documentsRemaining) <= 0 ? 'Your Document limit has been reached' : 'New Document'}" style="border-left: solid 1px; padding-left: 0.5em; border-right: solid 1px; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer">
+
+                            <i class="glyphicon glyphicon-plus"></i>
+
+                        </a>
+
+                        <a id="RecycleBin" style=" padding-right: 0.5em; margin-left: 0.5em; border-right: solid 1px; cursor: pointer">
+                            <i class="glyphicon glyphicon-trash"></i>
+
+                        </a>
+                    }
+
+                    <div class="pull-right">
+                        <form class="form-inline" data-bind="event:{submit:function(data, event){return $root.paging.submit();}}">
+                            <div class="input-group">
+                                <select class="selectpicker" multiple data-bind="foreach:$root.enums.filterGroup,selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'},selectedOptions:$root.query.DocumentFilters">
+                                    <optgroup data-bind="attr:{label:title},foreach:options">
+                                        <option data-bind="text:Name,attr:{value:Id}"></option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Document or Tag Search" data-bind="textInput:$root.query.MatchText" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" data-bind="click:$root.paging.submit.bind()"><span class="glyphicon glyphicon-search"></span></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                    @*<span class="pull-right" style="margin-right: 15px" id="documentCounter" data-bind="text: bundleSize() - documentsRemaining() + '/' + bundleSize()"></span>*@
+                    <span class="pull-right" style="margin-right: 15px" id="documentCounter">  <span data-bind="text: query.TotalItems "></span>/<span data-bind="text: bundleSize()"></span> </span>
+                </div>
+
+                <div class="panel-body">
+
+                    <div class="table-responsive">
+
+                        <table id="documentTable" class="dataTable table-hover table-fixed">
+                            <thead>
+                                <tr>
+                                    <th class="col-sm-1" data-bind="attr:{name:'Type'},click:$root.sorting.inverseColumnOrdering.bind()">Type<span class="caret" data-bind="css:{'caret-decending' : $root.sorting.getInverseColumnOrdering('Type')}"></span></th>
+                                    <th class="col-sm-3" data-bind="attr:{name:'Title'},click:$root.sorting.inverseColumnOrdering.bind()">Document Information<span class="caret" data-bind="css:{'caret-decending' : $root.sorting.getInverseColumnOrdering('Title')}"></span></th>
+                                    @*below code aade by neeraj*@
+                                    <th class="col-sm-2">Status</th>
+                                    <th class="col-sm-2" data-bind="attr:{name:'LastEdited'},click:$root.sorting.inverseColumnOrdering.bind()">Last Edited<span class="caret" data-bind="css:{'caret-decending' : $root.sorting.getInverseColumnOrdering('LastEdited')}"></span></th>
+                                    <th class="col-sm-3">Options</th>
+                                </tr>
+                            </thead>
+                            <!-- ko if:ko.unwrap(data.Items).length > 0 -->
+                            <tbody data-bind="foreach:data.Items">
+                                <tr>
+                                    <td>
+                                        <img class="img-circle center-block document-icon" data-bind="attr: {src: $root.document.icon($data)}" />
+                                    </td>
+                                    <td>
+
+                                        <span style="font-size:16px;font-weight:500;" data-bind="text:Title"></span>
+                                        <span class="fa fa-info-circle" style="color:#00a5e2;" data-bind="bootstrapPopover: ko.unwrap($data)"></span>
+
+                                        <br>
+                                        @*<span style="font-size:12px">Author: </span><span style="font-size:12px;" data-bind="text: LastEditedByModel.Name != null ? LastEditedByModel.Name : 'Unknown'"></span><br>
+                                            <span style="font-size:12px">Status: <span style="font-size:12px;" data-bind="text:vm.enums.documentStatus[ko.unwrap(DocumentStatus)]"></span></span><br>
+                                            <span style="font-size:12px">Category: <span style="font-size:12px;" data-bind="html:ko.unwrap(Category).Name"></span></span><br>
+                                            <span style="font-size:12px">Tags: <span style="font-size:12px;" data-bind="html:ko.unwrap(TrainingLabels)"></span></span><br>
+                                            <span style="font-size:12px">Points: <span style="font-size:12px;" data-bind="html:ko.unwrap(Points)"></span></span>*@
+                                    </td>
+                                    <td>
+
+                                        <span class="Draft align-middle badge badge-default status" style="font-size:16px;font-weight:500;" data-bind="if:PublishStatus() == 0, attr: { title: ApproversName }">DRAFT</span>
+                                        @*@if (Thread.CurrentPrincipal.IsInRole(Role.ContentCreator))
+                                            {*@
+                                        <span class="Wait align-middle badge badge-default status" style="font-size:16px;font-weight:500;" data-bind="if:(PublishStatus() == 1 && $root.UserId() == CreatedBy()), attr: { title: ApproversName }">SUBMITTED</span>
+                                        @*}
+                                            @if (Thread.CurrentPrincipal.IsInRole(Role.ContentApprover) || Thread.CurrentPrincipal.IsInRole(Role.CustomerAdmin))
+                                            {*@
+                                        <span class="Wait align-middle badge badge-default status" style="font-size:16px;font-weight:500;" data-bind="if:(PublishStatus() == 1 && $root.UserId() != CreatedBy()), attr: { title: ApproversName }">PENDING APPROVAL</span>
+                                        @*<span style="background: red;" data-bind="if:$root.UserId() == CreatedBy()">Creator</span>
+                                            <span style="background:green;" data-bind="if:$root.UserId() != CreatedBy()">Approver</span>*@
+                                        @*}*@
+                                        @if (Thread.CurrentPrincipal.IsInRole(Role.ContentApprover) || Thread.CurrentPrincipal.IsInRole(Role.ContentCreator))
+                                        {
+                                            <span class="Approved align-middle badge badge-default status" style="font-size:16px;font-weight:500;" data-bind="if:PublishStatus() == 2">APPROVED</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="Approved align-middle badge badge-default status" style="font-size:16px;font-weight:500;" data-bind="if:PublishStatus() == 2">PUBLISHED</span>
+                                        }
+
+
+                                        <span class="Declined align-middle badge badge-default status" data-toggle="tooltip" data-placement="top" style="font-size:16px;font-weight:500;" data-bind="if:PublishStatus() == 3">DECLINED</span>
+
+                                    </td>
+                                    <td style="font-size:15px;" data-bind="text:LastEditDate() != null ? app.data.utils.date.format(LastEditDate,'DD/MM/YYYY') : 'Unknown'"></td>
+                                    <td>
+
+
+                                        <div class="btn-group-xs">
+                                            @*<button class="btn btn-default" style="color:#262626; background-color:#f9f9f9">
+                                                    <span class="glyphicon glyphicon-edit"></span> Approve
+                                                </button>
+
+                                                <button class="btn btn-default decline" style="color:#262626; background-color:#f9f9f9">
+                                                    <span class="glyphicon glyphicon-edit"></span> Decline
+                                                </button>*@
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="disable:ko.unwrap(DocumentStatus) != 0,click : $root.nav.edit.bind()">
+                                                <span class="glyphicon glyphicon-edit"></span> Edit
+                                            </button>
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="click:$root.nav.preview.bind()">
+                                                <span class="glyphicon glyphicon-eye-open"></span> Preview
+                                            </button>
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="confirm : {message : 'Are you sure you want to duplicate <b>'+ko.unwrap(Title)+'</b>?',delegate : $root.nav.clone,model : $data}, enable:ko.unwrap($root.documentsRemaining) > 0">
+                                                <span class="glyphicon glyphicon-duplicate"></span> Duplicate
+                                            </button>
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="click:$root.document.print.bind($data)">
+                                                    <span class="glyphicon glyphicon-download-alt"></span> Download
+                                                </button>
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="confirm : {message : 'Are you sure you want to delete <b>'+ko.unwrap(Title)+'</b>?',delegate : $root.nav.delete,model : $data}">
+                                                <span class="glyphicon glyphicon-trash"></span>  Delete
+                                            </button>
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="disable:ko.unwrap(DocumentStatus) == 2, click: $root.modals.collaborate.open.bind($data)">
+                                                <span class="glyphicon glyphicon-user"></span>  Collaborate
+                                            </button>
+                                            <!-- ko if: (ko.unwrap(DocumentType) == "2" && ko.unwrap(Certificate) != null )-->
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9">
+                                                <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Certificate.ThumbnailUrl }" class="fancybox.image" style="color: black;text-decoration:none;">
+                                                    <span class="glyphicon glyphicon-eye-open"></span> Preview Certificate
+                                                </a>
+                                            </button>
+                                            <!-- /ko -->
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="disable:ko.unwrap($root.documentsRemaining) <= 0 || ko.unwrap(DocumentStatus) != 1,confirm : {message : 'By creating a new version of this document, all records of this document will be recalled from any users this document has been assigned to.<br>Are you sure you want to create a new version of <b>'+ko.unwrap(Title)+'</b>?',delegate : $root.nav.newVersion,model : $data}">
+                                                <span class="glyphicon glyphicon-edit"></span> New Version
+
+                                            </button>
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="disable:ko.unwrap(DocumentStatus) == 0, click:$root.document.feedback.bind($data)">
+                                                <span class="glyphicon glyphicon-comment"></span> View Feedback
+                                            </button>
+
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9" data-bind="click:$root.getApproverFeedback">
+                                                <span class="glyphicon glyphicon-user"></span>  View Admin Feedback
+                                            </button>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                            <!-- ko ifnot:ko.unwrap(data.Items).length > 0 -->
+                            <tbody>
+                                <tr>
+                                    <th colspan="5" class="text-danger text-center">
+                                        No Documents
+                                    </th>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4" style="padding-top: 4px">
+                    Show <select data-bind="value: query.PageSize, options: paging.sizes"></select> entries
+                </div>
+                <div class="pull-right">
+                    <ul class="pagination" style="margin: 0 15px 20px 0;">
+                        <li data-bind="css:{'disabled' : ko.unwrap($root.query.IsFirstPage)}"><a href="#" data-bind="click:$root.paging.previousPage.bind()">&larr; Previous</a></li>
+                        <!-- ko foreach: $root.paging.visiblePages-->
+                        <li data-bind="css:{'active': ko.unwrap($root.query.PageIndex) + 1 == $data}"><a href="#" data-bind="click:$root.paging.goToPage.bind($data - 1), text: $data"></a></li>
+                        <!-- /ko -->
+                        <li data-bind="css:{'disabled' : ko.unwrap($root.query.IsLastPage)}"><a href="#" data-bind="click:$root.paging.nextPage.bind()">Next &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="pull-right" style="padding-top: 6px; margin-right: 2em;">Showing <span data-bind="text: query.PageIndex() * query.PageSize() + 1"></span> to <span data-bind="text: ko.unwrap(query.IsLastPage) ? query.TotalItems : (query.PageIndex() + 1) * query.PageSize()"></span> of <span data-bind="text: query.TotalItems"></span> entries</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@*neeraj*@
+@*<div class="modal fade" id="approverFeedback" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Approver Correspondance</h4>
+                </div>
+                <div class="modal-body">
+                    <div data-bind="foreach: $root.approverFeedbacks">
+                        <div class="row">
+                            <div class="col-sm-6 text-center text-capitalize">
+                                Approver:
+                            </div>
+                            <div class="col-sm-6 text-center text-capitalize">
+                                <span data-bind="text: ApproverName"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 text-center text-capitalize">
+                                Approver Email:
+                            </div>
+                            <div class="col-sm-6 text-center text-capitalize">
+                                <span data-bind="text: ApproverEmail"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 text-center text-capitalize">
+                                Date:
+                            </div>
+                            <div class="col-sm-6 text-center text-capitalize">
+                                <span data-bind="text: DateCreated"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 text-center text-capitalize">
+                                Message:
+                            </div>
+                            <div class="col-sm-6 text-center text-capitalize">
+                                <span data-bind="text: Message"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+<div class="modal fade" id="approverFeedback" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Approval Correspondence</h4>
+            </div>
+            <div class="modal-body">
+                <div data-bind="foreach: $root.approverFeedbacks">
+                    <div class="panel panel-info">
+                        <div class="panel-heading" style="height:40px;">
+                            <p>Message</p>
+                        </div>
+                        <div class="panel-footer panel-primary">
+                            <span data-bind="if: CreatorName"> Creator: <span data-bind="text: CreatorName"></span><br></span>
+                            <span data-bind="if: CreatorName">Creator Email: <span data-bind="text: CreatorEmail"></span><br></span>
+                            <span data-bind="if: ApproverName"> Approver: <span data-bind="text: ApproverName"></span><br></span>
+                            <span data-bind="if: ApproverEmail">Approver Email: <span data-bind="text: ApproverEmail"></span><br></span>
+                            <span>Date Actioned: <span data-bind="text: app.data.utils.date.format(DateCreated,'DD/MM/YYYY')"></span><br></span>
+                            <span>Message: <span data-bind="text: Message"></span><br></span>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div data-bind="if:approverFeedbacks().length == 0">
+                    <p> No Messages to show</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*neeraj
+    @*neeraj*@
+
+<div class="modal fade" id="newDocumentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with:$root.modals.newDocument">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">What do you want to build today?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+
+                    @if (PortalContext.Current.UserCompany.EnableChecklistDocument)
+                    {
+                        <div class="col-sm-12 text-center text-capitalize">
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="" data-bind="click:create.bind(1)" class="no-underline">
+                                    <img class="img-responsive" src="~/Content/images/Docicons/TM.png" />
+                                    Training Manual
+                                </a>
+                            </div>
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="" data-bind="click:create.bind(4)" class="no-underline">
+                                    <img class="img-responsive" src="~/Content/images/Docicons/M.png" />
+                                    Memo
+                                </a>
+                            </div>
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="" data-bind="click:create.bind(2)" class="no-underline">
+                                    <img class="img-responsive" src="~/Content/images/Docicons/T.png" />
+                                    Test
+                                </a>
+                            </div>
+
+                            <div class="col-sm-4 hover-zoom">
+                                <a href="" data-bind="click:create.bind(3)" class="no-underline">
+                                    <img class="img-responsive" src="~/Content/images/Docicons/P.png" />
+                                    Policy
+                                </a>
+                            </div><div class="col-sm-4 hover-zoom pull-left">
+                                <a href="" data-bind="click:create.bind(6)" class="no-underline">
+                                    <img class="img-responsive" src="~/Content/images/Docicons/CL.png" />
+                                    @*Checklist*@
+                                    Activity Book
+                                </a>
+                            </div>
+                            <div class="col-sm-4 hover-zoom pull-left">
+                                <a href="" data-bind="click:create.bind(7)" class="no-underline">
+                                    <img class="img-responsive" src="~/Content/images/CustomDocument.png" />
+                                    @*Checklist*@
+                                    Custom Document
+                                </a>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-sm-12 text-center text-capitalize">
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="" data-bind="click:create.bind(1)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)" />
+                                    Training Manual
+                                </a>
+                            </div>
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="" data-bind="click:create.bind(4)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)" />
+                                    Memo
+                                </a>
+                            </div>
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="" data-bind="click:create.bind(2)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)" />
+                                    Test
+                                </a>
+                            </div>
+
+                            <div class="col-sm-3 hover-zoom">
+                                <a href="" data-bind="click:create.bind(3)" class="no-underline">
+                                    <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)" />
+                                    Policy
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with:$root.modals.wizard">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">How do you want to build your document?</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <div class="col-sm-4 col-sm-offset-2 hover-zoom">
+                            <a href="" data-bind="click:create.bind()" class="no-underline">
+                                <img class="img-responsive" src="~/Content/images/OR_RebuildIcons_BuildFromScratch.png" />
+                                Build From Scratch
+                            </a>
+                        </div>
+                        <div class="col-sm-4 hover-zoom">
+                            <a href="" data-bind="click:createFromTemplate.bind()" class="no-underline">
+                                <img class="img-responsive" src="~/Content/images/OR_RebuildIcons_BuildFromTemplate.png" />
+                                Customize From Template
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="templateModal" tabindex="-1" role="dialog" aria-labelledby="templateModal" aria-hidden="true" data-bind="with:$root.modals.template">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Templates</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" style="margin-bottom:5px;">
+                    <div class="col-sm-12">
+                        <input type="text" placeholder="Search for templates" data-bind="textInput:match" class="form-control" style="max-width:unset" />
+                    </div>
+                </div>
+                <div class="row">
+                    <fieldset style="margin: 1em; padding: 0.5em; border: 1px solid #c0c0c0">
+                        <legend style="margin-bottom: unset; padding: unset; display: unset; border-bottom: unset; background-color: transparent">
+                            Documents
+                            <span class="pull-right">
+                                <select class="form-control" title="Categories" data-bind="options:categories,optionsText:'Name',optionsCaption: 'All Categories',value:filteredCategory"></select>
+                            </span>
+                        </legend>
+                        <div data-bind="foreach:documents">
+                            <a class="col-sm-3 text-center no-underline template-type" data-bind="click:$parent.filterByDocument.bind(),css:{'not-selected' : $parent.getFilteredDocumentId() != Id}">
+                                <img data-bind="attr: { src:Url, alt:Name }" class="img-responsive" />
+                                <span data-bind="text:Name"></span>
+                            </a>
+                        </div>
+                    </fieldset>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="well-lg">
+                            <div class="row">
+                                <!-- ko if: ko.unwrap(filtered).length === 0 -->
+                                <div class="col-sm-12">
+                                    <div class="well text-center">
+                                        <p>No templates available for your selection</p>
+                                    </div>
+                                </div>
+                                <!-- /ko -->
+                                <div class="col-sm-12 templates-window" data-bind="foreach:ko.unwrap(filtered)">
+                                    <div class="col-sm-3">
+                                        <div class="center-block">
+                                            <a data-bind="click:$root.modals.templateWizard.open.bind()">
+                                                <img class="img-responsive center-block" data-bind="attr:{src:CoverPicture.Url}" />
+                                            </a>
+                                        </div>
+                                        <a class="template-tile" data-bind="click:$root.modals.templateWizard.open.bind()"><strong data-bind="text:app.data.utils.string.trim(Title,18)"></strong></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="TemplateWizard" tabindex="-1" role="dialog" aria-labelledby="TemplateWizard" aria-hidden="true" data-bind="with:$root.modals.templateWizard">
+    <div class="modal-dialog" data-bind="with:template">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:$parent.close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Create from <span data-bind="text:Title"></span></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="col-sm-8">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Title:</label>
+                                    <div class="col-sm-9">
+                                        <p data-bind="text:Title" class="form-control-static"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group" data-bind="with:Category">
+                                    <label class="col-sm-3 control-label">Category:</label>
+                                    <div class="col-sm-9">
+                                        <p data-bind="text:Name" class="form-control-static"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Description:</label>
+                                <p class="form-control-static" data-bind="text:Description"></p>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div data-bind="with:CoverPicture">
+                                <img class="img-responsive center-block" data-bind="attr:{src:Url}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="text-center">
+                            <button class="btn btn-default btn-primary" data-bind="click:$root.modals.templateWizard.clone.bind()">Create</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="collaborateModal" class="modal fade" tabIndex="-1" role="dialog" style="overflow:auto" data-bind="with: $root.modals.collaborate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-bind="click: close">&times;</button>
+                <h3 class="modal-title">Collaboration</h3>
+            </div>
+            <div class="modal-body">
+                <p>Please select the content creators that you would like to collaborate with for the selected document.</p>
+
+                <strong> <span id="spnDocsName"></span></strong>
+                <br />
+                <br />
+                <div class="table-responsive">
+                    <div id="collaborateUserTable_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="collaborateUserTable" class="table table-striped table-bordered table-hover dataTable no-footer">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Collaborator</th>
+                                </tr>
+                            </thead>
+                            <!-- ko if:ko.unwrap(collaborators).length > 0 -->
+                            <tbody data-bind="foreach:collaborators">
+                                <tr>
+                                    <td data-bind="text: Name"></td>
+                                    <td data-bind="text: Email"></td>
+                                    <td><input type="checkbox" data-bind="value: Id, checked: $parent.selectedCollaborators" /></td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                            <!-- ko ifnot:ko.unwrap(collaborators).length > 0 -->
+                            <tbody>
+                                <tr class="text-center">
+                                    <td colspan="3">No Collaborators</td>
+                                </tr>
+                            </tbody>
+                            <!-- /ko -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default btn-outline" data-bind="click: submit">Collaborate</button>
+                <button class="btn btn-default btn-outline" data-bind="click: close">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="hdnRestoreId" />
+<div class="modal fade" id="RecycleDocumentModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" id="btnModalClose" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Recycle Bin</h4>
+            </div>
+
+            <div class="modal-body">
+                <p>Documents that are deleted will appear in your recycle bin for 7 days. After 7 days the documents will be permanently deleted. To retrieve deleted files, please press the restore button. </p><br />
+                <div id="divRecycleDocument" style="height:350px; overflow:auto;"></div>
+            </div>
+
+
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("~/Views/Category/ManageCategoryModalPartial.cshtml")
+<script>
+
+        $(window).resize(function () {
+            $("table.dataTable").resize();
+
+    });
+
+    $('#categoryTree').on("select_node.jstree",
+        function (e, data) {
+            var nodeId = sessionStorage.getItem("nodeId");
+            if (nodeId != null && nodeId != undefined && nodeId != "") {
+                sessionStorage.removeItem("nodeId");
+            }
+            sessionStorage.setItem("nodeId", data.node.id);
+        });
+
+    $(function () {
+        $('#btnModalClose').click(function () {
+             window.location.href = "@Url.Action("Index","Document")";
+        });
+
+        $('#btnCancel').click(function () {
+            window.location.href = "@Url.Action("Index","Document")";
+        });
+
+        /************this will used to restore*************/
+         $(document).on('click', '.restoreCss', function () {
+                var id = $(this).attr('id');
+               var promise = $.get("@Url.Action("RestoreDocuments", "Account")/"+id);
+
+                    promise.done(function (data) {
+
+                        $('#divRecycleDocument').html(data);
+                        notif({ msg: "<b>Success :</b> Documnet has been successfully Restored", type: "success", multiline: true });
+                    });
+
+
+                    promise.fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error(errorThrown);
+
+                    });
+                    promise.always(function () {
+
+
+                    });
+            });
+
+
+         /********************this is used to show the deleted documents for Recycle bin**************************/
+            $('#RecycleBin').click(function () {
+
+                var promise = $.get("@Url.Action("RecycleBinDocuments", "Account", new { area= "", id = Thread.CurrentPrincipal.GetId() })");
+
+                    promise.done(function (data) {
+
+                        $("#RecycleDocumentModal").modal("show");
+                        $('#divRecycleDocument').html(data);
+
+                    });
+                    promise.fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error(errorThrown);
+
+                    });
+                    promise.always(function () {
+
+
+                    });
+
+            });
+    });
+
+
+    @{
+        ((IDictionary<string, string>)ViewBag.Links).Add("trainingManual:edit", Url.Action("Edit", "TrainingManual", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("trainingManual:clone", Url.Action("Clone", "TrainingManual", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("trainingManual:delete", Url.Action("Delete", "TrainingManual", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("trainingManual:preview", Url.Action("Preview", "TrainingManual", new { Area = "" , Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("trainingManual:print", Url.Action("Print", "TrainingManual", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("test:edit", Url.Action("Edit", "Test", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("test:clone", Url.Action("Clone", "Test", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("test:delete", Url.Action("Delete", "Test", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("test:preview", Url.Action("Preview", "Test", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("test:print", Url.Action("Print", "Test", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("policy:edit", Url.Action("Edit", "Policy", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("policy:delete", Url.Action("Delete", "Policy", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("policy:clone", Url.Action("Clone", "Policy", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("policy:preview", Url.Action("Preview", "Policy", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("policy:print", Url.Action("Print", "Policy", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("memo:edit", Url.Action("Edit", "Memo", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("memo:delete", Url.Action("Delete", "Memo", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("memo:clone", Url.Action("Clone", "Memo", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("memo:preview", Url.Action("Preview", "Memo", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("memo:print", Url.Action("Print", "Memo", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("template:list", Url.Action("List", "Template", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("template:clone", Url.Action("Clone", "Template", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("feedback", Url.Action("Feedback", "Document", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("activitybook:edit", Url.Action("Edit", "Activitybook", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("activitybook:delete", Url.Action("Delete", "Activitybook", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("activitybook:clone", Url.Action("Clone", "Activitybook", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("activitybook:preview", Url.Action("Preview", "Activitybook", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("activitybook:print", Url.Action("Print", "Activitybook", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("customdocument:edit", Url.Action("Edit", "CustomDocument", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("customdocument:preview", Url.Action("Preview", "CustomDocument", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("customdocument:delete", Url.Action("Delete", "CustomDocument", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("customdocument:clone", Url.Action("Clone", "CustomDocument", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("customdocument:print", Url.Action("Print", "CustomDocument", new { Area = "" }));
+
+        //added by softude
+
+        ((IDictionary<string, string>)ViewBag.Links).Add("form:edit", Url.Action("Edit", "Form", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("form:clone", Url.Action("Clone", "Form", new { Area = "" }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("form:delete", Url.Action("Delete", "Form", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("form:preview", Url.Action("Preview", "Form", new { Area = "", Id = string.Empty }));
+        ((IDictionary<string, string>)ViewBag.Links).Add("form:print", Url.Action("Print", "Form", new { Area = "", Id = string.Empty }));
+
+        }
+    vm = new app.data.pagedListController(@Html.ToJson(Model),@Html.ToJson((IDictionary<string,string>)ViewBag.Links),@Html.ToJson((string)ViewBag.Mode), true, true);
+
+    //neeraj
+    vm.UserId = ko.observable('@userId'.toString());
+    //vm.CreatedBy();
+
+    console.log("userId check check", '@userId');
+
+    vm.approverFeedbacks = ko.observable([]);
+    vm.getApproverFeedback = function (data) {
+        $('#LoadingImageDiv').show();
+            //console.log(data);
+             $.ajax({
+                    url: '@Url.Action("DocumentFeedback", "Document")',
+                    method: 'POST',
+                 data: {
+                     documentId: data.Id(),
+                     creatorId: data.CreatedBy()
+                    }
+             }).done(function (data) {
+                 console.log("data recieved ", data.length)
+                 vm.approverFeedbacks(data)
+                 //}
+                 $("#approverFeedback").modal('show');
+                }).always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+        }
+        //neeraj
+
+    vm.modals = {
+        newDocument: {
+            open: function () {
+
+                if (ko.unwrap(vm.documentsRemaining) <= 0) {
+                    notif({
+                        type: 'error',
+                        msg: 'You have reached the document limit for you package.<br> Please upgrade your bundle.',
+                        multiline : true
+                    });
+                    return;
+                }
+                $('#newDocumentModal').modal('show');
+            },
+            close: function () {
+
+                $('#newDocumentModal').modal('hide');
+            },
+            create: function (type) {
+
+                vm.modals.wizard.type(this);
+                vm.modals.newDocument.close();
+                vm.modals.wizard.open();
+            }
+        },
+        wizard: {
+            type: ko.observable(0),
+            open: function () {
+
+                $('#wizardModal').modal('show');
+            },
+            close: function () {
+
+                $('#wizardModal').modal('hide');
+            },
+            create: function () {
+
+                vm.modals.wizard.close();
+                vm.nav.create(ko.unwrap(vm.modals.wizard.type));
+            },
+            createFromTemplate: function () {
+
+                vm.modals.wizard.close();
+                vm.modals.template.open({
+                    Name: vm.enums.documentType[ko.unwrap(vm.modals.wizard.type)],
+                    Id: ko.unwrap(vm.modals.wizard.type)
+                });
+            }
+        },
+        template: {
+            data: ko.observableArray(),
+            filtered : ko.observableArray(),
+            categories: ko.observableArray(),
+            documents: ko.observableArray(),
+            filteredCategory: ko.observable(),
+            filteredDocument : ko.observable(),
+            initialize: function () {
+                $.get(vm.links['template:list']).then(function (data) {
+                    app.data.utils.array.sync(ko.mapping.fromJS(data), vm.modals.template.data);
+                    app.data.utils.array.sync(ko.mapping.fromJS(data), vm.modals.template.filtered);
+                    var categories = (data || []).groupBy('CategoryId').orderBy(true, 'values').mapMany('values', function (currentItem, index) { return currentItem['Category']; }).unique('Id').orderBy(false,'Name');
+                    app.data.utils.array.sync(categories, vm.modals.template.categories);
+                    var documents = [
+                        { Id: 1, Name: vm.enums.documentType[1], Url: '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)' },
+                        { Id: 4, Name: vm.enums.documentType[4], Url: '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)' },
+                        { Id: 2, Name: vm.enums.documentType[2], Url: '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)' },
+                        { Id: 3, Name: vm.enums.documentType[3], Url: '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)' },
+                        { Id: 6, Name: vm.enums.documentType[6], Url: '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)' },
+                        { Id: 7, Name: vm.enums.documentType[7], Url: '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)' }
+                   ];
+                    app.data.utils.array.sync(documents, vm.modals.template.documents);
+                });
+                vm.modals.template.match.subscribe(vm.modals.template.filter);
+                vm.modals.template.filteredCategory.subscribe(function(newValue) {
+                    vm.modals.template.filterByCategory(newValue);
+                });
+            },
+            open: function (type) {
+
+                if (type) {
+                    vm.modals.template.match(null);
+                    vm.modals.template.filteredCategory(null);
+                    vm.modals.template.filteredDocument(type);
+                    vm.modals.template.resetCollection();
+                    vm.modals.template.applyFilters();
+                    $('#templateModal').modal('show');
+                }
+            },
+            close: function () {
+
+                $('#templateModal').modal('hide');
+            },
+            match: ko.observable(null),
+            filter: function (newValue, oldValue) {
+
+                if (oldValue != newValue) {
+                    vm.modals.template.applyFilters();
+                }
+            },
+            applyFilters: function () {
+
+                if (!ko.unwrap(vm.modals.template.filteredCategory) || !ko.unwrap(vm.modals.template.filteredDocument))
+                    app.data.utils.array.sync(vm.modals.template.data, vm.modals.template.filtered);
+                var collection = vm.modals.template.filtered;
+                if (ko.unwrap(vm.modals.template.filteredDocument)) {
+                    var filtered = app.data.utils.array.where(vm.modals.template.data, function (entry) {
+                        return ko.unwrap(entry.DocumentType) == ko.unwrap(ko.unwrap(vm.modals.template.filteredDocument).Id);
+                    });
+                    app.data.utils.array.sync(filtered, collection);
+                }
+                if (ko.unwrap(vm.modals.template.filteredCategory)) {
+                    var filtered = app.data.utils.array.where(collection, function (entry) {
+                        return ko.unwrap(entry.Category.Name) == ko.unwrap(ko.unwrap(vm.modals.template.filteredCategory).Name);
+                    });
+                    app.data.utils.array.sync(filtered, collection);
+                }
+                if (ko.unwrap(vm.modals.template.match)) {
+                    var filtered = $.map(ko.unwrap(collection), function (i) {
+                        var _i = ko.unwrap(i);
+                        if (app.data.utils.string.contains(ko.unwrap(ko.unwrap(vm.modals.template.match)), ko.unwrap(_i.Title)))
+                            return i;
+                    });
+                    app.data.utils.array.sync(filtered, collection);
+                }
+            },
+            resetCollection: function () {
+                app.data.utils.array.sync(vm.modals.template.data, vm.modals.template.filtered);
+            },
+            filterByCategory: function (category) {
+                if (ko.unwrap(vm.modals.template.filteredCategory) && ko.unwrap(vm.modals.template.filteredCategory).Id == ko.unwrap(category.Id)) {
+                    app.data.utils.array.sync(vm.modals.template.data, vm.modals.template.filtered);
+                }
+                vm.modals.template.applyFilters();
+            },
+            filterByDocument: function (document) {
+                if (ko.unwrap(vm.modals.template.filteredDocument) && ko.unwrap(vm.modals.template.filteredDocument).Id == ko.unwrap(document.Id)) {
+                    vm.modals.template.filteredDocument(null);
+                    app.data.utils.array.sync(vm.modals.template.data, vm.modals.template.filtered);
+                } else {
+                    vm.modals.template.filteredDocument(document);
+                }
+                vm.modals.template.applyFilters();
+            },
+            getFilteredDocumentId: function () {
+                if (ko.unwrap(vm.modals.template.filteredDocument))
+                    return ko.unwrap(vm.modals.template.filteredDocument).Id;
+                return null;
+            }
+        },
+        templateWizard: {
+            template : ko.observable(),
+            open: function (template) {
+
+                vm.modals.templateWizard.template(template);
+
+                $('#TemplateWizard').modal('show');
+
+            },
+            close: function () {
+
+                vm.modals.templateWizard.template(null);
+
+                $('#TemplateWizard').modal('hide');
+
+            },
+            clone: function () {
+
+                var m = ko.mapping.toJS(vm.modals.templateWizard.template);
+
+                vm.modals.templateWizard.close();
+
+                $.post(vm.links['template:clone'], {
+                    Id: m.Id,
+                    Type: m.DocumentType
+                }).then(function (response) {
+
+                    if (response && response.HttpStatusCode == 200) {
+                        vm.redirect(response.Url);
+
+                    } else if (notif) {
+
+                        notif({
+                            type: 'error',
+                            msg: 'Creating from template failed',
+                            multiline: true
+                        });
+                    }
+
+                });
+
+            }
+        },
+        manageCategories: {
+            open: function() {
+                $('#manageCategoriesModal').modal('show');
+            },
+            close: function() {
+                $('#manageCategoriesModal').modal('hide');
+            }
+        },
+        collaborate: {
+            open: function(model) {
+                vm.modals.collaborate.model(model);
+                $('#spnDocsName').text(ko.unwrap(model.Title));
+                $('#LoadingImageDiv').show();
+                $.ajax({
+                    url: '@Url.Action("CollaboratorsForDocument", "Document")',
+                    method: 'POST',
+                    data: {
+                        documentId: ko.unwrap(model.Id),
+                        documentType: ko.unwrap(model.DocumentType)
+                    }
+                }).done(function(data) {
+                    var collaborators = data.map(function (item) { return item.Id });
+                    vm.modals.collaborate.selectedCollaborators(collaborators);
+                    $('#collaborateModal').modal('show');
+                }).always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+            },
+            close: function() {
+                $('#collaborateModal').modal('hide');
+                vm.modals.collaborate.selectedCollaborators([]);
+                vm.modals.collaborate.model(null);
+            },
+            submit: function () {
+                $('#LoadingImageDiv').show();
+                $.ajax({
+                    url: '@Url.Action("UpdateCollaboratorsOfDocument", "Document")',
+                    method: 'POST',
+                    data: {
+                        documentId: ko.unwrap(vm.modals.collaborate.model().Id),
+                        documentType: ko.unwrap(vm.modals.collaborate.model().DocumentType),
+                        userIds: vm.modals.collaborate.selectedCollaborators()
+                    }
+                }).fail(function () {
+                    if (notif) {
+                        notif({
+                            msg: 'Updating collaborators failed, please try again',
+                            type: 'error'
+                        });
+                    }
+                }).done(function (data) {
+                    vm.modals.collaborate.close();
+                }).always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+
+            },
+            model: ko.observable(),
+            collaborators: ko.mapping.fromJS(@Html.ToJson((IEnumerable<dynamic>)ViewBag.Collaborators)),
+            selectedCollaborators: ko.observableArray()
+        }
+    };
+    vm.nav = {
+
+        create: function (type) {
+            vm.links.edit = vm.nav.getUrl(ko.unwrap(document.DocumentType) || type,'edit');
+            return vm.edit(document);
+        },
+        edit: function (document) {
+
+            console.log("Test",ko.unwrap(document.DocumentType));
+            vm.links.edit = vm.nav.getUrl(ko.unwrap(document.DocumentType), 'edit');
+            return vm.edit(document);
+        },
+        delete: function (document) {
+
+            vm.links.edit = vm.nav.getUrl(ko.unwrap(document.DocumentType), 'edit');
+            vm.links.delete = vm.nav.getUrl(ko.unwrap(document.DocumentType),'delete');
+            return vm.delete(document);
+        },
+        clone: function (document) {
+
+            vm.links.edit = vm.nav.getUrl(ko.unwrap(document.DocumentType), 'edit');
+
+            vm.links.clone = vm.nav.getUrl(ko.unwrap(document.DocumentType), 'clone');
+
+            return vm.clone(document);
+
+        },
+        newVersion: function (document) {
+
+            vm.links.edit = vm.nav.getUrl(ko.unwrap(document.DocumentType), 'edit');
+
+            vm.links.clone = vm.nav.getUrl(ko.unwrap(document.DocumentType), 'clone');
+
+            return vm.clone(document, true);
+
+        },
+        preview: function (document) {
+            vm.links.preview = vm.nav.getUrl(ko.unwrap(document.DocumentType), 'preview');
+            return vm.preview(document);
+        },
+        getUrl: function (type, action) {
+
+            if (type == 1)
+                return vm.links['trainingManual:' + action];
+            if (type == 2)
+                return vm.links['test:' + action];
+            if (type == 3)
+                return vm.links['policy:' + action];
+            if (type == 4)
+                return vm.links['memo:' + action];
+            if (type == 6)
+                //below code commented by neeraj
+                //return vm.links['checkList:' + action];
+                return vm.links['activitybook:' + action];
+            if (type == 7)
+                return vm.links['customdocument:' + action];
+            if (type == 0)
+                return vm.links['customdocument:' + action];
+
+        }
+    };
+    vm.enums = {};
+    vm.enums.documentType=  @Html.ToJson(PortalContext.Current.UserCompany.EnableChecklistDocument? EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentTypeWithoutVirtual)) : EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType)));
+    vm.enums.documentStatus = @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentStatus)));
+    vm.enums.filterGroup = [{
+        title: 'Type',
+        options: $.map(vm.enums.documentType, function (i, index) { if (index != 0 && index != 5) { return { Id: 'Type:'+ index, Name: i }; } }).reverse()
+    },
+    {
+        title: 'Status',
+        options: $.map(vm.enums.documentStatus, function (i, index) { return { Id: 'Status:'+index, Name: i }; }).sort()
+    }];
+    vm.modals.template.initialize();
+    vm.category = {
+        menu: {
+            match: ko.observable(),
+            selected: ko.observable(),
+            options: ko.observableArray(),
+            initialize: function () {
+                vm.category.menu.selected.subscribe(vm.category.handlers.filter);
+            }
+        },
+        handlers: {
+            filter: function (newValue, oldValue) {
+                if (newValue != oldValue)
+                    vm.query.CategoryId(newValue != '00000000-0000-0000-0000-000000000000' ? newValue : null);
+            },
+            clear: function () {
+                vm.category.menu.match('');
+                vm.category.menu.selected('');
+            }
+        }
+    };
+    vm.document = {
+        getMoreInfo: function(model) {
+            return ko.unwrap(model.ReferenceId) + '\n' + 'Description: \n' + ko.unwrap(model.Description);
+        },
+        print: function (model) {
+
+            console.log("model to be downloaded", model.Id);
+
+
+            var url = vm.nav.getUrl(ko.unwrap(model.DocumentType), 'print') + '/' + ko.unwrap(model.Id) ;
+
+            console.log("urrl ", url)
+
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+            request.onload = function() {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                }
+            }
+            request.send();
+        },
+        feedback: function(model) {
+            var url = vm.links['feedback'] +
+                '?documentId=' +
+                ko.unwrap(model.Id) +
+                '&documentType=' +
+                ko.unwrap(model.DocumentType);
+            vm.redirect(url);
+        },
+        icon: function(model) {
+            switch (ko.unwrap(model.DocumentType)) {
+                case 1:
+                    return '@Href("~/Content/images/Docicons/TM.png")';
+                case 2:
+                    return '@Href("~/Content/images/Docicons/T.png")';;
+                case 3:
+                    return '@Href("~/Content/images/Docicons/P.png")';;
+                case 4:
+                    return '@Href("~/Content/images/Docicons/M.png")';;
+                case 6:
+                    return '@Href("~/Content/images/Docicons/CL.png")';;
+                case 0:
+                    return '@Href("~/Content/images/CustomDocument.png")';
+                default:
+                    return '@Href("~/Content/images/CustomDocument.png")';
+            }
+        }
+    };
+    vm.category.menu.options = ko.observableArray(@Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Categories));
+    vm.category.menu.initialize();
+    vm.query.CategoryId = ko.observable();
+    vm.query.CategoryId.subscribe(vm.paging.submit);
+    vm.query.MatchText = ko.observable();
+    vm.query.DocumentType = ko.observableArray();
+    vm.query.DocumentStatus = ko.observableArray();
+    vm.query.DocumentFilters = ko.observableArray();
+    vm.query.DocumentFilters.subscribe(vm.paging.submit);
+    vm.paging.sizes = [10, 25, 50, 100];
+    vm.documentsRemaining = ko.observable(parseInt(@((int)ViewBag.DocumentsRemaining), 10));
+    vm.bundleSize = ko.observable(parseInt(@((int)ViewBag.BundleSize), 10));
+    ko.bindingHandlers.bootstrapPopover = {
+        init: function (element, valueAccessor) {
+            var $el = $(element);
+            var accessor = ko.unwrap(valueAccessor());
+            var docTitle = "<span style='font-size:12px'>" + ko.unwrap(accessor.Title) + "</span>";
+            var author = ko.unwrap(accessor.CreatedBy) != null ? ko.unwrap(accessor.CreatedByModel.UserName) : 'Unknown';
+            var content = "<span style='font-size:12px;'>Author: </span> <span style='font-size:12px;'>" + author + "</span><br>";
+            content += "<span style='font-size:12px'>Status: </span> <span style='font-size:12px;'>" + vm.enums.documentStatus[ko.unwrap(accessor.DocumentStatus)] + "</span><br>";
+            content += "<span style='font-size:12px'>Category: </span> <span style='font-size:12px;'>" + ko.unwrap(accessor.Category.Name) + "</span><br>";
+            content += "<span style='font-size:12px'>Tags: </span> <span style='font-size:12px;'>" + ko.unwrap(accessor.TrainingLabels) + "</span><br>";
+            content += "<span style='font-size:12px'>Points: </span> <span style='font-size:12px;'>" + ko.unwrap(accessor.Points) + "</span>";
+            if (ko.unwrap(accessor.DocumentType) === 2) {
+                content += "<br><span style='font-size:12px'>Pass Mark: </span> <span style='font-size:12px;'>" + ko.unwrap(accessor.PassMarks) + "%</span>";
+                content += "<br><span style='font-size:12px'>Duration: </span> <span style='font-size:12px;'>" + ko.unwrap(accessor.Duration) + " minutes </span>";
+            }
+            $el.attr('data-toggle', 'popover');
+            $el.attr('data-trigger', 'hover');
+            $el.attr('data-html', 'true');
+            $el.attr('data-placement', 'right');
+            $el.attr('title', docTitle);
+            $el.attr('data-content', content);
+            $el.popover();
+        }
+    };
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    $(function () {
+        $('#categoryTree').jstree('open_node', '00000000-0000-0000-0000-000000000000');
+        $('#manageCategoriesModal').on('hidden.bs.modal',
+            function() {
+                $('#LoadingImageDiv').show();
+                window.setTimeout(function () { window.location = window.location; }, 1000);
+            });
+        $(document).on('hidden.bs.modal',
+            '.modal',
+            function() {
+                $('.modal:visible').length && $(document.body).addClass('modal-open');
+            });
+        $('#documentCounter').hover(function() {
+            var date = '@ViewBag.ExpiryDate';
+            var provCompany = '@ViewBag.ProvisionalCompany';
+            var provCompanyCntNo = '@ViewBag.ProvCompanyCntNo';
+            $(this).tooltip({
+                'show': true,
+                'placement': 'top',
+                'title': "You are utilizing " + (vm.bundleSize() - vm.documentsRemaining()) + " out of " + vm.bundleSize() + " documents.To top up your bundle, please contact your Account Manager."
+            }, function () {});
+
+            $(this).tooltip('show');
+        })
+        var nodeId = sessionStorage.getItem("nodeId");
+        if (nodeId != null && nodeId != undefined && nodeId != "") {
+            $('#categoryTree').jstree('select_node', nodeId);
+        }
+    });
+</script>
+
+@if (ViewData["Chart"] != null)
+{
+    <script>
+
+    var options = {
+        series: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Categories))'),
+        chart: {
+               height: 180,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Name))'),
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+        legend: {
+            position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+        },
+        colors: ['#d04627', '#7A3978', '#197248', '#2B5892', '#B51616'],
+           fill: {
+               colors: ['#d04627', '#7A3978', '#197248', '#2B5892', '#B51616']
+           }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#divCategorychart"), options);
+    chart.render();
+
+       var docoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Count))'),
+        chart: {
+           height: 180,
+           width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+           enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Type))'),
+        responsive: [{
+           breakpoint: 480,
+            options: {
+               chart: {
+                   width: 200
+                },
+                legend: {
+                   show: false
+                }
+           }
+       }],
+        legend: {
+           position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+           },
+           colors: ['#d04627', '#7A3978', '#197248', '#2B5892', '#B51616'],
+           fill: {
+               colors: ['#d04627', '#7A3978', '#197248', '#2B5892', '#B51616']
+           }
+   };
+    var docchart = new ApexCharts(document.querySelector("#divDocumentchart"), docoptions);
+    docchart.render();
+
+    var statusoptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).StatusCount))'),
+        chart: {
+            height: 180,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["Chart"]).Status))'),
+       responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+
+        legend: {
+            position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+        },
+    };
+    //var statuschart = new ApexCharts(document.querySelector("#divStatuschart"), statusoptions);
+    //    statuschart.render();
+
+         ////////////////////////////////////////////////////////////////////////////////////
+        //neeraj
+        //chart for content creator
+        var contentCreatorOptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["contentCreatorChart"]).Categories))'),
+        chart: {
+            height: 180,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["contentCreatorChart"]).Name))'),
+       responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+
+        legend: {
+            position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+        },
+        };
+
+        var contentCreatorChart = new ApexCharts(document.querySelector("#contentCreatorChart"), contentCreatorOptions);
+
+        contentCreatorChart.render();
+
+
+        //chart for content approver
+        var contentApproverOptions = {
+        series: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["contentApproverChart"]).Categories))'),
+        chart: {
+            height: 180,
+    width: "100%",
+            type: 'donut',
+        },
+        dataLabels: {
+            enabled: false
+        },
+        labels: JSON.parse('@Html.Raw(Json.Encode(((ChartViewModel)ViewData["contentApproverChart"]).Name))'),
+       responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    show: false
+                }
+            }
+        }],
+
+        legend: {
+            position: 'right',
+              verticalAlign: 'middle',
+            offsetY: 0,
+            height: 230,
+        },
+        };
+
+        //var contentApproverChart = new ApexCharts(document.querySelector("#contentApproverChart"), contentApproverOptions);
+        //contentApproverChart.render();
+        //neeraj
+        ////////////////////////////////////////////////////////////////////////////////////
+        $("#close").click(() => {
+            $("#approverFeedback").modal('hide');
+        })
+    </script>
+}
+

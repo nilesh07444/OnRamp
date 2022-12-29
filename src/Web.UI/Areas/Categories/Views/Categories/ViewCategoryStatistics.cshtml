@@ -1,0 +1,395 @@
+﻿@using Domain.Customer.Models
+@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Common.Web
+@using Ramp.Contracts.Security
+@using System.Threading
+@using Web.UI.Code.Extensions
+@model Ramp.Contracts.ViewModel.CategoryStatisticsReportViewModel
+
+@{
+    bool globalAdminOrReseller = false, admin = false;
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+        globalAdminOrReseller = true;
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+        admin = true;
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<style>
+    .dropdown-submenu {
+        position: relative;
+    }
+
+        .dropdown-submenu > .dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -6px;
+            margin-left: -1px;
+            -webkit-border-radius: 0 6px 6px 6px;
+            -moz-border-radius: 0 6px 6px;
+            border-radius: 0 6px 6px 6px;
+        }
+
+        .dropdown-submenu:hover > .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-submenu > a:after {
+            display: block;
+            content: " ";
+            float: right;
+            width: 0;
+            height: 0;
+            border-color: transparent;
+            border-style: solid;
+            border-width: 5px 0 5px 5px;
+            border-left-color: #ccc;
+            margin-top: 5px;
+            margin-right: -10px;
+        }
+
+        .dropdown-submenu:hover > a:after {
+            border-left-color: #fff;
+        }
+
+        .dropdown-submenu.pull-left {
+            float: none;
+        }
+
+            .dropdown-submenu.pull-left > .dropdown-menu {
+                left: -100%;
+                margin-left: 10px;
+                -webkit-border-radius: 6px 0 6px 6px;
+                -moz-border-radius: 6px 0 6px 6px;
+                border-radius: 6px 0 6px 6px;
+            }
+</style>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Category Certification & Utilization Report</h1>
+        @Html.Label("Description :")
+        @if (globalAdminOrReseller)
+        {
+            <div class="form-group input-group">
+                <p>
+                    This report allows you to examine user compliance and certification on a per category basis.
+
+                    For example - if you have a category of Playbooks for Health and Safety,
+                    you can check to see that all of your health and safety Playbooks have been read,
+                    and assigned Tests have been taken.
+                    You can look at the percentage passed column to see how users are certified on each of your Playbooks in the
+                    selected category.  i.e.  Safety in the Kitchen, Hygiene, Safety in the workshop.
+                    Please select a Company and a Playbook category to report on:
+                </p>
+            </div>
+        }
+        else if (admin)
+        {
+            <div class="form-group input-group">
+                <p>
+                    This report allows you to examine user compliance and certification on a per category basis.
+
+                    For example - if you have a category of Playbooks for Health and Safety,
+                    you can check to see that all of your health and safety Playbooks have been read,
+                    and assigned Tests have been taken.
+                    You can look at the percentage passed column to see how users are certified on each of your Playbooks in the
+                    selected category.  i.e.  Safety in the Kitchen, Hygiene, Safety in the workshop.
+                    Please select a Playbook category to report on:
+                </p>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="panel panel-info">
+    <div class="panel-heading">OnRamp Online Training Portal</div>
+    <div class="panel-body">
+
+        @using (Html.BeginForm("ViewCategoryStatistics", "Categories", FormMethod.Post, new { enctype = "multipart/form-data", id = "ViewCategoryStatics", novalidate = "novalidate" }))
+        {
+            if (Model.Companies.Any())
+            {
+                if (globalAdminOrReseller)
+                {
+                    <div class="form-group col-md-2">
+                        @Html.Label("Company")
+                        @if (Thread.CurrentPrincipal.IsInResellerRole())
+                        {
+
+                            @Html.DropDownListFor(m => m.SelectedCompanyId, Model.Companies.Where(c => c.SelectedProvisionalAccountLink == PortalContext.Current.UserCompany.Id).ToSelectList(c => c.Id.ToString(), c => c.CompanyName), "Select Company", new { @class = "form-control" })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(m => m.SelectedCompanyId, Model.Companies.ToSelectList(c => c.Id.ToString(), c => c.CompanyName), "Select Company", new { @class = "form-control" })
+                        }
+                    </div>
+                }
+
+                <input type="hidden" id="CustomerCompanyId" name="CustomerCompanyId" />
+                <input type="hidden" id="CategoryId" name="CategoryId" />
+                <input type="hidden" id="CompanyIdAdmin" value="@Model.SelectedCategoryId" />
+
+            }
+
+            <div class="form-group col-md-2">
+                @Html.Label("Select Category")
+                <div id="categoryMenuReport" data-bind="with:categories">
+                    <div class="dropdown">
+                        <a href="#" class="btn btn-primary" data-toggle="dropdown" data-target="#categories" role="button">
+                            Categories <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu" 
+                            data-bind="template : {name : 'category-template' , foreach:children }">
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+            <div class="form-group col-md-2">
+                <label id="CategoryName"> @ViewBag.CategoryId</label>
+            </div>
+
+            <div class="form-group col-md-2">
+                    @Html.DropDownListFor(m => m.SelectedCategoryId, Model.Categories.ToSelectList(c => c.Id.ToString(), c => c.CategorieTitle), "Select Category", new { @class = "form-control", @style = "display: none" })
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model.Summary.Items.Any() && Model.Detail == null)
+{
+    <div class="panel panel-info" id="PanelTable">
+        <div class="panel-heading">Summary</div>
+        <table class="table table-bordered table-striped">
+            <tr>
+                <th>Play Book</th>
+                <th>Allocated</th>
+                <th>Interacted</th>
+                <th>Yet to Interact</th>
+                <th>Assigned Tests</th>
+                <th>Passed</th>
+                <th></th>
+            </tr>
+            @foreach (var data in Model.Summary.Items)
+            {
+                <tr>
+                    <td>
+                        @data.Guide
+                    </td>
+                    <td>
+                        @data.Allocated
+                    </td>
+                    <td>
+                        @data.Interacted
+                    </td>
+                    <td>@data.NotInteracted</td>
+                    <td>@data.Assigned</td>
+                    <td>
+                        @data.Passed&nbsp;/&nbsp;@data.TestTaken (@data.PassPercentage%)
+                    </td>
+                    <td>
+                        @using (Html.BeginForm())
+                        {
+                            @Html.Hidden("SelectedCompanyId", (object)ViewBag.query.SelectedCompanyId)
+                            @Html.Hidden("SelectedCategoryId", (object)ViewBag.query.SelectedCategoryId)
+                            <input type="hidden" name="TrainingGuideId" value="@data.GuideId" />
+                            <button type="submit" class="btn btn-sm btn-info">Details</button>
+                        }
+                    </td>
+                </tr>
+            }
+            <tr>
+                <th>
+                    Totals
+                </th>
+                <th>
+                    @Model.Summary.Allocated
+                </th>
+                <th>
+                    @Model.Summary.Interacted
+                </th>
+                <th>
+                    @Model.Summary.NotInteracted
+                </th>
+                <th>
+                    @Model.Summary.Assigned
+                </th>
+                <th>
+                    @Model.Summary.Passed / @Model.Summary.TestTaken (@Model.Summary.PassPercentage%)
+                </th>
+                <th></th>
+            </tr>
+        </table>
+    </div>
+
+    <div id="bar-chart">
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            var d = @Html.ToJson(Model.Summary.Items);
+
+            Morris.Bar({
+                element: 'bar-chart',
+                data: d,
+                xkey: 'Guide',
+                ykeys: ['Allocated', 'Interacted', 'NotInteracted', 'Assigned', 'Passed'],
+                labels: ['Allocated', 'Interacted', 'Yet to Interact', 'Assigned', 'Passed'],
+                hideHover: 'auto',
+                resize: true
+            });
+        });
+    </script>
+}
+
+@if (Model.Detail != null)
+{
+    <div class="row">
+        <div class="col-lg-12">
+            <h3>@Model.Detail.Guide</h3>
+        </div>
+    </div>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">Allocated (@Model.Detail.Allocated.Count())</div>
+        <ul class="list-group">
+            @if (!Model.Detail.Allocated.Any())
+            {
+                <div style="padding:15px">There are no users allocated</div>
+            }
+            @foreach (var user in Model.Detail.Allocated)
+            {
+                <li class="list-group-item">
+                    @user.Name
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">Interacted (@Model.Detail.Interacted.Count())</div>
+        <ul class="list-group">
+            @if (!Model.Detail.Interacted.Any())
+            {
+                <div style="padding:15px">There are no users that have interacted</div>
+            }
+            @foreach (var user in Model.Detail.Interacted)
+            {
+                <li class="list-group-item">
+                    @user.Name
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">Not Yet Interacted (@Model.Detail.NotInteracted.Count())</div>
+        <ul class="list-group">
+            @if (!Model.Detail.NotInteracted.Any())
+            {
+                <div style="padding:15px">There are no users to show</div>
+            }
+            @foreach (var user in Model.Detail.NotInteracted)
+            {
+                <li class="list-group-item">
+                    @user.Name
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">Assigned (@Model.Detail.Assigned.Count())</div>
+        <ul class="list-group">
+            @if (!Model.Detail.Assigned.Any())
+            {
+                <div style="padding:15px">There are no users assigned to tests</div>
+            }
+            @foreach (var user in Model.Detail.Assigned)
+            {
+                <li class="list-group-item">
+                    @user.Name
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">Passed (@Model.Detail.Passed.Count())</div>
+        <ul class="list-group">
+            @if (!Model.Detail.Passed.Any())
+            {
+                <div style="padding:15px">There are no users that have passed</div>
+            }
+            @foreach (var user in Model.Detail.Passed)
+            {
+                <li class="list-group-item">
+                    @user.Name
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+<script type="text/javascript">
+
+    $(function() {
+        $('#SelectedCompanyId').on('change',function(){
+            $('#ViewCategoryStatics').submit();
+        });
+        $('#LoadingImageDiv').show();
+        var methodUrl = "@(Url.Action("GetCategoryReport", "Categories", "Categories"))";
+        $.ajax({
+            type: "GET",
+            url: methodUrl,
+            success: function(data) {
+                vm.categories(ko.mapping.fromJS(data));
+                $.each($('.category'), function () {
+                    $(this).on('click', refresh);
+                });
+                $('#LoadingImageDiv').hide();
+            },
+            error: function(data) {
+            }
+        });
+    });
+    function refresh(element) {
+        var name = element.target.innerText;
+        var id = id = $(element.target).closest('a').attr('id');
+        var compId = $('#CompanyIdAdmin').val();
+        if (id != undefined) {
+            if (compId != "00000000-0000-0000-0000-000000000000") {
+                $('#CustomerCompanyId').val(compId);
+                $('#CategoryName').text("Category : " + name);
+                $('#SelectedCategoryId').val(id);
+                $('#ViewCategoryStatics').submit();
+            } else {
+                $('#CategoryName').text("Category : " + name);
+                $('#SelectedCategoryId').val(id);
+                $('#ViewCategoryStatics').submit();
+            }
+        }
+    };
+    var vm = {
+        categories : new ko.observable(null)
+    };
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>
+<script type="text/html" id="category-template">
+    <li data-bind="if:ko.unwrap(children).length == 0"><a href="#" class="category" data-bind="attr:{id : attr.id}"><span data-bind="text:data"></span></a></li>
+    <li data-bind="ifnot:ko.unwrap(children).length == 0" class="dropdown-submenu">
+        <a tabindex="-1" href="#" data-bind="attr:{id : attr.id}" class="category"><span data-bind="text:data"></span></a>
+        <ul class="dropdown-menu" data-bind="template : {name : 'category-template',foreach:children}"></ul>
+    </li>
+</script>

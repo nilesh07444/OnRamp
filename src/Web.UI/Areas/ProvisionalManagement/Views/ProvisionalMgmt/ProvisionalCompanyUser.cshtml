@@ -1,0 +1,155 @@
+﻿@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.CompanyUserViewModel
+
+@{
+    Layout = "../../../../Views/Shared/_Layout.cshtml";
+    //ViewBag.Title = "Create User for " + @Model.CompanyName;
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Provisional Company Management</h1>
+    </div>
+</div>
+
+<div class="row">
+        @Html.Partial("AddOrUpdateProvisionalCompanyUser", Model)
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"> Provisional Company User List </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Full Name
+                                    </th>
+                                    @*<th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                            Description
+                                        </th>*@
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Contact Number
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Email Address
+                                    </th>
+
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Mobile Number
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Status
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Options
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    foreach (UserViewModel item in Model.UserList)
+                                    {
+                                        <tr class="gradeA odd">
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.FullName)
+                                            </td>
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.ContactNumber)
+                                            </td>
+
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.EmailAddress)
+                                            </td>
+
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.MobileNumber)
+                                            </td>
+
+                                            <td class="">
+                                                @Html.CheckBoxFor(modelItem => item.Status, new { @Id = "item_status_" + item.Id, @class = "UserStatus" })
+                                            </td>
+                                            <td class="tooltip-demo">
+                                                <a href="@(Url.Content("~/ProvisionalManagement/ProvisionalMgmt/ProvisionalCompanyUser?companyId=" + Model.CompanyId + "&userId=" + item.Id + "&companyName=" + Model.CompanyName))"
+                                                   class="btn btn-circle" data-toggle="tooltip" data-placement="top" title="Edit">
+                                                    <img src="@(Url.Content("~/Content/images/btnEdit.png"))" id="center-button" class="img-circle" />
+                                                </a>
+                                                <a href="javascript:void(0)"
+                                                   onclick="confirmDelete(this)" id="@(item.Id)" class="btn btn-circle" data-toggle="tooltip" data-placement="top" title="Delete">
+                                                    <img src="@(Url.Content("~/Content/images/btnDelete.png"))" id="center-button" class="img-circle" />
+                                                </a>
+                                                <button type="button" class="btn btn-success btn-circle" title="Change Password" data-toggle="modal" data-target="#myModal" onclick="setUserId('@(item.Id)');">
+                                                    <img src="@(Url.Content("~/Content/images/btnPassword.png"))" id="center-button" class="img-circle" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_ChangePasswordPartial", new ChangePasswordViewModel())
+
+<script type="text/javascript" language="javascript">
+    $(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+    });
+
+    function confirmDelete(element) {
+        var userId = $(element).attr('Id');
+        bootbox.confirm("Do you really want to delete this User?", function (result) {
+            var urlToHit = "DeleteProvisionalCompanyUser?userId=" + userId;
+            if (result) {
+                $.ajax({
+                    type: "POST",
+                    url: urlToHit,
+                    data: { userId: userId },
+                    success: function (data) {
+                        notif({
+                            msg: "<b>Success :</b> Provisional User deleted.",
+                            type: "success",
+                        });
+                        window.location.reload();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        });
+    }
+
+    function setUserId(id) {
+        document.getElementById('hdUserId').value = id;
+    }
+
+    $('.UserStatus').click(function () {
+        var id = $(this).attr('id').split('_')[2];
+        var status = $(this).is(":checked");
+        var actionUrl = "ChangeCompanyUserStatus?userId=" + id + "&status=" + status + "";
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: {},
+            success: function (data) {
+            },
+            error: function (data) {
+            }
+        });
+    });
+</script>

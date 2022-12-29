@@ -1,0 +1,1159 @@
+﻿@model Ramp.Contracts.ViewModel.TestModel
+@using Web.UI.Controllers
+@using Common.Web
+@using Web.UI.Code.Extensions
+@using System.Threading
+
+@using Ramp.Security.Authorization
+@{
+    Layout = "../Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var roles = SessionManager.GetRolesForCurrentlyLoggedInUser().ToList();
+    var contentApprovers = ViewBag.ContentApprovers;
+    var uId = @SessionManager.GetCurrentlyLoggedInUserId().ToString();
+    var DocumentApprovers = ViewBag.DocumentApprovers;
+}
+<link href="~/Content/Areas/Document/Edit.css" rel="stylesheet" />
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+    .checkbox label {
+        font-weight: bold;
+    }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+@*neeraj*@
+<script>
+    var approverList;
+    $(document).ready(function () {
+        // #boot-multiselect-demo.multiselect({ })
+        $('.multiselect1').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 250,
+            enableFiltering: true,
+            maxHeight: 350
+        });
+
+
+    });
+</script>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<div id="blueimp-gallery" class="blueimp-gallery">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header"><span data-bind="text: mode"></span> Test</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">Test Detail</div>
+            <div class="panel-body" data-bind="with:data">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="well">
+                            <div class="form-group">
+                                <label class="control-label">Title</label>
+                                <input type="text" class="form-control" data-bind="textInput:Title,validatewith:$root.errors" name="Title" />
+                                @*<input type="hidden" id="docUrl" name="DocumentUrl" data-bind="value: DocumentUrl" />*@
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Description</label>
+                                <textarea name="Description" class="form-control" data-bind="textInput:Description,validatewith:$root.errors" rows="2"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Points</label>
+                                <input type="number" min="0" class="form-control" data-bind="value:Points,validatewith:$root.errors" name="Points" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Pass Mark (%)</label>
+                                <input type="number" min="1" max="100" class="form-control" data-bind="value:PassMarks,validatewith:$root.errors" name="PassMarks" />
+                            </div>
+                            <div class="form-group" data-bind="visible:EnableTimer">
+                                <label class="control-label">Test Duration (Minutes)</label>
+                                <input type="number" min="1" class="form-control" data-bind="value:Duration,validatewith:$root.errors" name="Duration" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Tags</label>
+                                <div class="input-group" style="width:100%;max-width:280px">
+                                    @* <input type="text" class="form-control" id="TrainingLabels" name="TrainingLabels" data-bind="value:TrainingLabels,valueUpdate:['typeahead:selected','change','keyup'], validatewith:$root.errors" />*@
+                                    <select id="label-multiselect-Tags">
+                                        @if (ViewBag.Labels != null)
+                                        {
+                                            foreach (var item in ViewBag.Labels)
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Maximum Test Attempts</label>
+                                <select data-bind="value:MaximumAttempts, validatewith:$root.errors" class="form-control">
+                                    <option value="1">1 Attempt</option>
+                                    <option value="2">2 Attempts</option>
+                                    <option value="3">3 Attempts</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:AssignMarksToQuestions,validatewith:$root.errors" name="AssignMarksToQuestions" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Assign Marks To Each Question</span>
+                            </div>
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:TestReview,validatewith:$root.errors" name="TestReview" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Allow Test Review</span>
+                            </div>
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:OpenTest,validatewith:$root.errors" name="RandomizeQuestions" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Open Test</span>
+                            </div>
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:RandomizeQuestions,validatewith:$root.errors" name="RandomizeQuestions" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Randomize Questions</span>
+                            </div>
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:EmailSummary,validatewith:$root.errors" name="EmailSummary" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Email summary to users on completion</span>
+                            </div>
+                            <div data-bind="visible:ko.unwrap(EmailSummary)">
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:HighlightAnswersOnSummary,validatewith:$root.errors" name="HighlightAnswersOnSummary" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Highlight Answers On Summary</span>
+                            </div>
+                            <div>
+                                <label class="switch">
+                                    <input type="checkbox" data-bind="checked:EnableTimer,validatewith:$root.errors" name="EnableTimer" />
+                                    <span class="slider round"></span>
+                                </label>
+                                <span>Enable Timer</span>
+                            </div>
+                            <div>&nbsp;</div>
+                            <div class="form-group" data-bind="with:$root.modals.certificate">
+                                <button class="btn btn-default" data-bind="click:open.bind()">Select Certificate</button>
+                                <button class="btn btn-default" data-bind="visible:$root.data.Certificate,click:function(){$root.data.Certificate(null);}"><span class="fa fa-trash"></span></button>
+                            </div>
+                            <div class="form-group" data-bind="with:Certificate">
+                                <label id="certificate" class="control-label">Certificate : </label>
+                                <div class="thumbnail" style="overflow: hidden; width: 120px">
+                                    <img data-bind="attr: { src: ko.unwrap(ThumbnailUrl) ? ko.unwrap(ThumbnailUrl) : ko.unwrap(Url), alt: Description }" />
+                                </div>
+                            </div>
+                            <div class="form-group" data-bind="ifnot: Certificate">
+                                <label class="control-label">Certificate : None Selected</label>
+                            </div>
+
+                            <div class="form-group" data-bind="with:Category">
+                                <button class="btn btn-default" data-bind="click:$root.category.menu.toggle.bind()">Select Category</button>
+                                <!-- ko if:!ko.unwrap($root.category.menu.state.minimized) -->
+                                <div data-bind="jstree:$root.category.menu.options,jstreeOptions:$root.jsTree.options,valueProperty:Id"></div>
+                                <!-- /ko -->
+                            </div>
+                            <div class="form-group" data-bind="with:Category">
+                                <label id="category" class="control-label">Category : <span data-bind="html:Name"></span></label>
+                            </div>
+
+                            <div class="form-group">
+                                <label id="" class="control-label">Test Expires :</label>
+                                <div class="btn-group-sm">
+                                    <button type="button" class="btn btn-default" data-bind="click:function(){$root.test.expires(true);},css : {'btn-primary' : ko.unwrap($root.test.expires)}">Yes</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:function(){$root.test.expires(false);},css : {'btn-primary' : !ko.unwrap($root.test.expires)}">No</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group" data-bind="visible:ko.unwrap($root.test.expires)">
+                                <label class="control-label">No of days from assignment</label>
+                                <input type="text" class="form-control" autocomplete="off" data-bind="value:TestExpiresNumberDaysFromAssignment" />
+                            </div>
+                            <div class="form-group" data-bind="visible:ko.unwrap($root.test.expires)">
+                                <label class="control-label">Expiry Notification Type</label>
+                                <div class="btn-group-sm">
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.test.notificationInteval.set.bind(0),css : {'btn-primary' : ko.unwrap(NotificationInteval) == 0}">None</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.test.notificationInteval.set.bind(2),css : {'btn-primary' : ko.unwrap(NotificationInteval) == 2}">Daily</button>
+                                    <button type="button" class="btn btn-default" data-bind="click:$root.test.notificationInteval.set.bind(3),css : {'btn-primary' : ko.unwrap(NotificationInteval) == 3}">Custom</button>
+                                </div>
+                            </div>
+                            <div class="form-group" data-bind="visible:ko.unwrap(NotificationInteval) == 3 && ko.unwrap($root.test.expires) ">
+                                <label class="control-label">No of days before expiry</label>
+                                <input type="text" class="form-control" autocomplete="off" data-bind="value:NotificationIntevalDaysBeforeExpiry" />
+                            </div>
+                            @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+                            {
+                                <div class="form-group">
+                                    <label class="switch">
+                                        <input type="checkbox" data-bind="checked:IsGlobalAccessed" name="IsGlobalAccessed" />
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span>Enable global user access</span>
+                                </div>
+                            }
+                            <div class="form-group">
+                                <label class="control-label">Cover Picture</label>
+                                <div data-bind="with:CoverPicture">
+                                    <img class="img-responsive coverPicture" data-bind="attr:{src:$data.Url()},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                </div><br />
+                                <button id="coverPicture" class="btn btn-default" data-bind="click:function(){ $('.coverPictureUpload').trigger('click');}">Set / Change Cover Picture</button>
+                                <button class="btn btn-default" data-bind="visible:CoverPicture,click:function(){$root.data.CoverPicture(null);}"><span class="fa fa-trash"></span></button>
+                                <input data-bind="fileUpload:CoverPictureUpload,fileuploadOptions:$root.upload.options.coverPicture,valueProperty:CoverPicture" type="file" name="files[]" accept="image/*" class="hidden coverPictureUpload">
+                            </div>
+                            <div class="form-group has-error errorsSpan" data-bind="visible:$root.UploadCoverPictureError">
+                                <span>Error uploading CoverPicture</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- <div class="row">
+    <div class="col-sm-12">
+        <input type="button" name="attachment" onclick="showModal()" value="Add Link" />
+        <p></p>
+        <table class="table table-striped table-condensed" data-bind="with:data">
+            <tbody id="docLinks" data-bind="foreach:DocLinks">
+                <tr>
+                    <td data-bind="text: Url"></td>
+                    <td><a href="javascript:void(0)" data-bind="click: vm.deleteUrl.bind()">Delete</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div> -->
+<div class="row" data-bind="with:data">
+    <div class="col-sm-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">Test Introduction</div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <textarea class="form-control" data-bind="textInput:IntroductionContent,validatewith:$root.errors" name="IntroductionContent" rows="7" style="max-width:unset" placeholder="Introduction here..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="panel-info">
+            <div class="panel-body" data-bind="with:data">
+
+                <div data-bind="foreach:ContentModels,uiSortableList:ContentModels,handle:'.handle',callback:$root.content.restore">
+                    <div class=" panel panel-info ui-sortable-handle" data-bind="attr: { id: Number,role:Id }">
+                        <div class="panel-heading handle" title="Hold and drag to rearrange" data-bind="event:{mousedown:$root.content.reorder.bind()}">
+                            <button type="button" class="glyphicon glyphicon-sort" style="color:black" data-bind="click:$root.content.toggle.bind($data)"></button>
+                            <span data-bind="text:$root.content.generateTitle($data)"></span>
+                            <button class="close" data-bind="click:$root.content.remove.bind($data)">&times;</button>
+                        </div>
+                        <div class="panel-body" data-bind="hidden:state.minimized">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div id="chapterContent" data-bind="attr:{name : Id}">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label id="resources" class="control-label">Question</label>
+                                            </div>
+                                            <div class="form-group">
+                                                <textarea class="form-control chapterName" rows="7" data-bind="textInput:Question,  event: { blur: $root.checkTitles.bind() }" placeholder="Question here..." style="max-width:unset"></textarea>
+                                            </div>
+                                        </div>
+                                        <div data-bind="css:{'col-md-5' : !ko.unwrap($root.data.AssignMarksToQuestions),'col-md-4':ko.unwrap($root.data.AssignMarksToQuestions)}">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <label id="resources" class="control-label">Answers</label>
+                                                    </div>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped">
+                                                            <tbody data-bind="foreach:Answers">
+                                                                <tr>
+                                                                    <td>
+                                                                        <div class="col-sm-11">
+                                                                            <div class="input-group">
+                                                                                <input type="text" data-bind="textInput:Option,attr: { class: $root.count},event: { blur: $root.content.checkAns.bind() }" class="form-control checkAnswer" placeholder="Answer here..." style="max-width:unset" />
+                                                                                <span class="input-group-btn">
+                                                                                    <button class="btn btn-default" data-bind="click:$root.content.answer.remove.bind($parent)"><span class="fa fa-trash"></span></button>
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-sm-1">
+                                                                            <input type="radio" data-bind="checked:$parent.CorrectAnswerId,checkedValue:Id" />
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                            <tfoot>
+                                                                <tr>
+                                                                    <td>
+                                                                        <span class="label label-success" data-bind="click:$root.content.answer.addWrapper.bind($data)">Add Answer</span>
+                                                                    </td>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1" data-bind="if:ko.unwrap($root.data.AssignMarksToQuestions)">
+                                            <div class="form-group">
+                                                <label id="resources" class="control-label">Marks</label>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="number" class="form-control" placeholder="1" data-bind="value:Marks" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label id="resources" class="control-label">Choose any of the below to upload</label>
+                                            </div>
+                                            <img class="img-responsive uploadLauncher hover-zoom cursor" src="@Url.Content("~/Content/images/file/audDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" title="Accepted filetypes: &#013; .MP3" />
+                                            <img class="img-responsive uploadLauncher hover-zoom cursor" src="@Url.Content("~/Content/images/file/imgDoc.png")" data-bind="click:vm.upload.triggerUpload.bind($data)" title="Accepted filetypes: &#013; .PNG &#013; .JPEG &#013; .JPG &#013; .GIF &#013; .BMP" />
+                                            <img class="img-responsive uploadLauncher hover-zoom cursor" src="@Url.Content("~/Content/images/file/videoDoc.png")" id="videoUploadId" data-bind="click:vm.upload.triggerUpload.bind($data)" title="Accepted filetypes: &#013; .MP4" />
+                                            <div id="inputs"></div>
+                                        </div>
+                                        <div class="col-lg-12">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-condensed" data-bind="visible:ko.unwrap(Attachments).length > 0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th colspan="5" style="padding:0">
+                                                                <label class="success arrangeHeader">Arrange Attachments</label>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody data-bind="foreach:Attachments,,uiSortableList:Attachments,handle:'.uploadhandle'">
+                                                        <tr data-bind="if:!ko.unwrap($data.Error)">
+                                                            <td style="max-width: 50px">
+                                                                <a class="btn"><span class="glyphicon glyphicon-sort uploadhandle" style="color:black"></span></a>
+                                                            </td>
+                                                            <td class="upload upload-detail-20">
+                                                                <a data-bind="attr:{href: ko.unwrap($data.Url)},click:app.data.plugins.blueimpGallary.trigger.bind($data)" target="_blank">
+                                                                    <img class="img-responsive upload-thumbnail" data-bind="attr:{src:ko.unwrap($data.ThumbnailUrl)}" />
+                                                                </a>
+                                                            </td>
+                                                            <td class="upload upload-detail-40">
+                                                                <textarea type="text" class="form-control" data-bind="value:$data.Description" style="width:100%" rows="3"></textarea>
+                                                            </td>
+                                                            <td class="upload upload-detail-20">
+                                                                <label data-bind="text:vm.upload.getScaledSize(ko.unwrap($data.Size))"></label>
+                                                                <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-bind="visible :ko.unwrap($data.InProcess)">
+                                                                    <div class="progress-bar progress-bar-success" data-bind="style:{width:ko.unwrap($data.Progress)}"></div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="upload upload-detail-20" style="max-width: 50px">
+                                                                <div data-bind="if: ko.unwrap($data.InProcess)">
+                                                                    <button class="btn btn-danger upload-action" data-bind="click:vm.upload.cancel.bind($data,$parent)" title="Cancel"><i class="glyphicon glyphicon-ban-circle"></i></button>
+                                                                </div>
+                                                                <div data-bind="ifnot: ko.unwrap($data.InProcess)">
+                                                                    <button class="btn btn-danger upload-action" data-bind="click:vm.upload.delete.bind($data,$parent)" title="Delete"><i class="glyphicon glyphicon-trash"></i></button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody data-bind="foreach:Errors" class="errors">
+                                                        <tr>
+                                                            <td colspan="2">
+                                                                <div>
+                                                                    <b>Error uploading file. Please try again.</b>
+                                                                </div>
+                                                                <div data-bind="text:app.data.utils.string.toDisplayString(ko.unwrap($data.Name),50)"></div>
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-danger upload-action uploaderror" data-bind="click:vm.upload.clearError.bind($data,$parent)"><spand class="glyphicon glyphicon-remove"></spand></button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="custom-build-menu navbar-fixed-bottom" id="buildMenu">
+            <button class="btn btn-default" data-bind="click:$root.content.add.bind($root.data.Chapters)">Add Question</button>
+            <button id="save" class="btn btn-default" data-bind="click:$root.saveExit.bind(),disable:ko.unwrap($root.saving) || ko.unwrap($root.upload.concurrentUploads).length > 0">Save And Exit</button>
+            <button class="btn btn-default" data-bind="click: $root.print.bind()">Download</button>
+            @*<button class="btn btn-default" data-bind="confirm: {message:$root.publish.message,delegate:$root.publish.delegate,model:$data}">Publish</button>*@
+            @if (roles.Contains(Ramp.Contracts.Security.Role.Admin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString()))
+            {
+                <button class="btn btn-default" id="publish">Publish</button>
+            }
+            @if (roles.Contains(Ramp.Contracts.Security.Role.ContentCreator.ToString()) &&
+              (Model.CreatedBy == null || Model.CreatedBy == Thread.CurrentPrincipal.GetId().ToString())
+              )
+            {
+                <button class="btn btn-default checkCss" id="approval1">Submit for approval</button>
+            }
+            @if (
+                (roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString())) &&
+               (Model.CreatedBy != null && Model.CreatedBy != Thread.CurrentPrincipal.GetId().ToString())
+                )
+            {
+                <button class="btn btn-default approve">Approve</button>
+
+                <button class="btn btn-default decline">Decline</button>
+            }
+        </div>
+    </div>
+</div>
+<br />
+<div class="modal fade" id="certificateModal" tabindex="-1" role="dialog" aria-labelledby="certificateModals" aria-hidden="true" data-bind="with:$root.modals.certificate">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Certificates</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <!-- ko foreach:data -->
+                        <div class="col-sm-3">
+                            <a data-bind="click:$parent.set.bind()">
+                                <img class="img-responsive center-block" data-bind="attr:{src:ThumbnailUrl},click:app.data.plugins.blueimpGallary.trigger.bind($data)" />
+                                <div class="text-center" data-bind="text:(ko.unwrap(Description) || '').substring(0,20)" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis"></div>
+                            </a>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+@*neeraj*@
+<div class="modal fade" id="publishModal1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" id="btnCancel4" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Submit for Approval</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select an approver for your document and leave an optional message</p><br />
+                <div class="form-group">
+                    <div class="row">
+
+                        <div class="col-lg-12">
+                            <div>
+                                <label>Content Approvers</label><br>
+                                <select required class="multiselect1" id="ca-multiselect" multiple="multiple">
+                                    @foreach (var item in contentApprovers)
+                                    {
+                                        <option value="@item.Id">@item.FirstName&nbsp;@item.LastName</option>
+                                    }
+                                </select>
+                            </div><br />
+                        </div>
+                        <div class="col-lg-12">
+                            <label>Message</label>
+                            <textarea required type="text" id="msgToApprover" placeholder="Please enter a message here" style="min-width:100%;" class="form-control">
+</textarea>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group pull-right">
+
+                        <button class="btn btn-primary" id="btnSaveContentCreator" data-dismiss="modal" data-bind="enable: checkSubmitValidation()">Save</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@*content approver popup modal*@
+<div class="modal fade" id="feedbackModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" id="btnCancel4" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Enter a message for creator</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <label>Message</label>
+                            <textarea type="text" id="msgToCreator" placeholder="Please enter a message here" style="min-width:100%;" class="form-control">
+</textarea>
+
+                        </div>
+                        <input type="hidden" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group pull-right">
+
+                        <button class="btn btn-primary" id="declineCreatorMsg" data-dismiss="modal">Save</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="adminPublish" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button>
+             <div class="bootbox-body">
+    Document is pending approval <br />@if (Model.CreatedByModel 
+        != null) {<b>Creator: </b>@Model.CreatedByModel.Name <br />
+    <b>Approvers: </b>@DocumentApprovers}
+    </b>
+</div>
+            </div><div data-bind="click: $root.close('#adminPublish')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.adminPublishConfirm">OK</button></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="docAccept" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button data-bind="click: $root.close('#docAccept')" type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Accept</h4>
+            </div>
+            <div class="modal-content"><div class="modal-body"><button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button><div class="bootbox-body">Do you want to approve document?</b></div></div><div data-bind="click: $root.close('#docAccept')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.documentAccept">OK</button></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="docReject" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button data-bind="click: $root.close('#docReject')" type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Decline</h4>
+            </div>
+            <div class="modal-content"><div class="modal-body"><button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button><div class="bootbox-body">Do you want to decline document?</b></div></div><div data-bind="click: $root.close('#docReject')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.documentReject">OK</button></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="docSubmit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button data-bind="click: $root.close('#docSubmit')" type="button" class="close" id="close" data-dismiss=""><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Document Submission</h4>
+            </div>
+            <div class="modal-content"><div class="modal-body"><button type="button" class="bootbox-close-button close" data-dismiss="modal" aria-hidden="true" style="margin-top: -10px;">×</button><div class="bootbox-body">Do you want to submit document for approval?</b></div></div><div data-bind="click: $root.close('#docSubmit')" class="modal-footer"><button type="button" class="btn btn-default">Cancel</button><button type="button" class="btn btn-primary" data-bind="click: $root.docSubmission">OK</button></div></div>
+        </div>
+    </div>
+</div>
+@*neeraj*@
+<!--
+<div class="modal fade" id="myModal" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" id="btnCancel2" class="close" data-dismiss="modal" onclick="closeModal()">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title">Enter a Link</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="control-label">Link</label>
+                    <input type="text" class="form-control" id="inputUrl" name="url" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-primary pull-left" id="btnSaveLink" data-dismiss="modal" data-bind="click: vm.getUrl.docUrl.bind()">Save</button>&nbsp;&nbsp;
+                        <button class="btn btn-primary pull-right" data-dismiss="modal" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<script>
+
+
+    //var urls = [];
+
+    //$('#btnSaveLink').attr('disabled', true);
+    //$('#inputUrl').keyup(function () {
+    //    if ($(this).val().length != 0)
+    //        $('#btnSaveLink').attr('disabled', false);
+    //    else
+    //        $('#btnSaveLink').attr('disabled', true);
+    //})
+
+    //function showModal() {
+    //    $('#inputUrl').val('')
+    //    $('#myModal').modal('show');
+    //}
+
+    //function closeModal() {
+    //    $('#myModal').modal('hide');
+    //    $('#inputUrl').val('')
+    //}
+
+    //function jsDeleteUrl(event) {
+    //    event.remove();
+    //    var link = event.querySelector("td").innerHTML;
+    //    var linkIndex = urls.indexOf(link)
+    //    urls.splice(linkIndex, 1)
+    //}
+
+    $('#label-multiselect-Tags').attr("multiple", "multiple").val('');
+    $('#label-multiselect-Tags').multiselect({
+        includeSelectAllOption: false,
+        buttonWidth: 270,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+
+    });
+
+    @{
+        ((IDictionary<string, string>) ViewBag.Links).Add("print", Url.Action("Print", "Test", new {Area = ""}));
+    }
+    var vm = new app.data.documentController(@Html.ToJson(Model),
+        @Html.ToJson((IDictionary<string,string>)ViewBag.Links),
+        @Html.ToJson((string)ViewBag.Mode),
+        @Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Categories),
+        @Html.ToJson(new Ramp.Contracts.ViewModel.TestQuestionModel()),
+        null,
+        [
+            "image:png", "image:jpeg", "image:jpg", "image:gif", "image:bmp", "video:mp4","audio:mp3"
+        ],
+        @Html.ToJson(new Ramp.Contracts.ViewModel.FileUploadResultViewModel()),
+        120 * 1000);
+
+    vm.close = (data) => {
+        console.log("data", data)
+        $(data).modal('hide');
+    }
+
+       vm.adminPublishConfirm = () => {
+        let x = @Html.ToJson(Model)
+        vm.data.PublishStatus(2);
+        vm.publish.delegate();
+        vm.saveExit();
+        feedbackMessage(x, '', false, false, true);
+    }
+
+      vm.docSubmission = () =>{
+        vm.data.Approver(approverList.toString());
+        vm.data.PublishStatus(1);
+
+        let x = @Html.ToJson(Model)
+        vm.saveExit();
+
+        let msg = document.getElementById("msgToApprover");
+          feedbackMessage(vm.data, msg.value, true, false , false);
+    }
+
+    vm.documentReject = () => {
+        $('#feedbackModal').modal('hide');
+        vm.data.PublishStatus(3);
+
+        let x = @Html.ToJson(Model)
+            vm.saveExit();
+
+        let msg = document.getElementById("msgToCreator");
+        feedbackMessage(x, msg.value, false, true, false, "decline");
+    }
+
+        vm.documentAccept = () => {
+        vm.data.PublishStatus(2);
+
+        vm.publish.delegate();
+        vm.saveExit();
+            let x = @Html.ToJson(Model)
+        feedbackMessage(x, '', false, true, false, "accept");
+    }
+
+
+        @*@Html.ToJson(new Ramp.Contracts.ViewModel.DocumentUrlViewModel()),*@
+    vm.checkSubmitValidation = ko.observable(false);
+    vm.scope = { TrainingActivityLogginEnabled: @Html.ToJson((bool)ViewBag.TrainingActivityLogginEnabled)};
+    vm.contentTools = null;
+    vm.models.questionAnswerModel =  @Html.ToJson(new Ramp.Contracts.ViewModel.TestQuestionAnswerModel());
+    vm.content.add = function () {
+        var r = vm;
+        vm.count = '';
+        var self = app.data;
+        var collection = vm.data.ContentModels;
+        if (r.models.contentModel)
+            if (ko.isObservable(collection) && $.isArray(ko.unwrap(collection))) {
+                $.get(r.links.generateId).then(function (questionId) {
+                    var clone = self.utils.observable.clone(r.models.contentModel);
+                    if (ko.isObservable(clone.Id))
+                        clone.Id(questionId);
+                    if (ko.isObservable(clone.New))
+                        clone.New(true);
+                    if (ko.isObservable(clone.Title))
+                        clone.Title(ko.unwrap(r.content.defaultContentTitle));
+                    r.content.initialize(clone);
+                    vm.content.answer.add().then(function (a1) {
+                        vm.content.answer.add().then(function (a2) {
+                            vm.content.answer.add().then(function (a3) {
+                                clone.CorrectAnswerId(ko.unwrap(a1.Id));
+                                clone.Answers.push(a1);
+                                clone.Answers.push(a2);
+                                clone.Answers.push(a3);
+                                collection.push(clone);
+                                var e = $('div[name=' + ko.unwrap(clone.Id) + ']');
+                                if (e.length && ko.unwrap(collection).length > 1)
+                                    $('html,body').animate({ scrollTop: e.offset().top }, 1000);
+                            });
+                        });
+                    });
+                });
+            }
+    };
+    vm.content.generateTitle = function (model) {
+        var collection = ko.unwrap(vm.data.ContentModels);
+        var index = -1;
+        $.each(collection || [], function (i) {
+            if (ko.unwrap(this.Id) == ko.unwrap(model.Id))
+                index = i;
+        });
+        vm.count = 'Question' + (parseInt(index) + 1).toString();
+        return 'Question ' + (parseInt(index) + 1).toString();
+    };
+
+    vm.content.checkAns = function () {
+        var count = 1;
+        $(".Question" + count).each(function () {
+
+            val = $(this).val();
+            if (val === "" || typeof (val) === "undefined" || val === null) {
+
+                $(this).addClass("errorClass");
+            } else {
+                $(this).removeClass("errorClass");
+            }
+            count = parseInt(count) + 1
+        });
+
+    };
+
+
+    vm.content.answer = {
+        add: function () {
+            return new Promise(function (resolve, reject) {
+                $.get(vm.links.generateId, function (id) {
+                    var clone = app.data.utils.observable.clone(vm.models.questionAnswerModel);
+                    if (ko.isObservable(clone.Id))
+                        clone.Id(id);
+                    resolve(clone);
+                });
+            });
+        },
+        remove: function (answer) {
+            var question = this;
+            question.Answers.remove(answer);
+        },
+        addWrapper: function () {
+            var question = this;
+            vm.content.answer.add().then(function (answer) {
+                question.Answers.push(answer);
+            });
+        }
+    }
+    vm.upload.options.contentUpload.multiple = false;
+    vm.test = {
+        expires: ko.observable(ko.unwrap(vm.data.TestExpiresNumberDaysFromAssignment)),
+        notificationInteval: {
+            set: function () {
+                if (this != null && $.isNumeric(this))
+                    vm.data.NotificationInteval(parseInt(this));
+            }
+        }
+    };
+    vm.modals = {
+        certificate: {
+            open: function () {
+                $('#certificateModal').modal('show');
+            },
+            close: function () {
+                $('#certificateModal').modal('hide');
+            },
+            data: new ko.observableArray(),
+            initialize: function () {
+                $.get(vm.links.certificates, function (certificates) {
+                    app.data.utils.array.sync(certificates, vm.modals.certificate.data);
+                });
+            },
+            set: function (cert) {
+                console.log("bbbbbbbbb")
+                vm.data.Certificate(cert);
+                vm.modals.certificate.close();
+            }
+        }
+    };
+    vm.initialize();
+    vm.modals.certificate.initialize();
+    if (!ko.isObservable(vm.data.Certificate)) {
+        vm.data.Certificate = ko.observable(vm.data.Certificate);
+    }
+    if (!ko.isObservable(vm.data.CoverPicture)) {
+        vm.data.CoverPicture = ko.observable(vm.data.CoverPicture);
+    }
+    vm.test.expires.subscribe(function (value) {
+        if (!value) {
+            vm.data.TestExpiresNumberDaysFromAssignment(null);
+            vm.data.NotificationInteval(0);
+            vm.data.NotificationIntevalDaysBeforeExpiry(null);
+        }
+    });
+    //vm.getUrl = {
+    //    docUrl: function () {
+    //        var link = $('#inputUrl').val()
+    //        urls.push(link);
+
+    //        var dataRes = "<tr onclick = 'javascript:jsDeleteUrl(this);'>";
+    //        dataRes += "<td>" + link + "</td>"
+    //        dataRes += "<td><a href='javascript:void(0)'>Delete</a></td>";
+    //        dataRes += "</tr>"
+
+    //        $('#docLinks').append(dataRes)
+    //        $('#docUrl').val(link)
+
+    //        vm.data.DocumentUrl(urls.toString())
+    //    }
+    //}
+
+    //vm.deleteUrl = function (data, event) {
+    //    $.each(urls, function (i, el) {
+    //        if (ko.unwrap(data.Url) == el) {
+    //            urls.splice(i, 1);
+    //            return false;
+    //        }
+    //    });
+    //    vm.data.DocLinks.remove(data)
+    //}
+
+    //var links = ko.unwrap(vm.data.DocLinks);
+    //if (links != null && links.length > 0) {
+    //    for (var i = 0; i < links.length; i++) {
+    //        urls.push(ko.unwrap(links[i].Url));
+    //    }
+    //    vm.data.DocumentUrl(urls.toString())
+    //}
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    app.data.typeahead.tags.create('#TrainingLabels', '@Url.Content("~/AutoComplete/" + Ramp.Contracts.ViewModel.AutoCompleteSection.Labels.Action)', '@Ramp.Contracts.ViewModel.AutoCompleteSection.Labels.Name', true, vm.data.TrainingLabels);
+
+    $(function () {
+
+        $("#spnMessage").hide();
+        $('#label-multiselect-Tags').change(function () {
+            var tags = $("#label-multiselect-Tags option:selected").toArray().map(item => item.text).join();
+            vm.data.TrainingLabels((tags).toString());
+        });
+        var nameArr = ko.unwrap(vm.data.LabelIds).split(',');
+        $('#label-multiselect-Tags').val(nameArr);
+        for (var i in nameArr) {
+            var optionVal = nameArr[i];
+            $("#label-multiselect-Tags").find("option[value='" + optionVal + "']").prop("selected", "selected");
+
+        }
+        $("#label-multiselect-Tags").multiselect('refresh');
+
+            /************* Ashok write the code to make the chapter reorderable **************/
+        //$("#sortable").sortable({
+        //    update: function (event, ui) {
+        //        var count = 1;
+        //        var content = ko.unwrap(vm.data.ContentModels);
+        //        $(".ui-sortable-handle").each(function () {
+
+        //            var role = $(this).attr("role");
+        //            var newContent = content.filter(c => ko.unwrap(c.Id) == role);
+        //            newContent[0].Number(count);
+        //            count++;
+
+        //        });
+        //    }
+        //});
+        //$("#sortable").disableSelection();
+    });
+   //neeraj
+    $("#publish").click((data) => {
+
+        console.log("data ", data);
+
+        let x = @Html.ToJson(Model)
+             if (x.Id == null || x.CreatedBy == null || x.CreatedBy == '@uId'){
+            vm.data.PublishStatus(2);
+            vm.publish.delegate();
+            vm.saveExit();
+            } else {
+                $('#adminPublish').modal('show');
+        }
+
+
+    });
+
+    $("#approval1").on('click', () => {
+        console.log("subit for approval clicked");
+        $('#publishModal1').modal('show');
+    });
+
+    $("#btnSaveContentCreator").click((data) => {
+        $('#publishModal1').modal('hide');
+        $('#docSubmit').modal('show');
+        //vm.docSubmission();
+
+        @*vm.data.Approver(approverList.toString());
+        vm.data.PublishStatus(1);
+
+        let x = @Html.ToJson(Model)
+        vm.saveExit();
+
+        let msg = document.getElementById("msgToApprover");
+        feedbackMessage(x, msg.value, true, false , false);*@
+
+    });
+
+    $("#btnCancel4").on('click', () => {
+        $('#feedbackModal').modal('hide');
+    });
+
+    /////for content approver decline and approve functionality
+
+    //when approver click on decline button
+    $(".decline").on("click", () => {
+        $("#feedbackModal").modal("show");
+    });
+
+    //when approver click on approve button
+    $(".approve").on("click", () => {
+        $("#docAccept").modal("show");
+        //vm.data.PublishStatus(2);
+
+        //vm.publish.delegate();
+        //vm.saveExit();
+
+        //feedbackMessage(x, msg.value, false, true, false, "accept");
+    });
+
+    //when approver enters the feedback message and clicks save from feedback modal
+    $("#declineCreatorMsg").click((data) => {
+        $('#feedbackModal').modal('hide');
+        $('#docReject').modal('show');
+        @*vm.data.PublishStatus(3);
+
+        let x = @Html.ToJson(Model)
+            vm.saveExit();
+
+        let msg = document.getElementById("msgToCreator");
+        feedbackMessage(x, msg.value, false, true, false, "decline");*@
+    });
+    /////
+
+    $("#btnCancelFeedback1").on("click", () => {
+        $("#feedbackModal").modal("hide");
+    });
+
+    $('.multiselect1').change(function () {
+
+        approverList = $(this).val()
+        console.log("data ", approverList)
+        let msg = document.getElementById("msgToApprover");
+        if (approverList != null && msg.value != "") { vm.checkSubmitValidation(true) }
+        else vm.checkSubmitValidation(false)
+    });
+
+    $('#msgToApprover').bind('input propertychange', function () {
+        let msg = document.getElementById("msgToApprover");
+        if (approverList != null && msg.value != "") { vm.checkSubmitValidation(true) }
+        else vm.checkSubmitValidation(false)
+    });
+
+    function feedbackMessage(x, msg, creator, approver, amdin, action = null) {
+        console.log("iniside feedback message function ", approverList);
+         $('#LoadingImageDiv').show();
+            var url = '@Url.Action("DocumentWorkFlowMessageSave")';
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                data: {
+                    model: x, message: msg, creator: creator, approver: approver, admin: amdin, approvers: approverList, action: action
+                    }
+                })
+                .done(function (data) {
+                    notif({
+                        msg: 'Your progress has been saved.',
+                        multiline: true,
+                        type: 'success'
+                    });
+                    //window.location.assign("/Document/MyDocuments");
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+
+
+    }
+    //neeraj
+</script>
+

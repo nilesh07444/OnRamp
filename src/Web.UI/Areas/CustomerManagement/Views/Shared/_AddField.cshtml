@@ -1,0 +1,137 @@
+﻿@using Common.Web
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Domain.Customer
+@using Common.Enums
+@using Common.Web
+@using Web.UI.Code.AreaReferencesManagement
+@using Common.Web
+@using Common.Web
+@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@{
+    Layout = null;
+}
+<script src="~/Scripts/knockout.js"></script>
+
+<div class="modal-body" id="divAutoAssignWorkflowContainer">
+    <div class="row" id="AdminRoles" data-bind="with: vmSR">
+        <div class="col-lg-offset-1 col-lg-10">
+            <br />
+            <input type="hidden" id="fieldId" />
+            <p>Please enter your Fields details below.</p><br />
+            <div class="form-group">
+                <div class="form-group">
+                    <span class="required">*</span>@Html.Label("Field Name"):<br>
+                    <input type="text" class="form-control" data-bind="textInput:FieldName" name="Title" id="Title" />
+                </div>
+            </div>
+
+
+            <span class="required">*</span>@Html.Label("Field Type")<br>
+            <div id="FieldType" class="form-group">
+                <select id="ddlReorts" class="form-control">
+                    <option value="0"> Select Field Type</option>
+                    @*<option value="2">Focus Area Field</option>*@
+                    <option value="3"> Interaction Field</option>
+                    <option value="4"> Points Statement Field </option>
+                    <option value="5"> User Activity & Performance Field </option>
+                    <option value="6">Activity Book Submission Field</option>
+                    <option value="7">Custom document submission Field</option>
+                    @*<option value="8">User Login Field</option>*@
+                    <option value="9">Virtual Meeting Attendance Field</option>
+                    <option value="10">Document Audit Field</option>
+                    <option value="11">Training Activity Field</option>
+
+                </select>
+            </div>
+            <br>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <input type="button" id="btnSave" value="Save" class="btn btn-primary" />
+                        <input type="button" id="btnCancel" data-dismiss="modal" value="Cancel" class="btn" />
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*summary popup modal*@
+    <!--<div class="modal fade" id="assignconfirmModal" role="dialog" aria-hidden="true" data-backdrop="static" style="overflow-y:auto">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                @Html.Partial("_AutoAssignEditSummary")
+            </div>
+        </div>
+    </div>-->
+</div>
+
+<script>
+    var Data_Valid = false
+
+    function checkDataValidation() {
+        debugger;
+        var x = document.getElementById("Title");
+        var y = document.getElementById("ddlReorts");
+        if (x.value == '' || x.value == null || x.value == undefined || x.value.length == 0) {
+            x.classList.add('requiredTxt');
+
+            Data_Valid = false;
+        } else {
+            x.classList.remove('requiredTxt');
+
+            Data_Valid = true;
+        }
+
+    }
+
+    $("#btnSave").click((data) => {
+        debugger;
+        checkDataValidation();
+        var model = {
+            "Id": $('#fieldId').val(),
+            "FieldName": $('#Title').val(),
+            "Type": $('#ddlReorts').val(),
+        };
+       /* if (Data_Valid) {*/
+        $.ajax({
+            type: "POST",
+            url: "/CustomerManagement/CustomerMgmt/AddEditField",
+            data: model,
+            success: (data) => {
+                if (data.success) {
+                    notif({
+                        msg: "<b>Success :</b> Field Added .",
+                        type: "success",
+                    });
+                    setTimeout(() => { location.reload(); }, 500)
+
+                } else {
+                    notif({
+                        msg: 'Some thing went wrong',
+                        type: 'error'
+                    });
+                }
+            },
+        });
+       /* }*/
+        //else {
+        //    console.log("Validation fails ", Data_Valid);
+        //    //console.log("cbCheck ", cbCheck);
+        //}
+    });
+
+        $("#btnCancel1").click(() => {
+        $("#addScheduleReportModal").modal("hide");
+        });
+    var vmSR = {
+        FieldName: ko.observable(),
+        Type: ko.observable(),
+        Id: ko.observable()
+    }
+</script>
+

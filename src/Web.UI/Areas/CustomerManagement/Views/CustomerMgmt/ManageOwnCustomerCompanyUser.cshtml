@@ -1,0 +1,572 @@
+﻿@using Domain.Customer.Models
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using Web.UI.Code.Extensions
+@using Ramp.Contracts.ViewModel
+@using System.Threading
+
+@model Ramp.Contracts.ViewModel.CompanyUserViewModel
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else if (Thread.CurrentPrincipal.IsInAdminRole())
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+    var EnableRaceCode = false;
+    var EnabledTrainingActivityLoggingModule = false;
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany != null)
+    {
+        EnableRaceCode = PortalContext.Current.UserCompany.EnableRaceCode;
+        EnabledTrainingActivityLoggingModule = PortalContext.Current.UserCompany.EnableTrainingActivityLoggingModule;
+    }
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">User Library</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <style>
+            .user_permission {
+                white-space: nowrap;
+                overflow: hidden;
+            }
+            .tooltip-inner {
+                white-space: pre-wrap;
+            }
+               .btn-option {
+        margin-bottom: 5px;
+        padding:5px;
+        font-size:12px;
+    }
+
+        </style>
+        <div class="row">
+            @using (Html.BeginForm("CreateOrUpdateUserForSpecificCustomerCompany", "CustomerMgmt", FormMethod.Post, new { Area = "CustomerManagement", enctype = "multipart/form-data", @id = "UserForm" }))
+            {
+                <div class="col-lg-7">
+                    <div class="panel panel-info">
+                        <div class="panel-heading"> Create User for @Model.CompanyName</div>
+                        <div class="panel-body">
+                            <div class="row">
+                                @if (!Model.UserViewModel.DropDownForGroup.Any())
+                                {
+                                    <div style="padding: 15px;">
+                                        You do not have any groups yet. <a class="btn btn-sm btn-primary" href="@Href("~/Configurations/ManageGroups?companyId=" + Request.Params["companyid"])">Create Groups</a>
+                                    </div>
+                                }
+                                    <div class="col-md-7">
+                                        @Html.ValidationSummary(true)
+                                        @Html.HiddenFor(model => model.CompanyId)
+                                        @Html.HiddenFor(model => model.UserViewModel.Id)
+
+                                        <div class="form-group">
+                                            @Html.Label("* Full Name")
+                                            @Html.TextBoxFor(model => model.UserViewModel.FullName, new { @class = "form-control", tabindex = 1 })
+                                            @Html.ValidationMessageFor(model => model.UserViewModel.FullName)
+                                        </div>
+                                        <div class="form-group">
+                                            @Html.Label("Gender")
+                                            @Html.DropDownListFor(model => model.UserViewModel.Gender, Model.UserViewModel.GenderDropDown, new { @class = "form-control", tabindex = 3 })
+                                            @Html.ValidationMessageFor(model => model.UserViewModel.Gender)
+                                        </div>
+                                        <div class="form-group" id="EmployeeNo">
+                                            @Html.Label("Employee No")
+                                            @Html.TextBoxFor(model => model.UserViewModel.EmployeeNo, new { @class = "form-control", tabindex = 5 })
+                                            @Html.ValidationMessageFor(model => model.UserViewModel.EmployeeNo)
+                                        </div>
+
+                                        @if (Convert.ToBoolean(Session["EditForm"]) != true)
+                                        {
+                                            <div class="form-group">
+                                                @Html.Label("* Password")
+                                                @Html.PasswordFor(model => model.UserViewModel.Password, new { @class = "form-control", tabindex = 9 })
+                                                @Html.ValidationMessageFor(model => model.UserViewModel.Password)
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.Label("* Confirm Password")
+                                                @Html.PasswordFor(model => model.UserViewModel.ConfirmPassword, new { @class = "form-control", tabindex = 10 })
+                                                @Html.ValidationMessageFor(model => model.UserViewModel.ConfirmPassword)
+                                            </div>
+                                        }
+                                        <div class="form-group" id="UserType">
+                                            @Html.Label("User Type")
+                                            @Html.DropDownListFor(m => m.UserViewModel.SelectedCustomerType, Model.UserViewModel.CustomerTypesSelectList, new { @class = "form-control", @onchange = "showHideRoles()", tabindex = 11 })
+                                        </div>
+                                        <div class="row" id="AdminRoles" style="display: none;">
+                                            <div class="col-md-10">
+                                                <div class="panel-info">
+                                                    <div class="panel-heading" style="border-top-left-radius:6px;border-top-right-radius:6px;border-bottom-left-radius:6px;border-bottom-right-radius:6px;">User Permissions</div>
+                                                    <div class="panel-body">
+                                                        <div class="form-group" align="left">
+                                                            <div class="user_permission">
+                                                                @Html.CheckBoxFor(m => m.UserViewModel.CustomerAdmin, new { @onchange = "updateRoleSelection()" })
+                                                                @Html.LabelFor(m => m.UserViewModel.CustomerAdmin)
+                                                                <br />
+                                                            </div>
+                                                            @*<div class="user_permission">
+                                                                @Html.CheckBoxFor(m => m.UserViewModel.CategoryAdmin)
+                                                                @Html.LabelFor(m => m.UserViewModel.CategoryAdmin)
+                                                                <br />
+                                                            </div>*@
+                                                            <div class="user_permission">
+                                                                @Html.CheckBoxFor(m => m.UserViewModel.ContentAdmin)
+                                                                @Html.LabelFor(m => m.UserViewModel.ContentAdmin)
+                                                                <br />
+                                                            </div>
+                                                            <div class="user_permission">
+                                                                @Html.CheckBoxFor(m => m.UserViewModel.PortalAdmin)
+                                                                @Html.LabelFor(m => m.UserViewModel.PortalAdmin)
+                                                                <br />
+                                                            </div>
+                                                            <div class="user_permission">
+                                                                @Html.CheckBoxFor(m => m.UserViewModel.Publisher)
+                                                                @Html.LabelFor(m => m.UserViewModel.Publisher)
+                                                                <br />
+                                                            </div>
+                                                            <div class="user_permission">
+                                                                @Html.CheckBoxFor(m => m.UserViewModel.Reporter)
+                                                                @Html.LabelFor(m => m.UserViewModel.Reporter)
+                                                                <br />
+                                                            </div>
+                                                            <div class="user_permission">
+                                                                @Html.CheckBoxFor(m => m.UserViewModel.UserAdmin)
+                                                                @Html.LabelFor(m => m.UserViewModel.UserAdmin)
+                                                                <br />
+                                                            </div>
+                                                            @if (EnabledTrainingActivityLoggingModule)
+                                                            {
+                                                                <div class="user_permission">
+                                                                    @Html.CheckBoxFor(m => m.UserViewModel.TrainingActivityAdmin)
+                                                                    @Html.LabelFor(m => m.UserViewModel.TrainingActivityAdmin)
+                                                                    <br/>
+                                                                </div>
+                                                                <div class="user_permission">
+                                                                    @Html.CheckBoxFor(m => m.UserViewModel.TrainingActivityReporter)
+                                                                    @Html.LabelFor(m => m.UserViewModel.TrainingActivityReporter)
+                                                                    <br/>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <div class="col-md-5">
+                                    <div class="form-group">
+                                        @Html.Label("ID Number")
+                                        @Html.TextBoxFor(model => model.UserViewModel.IDNumber, new { @class = "form-control", tabindex = 2 })
+                                        @Html.ValidationMessageFor(model => model.UserViewModel.IDNumber)
+                                    </div>
+                                    @if (EnableRaceCode)
+                                    {
+                                        <div class="form-group">
+                                            @Html.Label("Race Code")
+                                            @Html.DropDownListFor(model => model.UserViewModel.RaceCodeId, Model.UserViewModel.RaceCodes.ToSelectList(a => a.Id.ToString(), a => a.Description), "Select a Race Code", new { @class = "form-control", tabindex = 4 })
+                                            @Html.ValidationMessageFor(model => model.UserViewModel.RaceCodeId)
+                                        </div>
+                                    }
+                                    @if (Session["EditForm"] != null && (Convert.ToBoolean(Session["EditForm"])))
+                                    {
+                                        <div class="form-group">
+                                            @Html.Label("Email Address")
+                                            @Html.TextBoxFor(m => m.UserViewModel.EmailAddress, new { @class = "form-control", disabled = "disabled" })
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-group">
+                                            @Html.Label("* Email Address")
+                                            @Html.TextBoxFor(model => model.UserViewModel.EmailAddress, new { @class = "form-control", tabindex = 6 })
+                                            @Html.ValidationMessageFor(model => model.UserViewModel.EmailAddress)
+                                        </div>
+                                    }
+                                    <div class="form-group">
+                                        @Html.Label("Mobile Number")
+                                        @Html.TextBoxFor(model => model.UserViewModel.MobileNumber, new { @class = "form-control", tabindex = 8 })
+                                        @Html.ValidationMessageFor(model => model.UserViewModel.MobileNumber)
+                                    </div>
+                                    <div class="form-group" id="GroupDropDown">
+                                        <label class="control-label">* Group Allocation</label>
+                                        @Html.DropDownListFor(m => m.UserViewModel.SelectedGroupId, Model.UserViewModel.DropDownForGroup, "", new { @class = "form-control", tabindex = 12 })
+                                        @Html.ValidationMessageFor(model => model.UserViewModel.SelectedGroupId)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <i>All mandatory fields are marked with *</i>
+                                <div class="col-md-7">
+                                    <input type="button" onclick="validateAdminRoleSelection($('#UserForm'))" value="Save" class="btn btn-primary" tabindex="13" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            
+            <div class="col-lg-5">
+                @using (Html.BeginForm("SaveCSVCustomerCompanyUser", "CustomerMgmt", FormMethod.Post, new { Area = "CustomerManagement", enctype = "multipart/form-data" }))
+                {
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">Upload CSV </div>
+                                <div class="panel-body">
+                                    @Html.ValidationSummary(true)
+                                    @Html.HiddenFor(model => model.CompanyId)
+                                    @Html.HiddenFor(model => model.UserViewModel.Id)
+
+                                    <div class="form-group">
+                                        @Html.Label("Download Sample CSV")
+                                        <a href="@Url.Content("~/Content/SampleCSV.csv")">Download</a>
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.Label("Upload CSV")
+                                        <input type="file" name="UserViewModel.UserCVSFile" class="btn btn-default" />
+                                        @Html.ValidationMessageFor(model => model.UserViewModel.UserCVSFile)
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" />
+                                    <br />
+                                    <br />
+                                    @foreach (var notification in Html.PopNotifications("csvuploads"))
+                                    {
+                                        <div class="alert alert-@notification.GetBootstrapType()" style="white-space: pre-line">@notification.Message</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                @using (Html.BeginForm("SaveSelfSignUpForCompany", "CustomerMgmt", FormMethod.Post, new { Area = "CustomerManagement", enctype = "multipart/form-data" }))
+                {
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">Self Sign Up</div>
+                                <div class="panel-body">
+                                    @Html.HiddenFor(model => model.CompanyId)
+                                    <div class="form-group">
+                                        @Html.CheckBoxFor(model => model.SelfSignUpViewModel.IsForSelfSignUp, new { @style = "display: initial; width:10%;", @class = "IsForSelfSignUp" })
+                                        @Html.Label("Allow users to sign up for OnRamp on their own")
+                                    </div>
+                                    <div class="form-group">
+                                        @Html.CheckBoxFor(model => model.SelfSignUpViewModel.IsSelfSignUpApprove, new { @style = "display: initial; width:10%;", @class = "IsSelfSignUpApprove" })
+                                        @Html.Label("Automatically approve users who sign up on their own")
+                                    </div>
+                                    <br />
+                                    <input type="submit" value="Save" class="btn btn-primary" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+        </div>
+        <script>
+        var $groupDropDownHtml;
+        $(function () {
+            $groupDropDownHtml = $('#GroupDropDown').html();
+            showHideRoles();
+        });
+
+            function showHideRoles() {
+            if ($('#UserViewModel_SelectedCustomerType').val() === 'StandardUser') {
+                setCheckboxes($('#AdminRoles'), false);
+                $('#AdminRoles').hide();
+                $('#GroupDropDown').html($groupDropDownHtml);
+            } else {
+                if ('@(Session["EditForm"] != null && (Convert.ToBoolean(Session["EditForm"])) && Model.UserViewModel.SelectedGroupId != null)' == 'True' && $('#GroupDropDown').html) {
+                    notif({
+                        msg: "All documents associated will now be removed from this user",
+                        multiline : 'true',
+                        type: "warning"
+                    });
+                }
+                $('#AdminRoles').show();
+                $('#GroupDropDown').html("");
+            }
+        }
+        function updateRoleSelection() {
+            if ($('#UserViewModel_CustomerAdmin').is(':checked')) {
+                setCheckboxes($('#AdminRoles'), true);
+            } else {
+                setCheckboxes($('#AdminRoles'), false);
+            }
+        }
+
+        function setCheckboxes(rolesDiv, checkedOption) {
+            var inputs = $(rolesDiv).find('input');
+            inputs.each(function () {
+                if ($(this).attr('type') == 'checkbox') {
+                    $(this).prop('checked', checkedOption);
+                }
+            });
+        }
+        function validateAdminRoleSelection(caller) {
+            if ($('#UserViewModel_SelectedCustomerType').val() === 'Administrator') {
+                var adminDiv = $('#AdminRoles');
+                var valid = false;
+                adminDiv.find('input').each(function () {
+                    if ($(this).is(':checked'))
+                        valid = true;
+                });
+                if (valid === false) {
+
+                    notif({
+                        msg: "<b>Error :</b> Whoops. Please select an admin role.",
+                        type: "error"
+                    });
+                } else {
+                    caller.submit();
+                }
+            } else {
+                caller.submit();
+            }
+        }
+        </script>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading" > @Model.CompanyName Users <a class="pull-right" style="cursor:pointer" onclick="downloadReport('@Url.Action("DownloadEXCEL", "CustomerCompanyUserExport", new { Area = "Reporting", CompanyId = Model.CompanyId })')"><b><u>Export To Excel</u></b></a></div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+                                <tr role="row">
+                                    @if (Model.UserList.Any(x => !string.IsNullOrWhiteSpace(x.EmployeeNo)))
+                                    {
+                                        <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 120px;" aria-label="Rendering engine: activate to sort column ascending">
+                                            Employee Code
+                                        </th>
+                                    }
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Full Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Email Address
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Roles
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Group
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 100px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Status
+                                    </th>
+                                    @*<th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width:100px;" aria-label="Rendering engine: activate to sort column ascending">
+            Expired
+        </th>*@
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Options
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    foreach (UserViewModel item in Model.UserList.OrderBy(x => x.FullName))
+                                    {
+                                        if (Thread.CurrentPrincipal.GetId() != item.Id)
+                                        {
+                                <tr class="gradeA odd">
+                                    @if (Model.UserList.Any(x => !string.IsNullOrWhiteSpace(x.EmployeeNo)))
+                                    {
+                                    <td class="">
+                                        @Html.DisplayFor(modelItem => item.EmployeeNo)
+                                    </td>
+                                    }
+                                    <td class="">
+                                        @Html.DisplayFor(modelItem => item.FullName)
+                                    </td>
+                                    <td class="">
+                                        @Html.DisplayFor(modelItem => item.EmailAddress)
+                                    </td>
+
+                                    @if (item.RoleName == "Managing Admin")
+                                    {
+                                        <td class="" title="@String.Join(Environment.NewLine, item.Roles.Select(r => r.Description))">
+                                            @Html.DisplayFor(modelItem => item.RoleName)
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="">
+                                            @Html.DisplayFor(modelItem => item.RoleName)
+                                        </td>
+                                    }
+                                    <td class="">
+                                        @Html.DisplayFor(modelItem => item.GroupName)
+                                    </td>
+                                    <td class="">
+                                        @Html.CheckBoxFor(modelItem => item.Status, new { @Id = "item_status_" + item.Id, @class = "UserStatus" })
+                                    </td>
+                                    @*<td class="">
+            @Html.CheckBoxFor(modelItem => item.IsUserExpire, new { @Id = "item_status_" + item.Id, @class = "UserExpireStatus" })
+        </td>*@
+                                    <td class="tooltip-demo" title="Toolip">
+                                        <a class="action" href="@(Url.Content("~/CustomerManagement/CustomerMgmt/ManageOwnCustomerCompanyUser?companyId=" + Model.CompanyId + "&userId=" + item.Id + "&companyName=" + Model.CompanyName + "&groupId=" + item.SelectedGroupId))" data-toggle="tooltip" data-placement="top" title="Edit">
+                  
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9"> <span class="glyphicon glyphicon-edit"></span> Edit</button>
+                                        </a>
+                                        <a href="javascript:void(0)" onclick="confirmDelete(this)" id="@(item.Id)" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9"> <span class="glyphicon glyphicon-trash"></span> Delete</button>
+
+                                        </a>
+                                        <a href="javascript:void(0)" class="action" title="Change Password" data-toggle="modal" data-target="#myModal" id="change-password" onclick="setUserId('@(item.Id)');">
+                                            <button class="btn btn-default btn-option" style="color:#262626; background-color:#f9f9f9"> <span class="glyphicon glyphicon-repeat"></span> Reset Password</button>
+                           
+                                        </a>
+                                    </td>
+                                </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("_ChangePasswordPartial", new ChangePasswordViewModel())
+<script type="text/javascript" language="javascript">
+    $(function () {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('[data-toggle="tooltip"]').tooltip();
+        $('#dataTables-example').dataTable({
+            initComplete: function() {
+                this.api().columns().every(function() {
+                    var column = this;
+                    if ($(column.header()).html().trim() === 'Roles') {
+                        var select = $('<select><option value=""></option></select>')
+                            .appendTo($(column.header()))
+                            .on('click',
+                                function(e) {
+                                    e.stopPropagation();
+                                })
+                            .on('change',
+                                function() {
+                                    var val = $.fn.dataTable.util.escapeRegex(
+                                        $(this).val()
+                                    );
+
+                                    column
+                                        .search(val ? '^' + val + '$' : '', true, false)
+                                        .draw();
+                                });
+
+                        column.data().unique().sort().each(function(d, j) {
+                            select.append('<option value="' + d + '">' + d + '</option>');
+                        });
+                    }
+                });
+            }
+        });
+        $($('#TourCheckBox').parent()).css('top', '14px');
+    });
+
+    function confirmDelete(element) {
+        var userId = $(element).attr('Id');
+        bootbox.confirm("Do you really want to delete this User?", function (result) {
+            var urlToHit = "DeleteCustomerCompanyUser?userId=" + userId;
+            if (result) {
+                $.ajax({
+                    type: "POST",
+                    url: urlToHit,
+                    data: { userId: userId },
+                    success: function (data) {
+                        notif({
+                            msg: "<b>Success :</b> Customer User deleted.",
+                            type: "success",
+                        });
+                        window.location.reload();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        });
+    }
+
+    function setUserId(id) {
+        document.getElementById('hdUserId').value = id;
+    }
+
+    $('.UserStatus').click(function () {
+        var id = $(this).attr('id').split('_')[2];
+        var status = $(this).is(":checked");
+        var actionUrl = "ChangeCompanyUserStatus?userId=" + id + "&status=" + status + "";
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: {},
+            success: function (data) {
+            },
+            error: function (data) {
+            }
+        });
+    });
+
+    function downloadReport(url) {
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = 'blob';
+        request.onload = function () {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement("a");
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                a.click();
+                window.setTimeout(function () { document.body.removeChild(a); }, 500);
+            }
+        }
+        request.onreadystatechange = function() {
+            if (this.readyState === 4) {
+                $('#LoadingImageDiv').hide();
+            }
+        }
+        $('#LoadingImageDiv').show();
+        request.send();
+    }
+    tour.steps = [
+        {
+            target: 'change-password',
+            title: 'Change Password',
+            content: 'Click here to reset the password for this User.',
+            placement: 'top',
+            xOffset: 'center',
+            arrowOffset: 'center',
+            width: 200
+        }];
+</script>

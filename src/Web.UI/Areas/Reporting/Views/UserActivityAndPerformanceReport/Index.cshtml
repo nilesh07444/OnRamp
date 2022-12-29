@@ -1,0 +1,795 @@
+﻿
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Common.Web
+@using Ramp.Contracts.ViewModel
+
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+    .requiredTxt {
+        border: solid red;
+    }
+
+    .required {
+        color: red;
+    }
+</style>
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            <span>User Activity & Performance Report</span>
+        </h1>
+        <div class="well well-sm">
+            This report offers a comprehensive record on an individual’s performance on all activities in the system. Please note that you can only mass export 50 individual users at a time, please try exporting groups instead.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*</span></b>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Filtering Options
+            </div>
+            <span id="spnMessage" style="margin-left:15px" data-bind=" text:ko.unwrap(selectedUsers).length<=41  ? '': '', style: { color: ko.unwrap(selectedUsers).length > 41 ? 'red' : 'black' }"></span>
+            <div class="panel-body">
+                <div class="col-md-12">
+
+                    <div class="col-md-3 col-sm-offset-2">
+                        <div class="form-group">
+                            <label>Users</label><br />
+                            <select id="users-multiselect-demo">
+                                @if (ViewBag.Users != null)
+                                {
+                                    foreach (var item in ViewBag.Users)
+                                    {
+                                        <option value="@item.Id">@item.Value</option>
+                                    }
+                                }
+                            </select>
+
+                        </div>
+                        <div class="form-group">
+                            <label>Groups</label><br />
+
+                            <select id="groups-multiselect-demo">
+                                @if (ViewBag.Groups != null)
+                                {
+                                    foreach (var item in ViewBag.Groups)
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                }
+                            </select>
+
+
+                        </div>
+                        <div class="form-group">
+                            <label>Tags</label><br />
+
+                            <select id="label-multiselect-Tags">
+                                @if (ViewBag.Labels != null)
+                                {
+                                    foreach (var item in ViewBag.Labels)
+                                    {
+                                        <option value="@item.Name">@item.Name</option>
+                                    }
+                                }
+                            </select>
+
+
+                        </div>
+
+                    </div>
+
+
+                    @* <div class="col-md-3">
+
+        <div class="form-group">
+             <label>Departments</label><br />
+
+             <select id="Departments-multiselect-demo">
+                 @if (ViewBag.Departments != null)
+                 {
+                     foreach (var item in ViewBag.Departments)
+                     {
+                         <option value="@item">@item</option>
+                     }
+                 }
+             </select>
+
+
+         </div>
+                </div>*@
+
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label><span style="color:red">*</span> From Date</label>
+                            <div class="input-group" id='FromDate' data-bind="datepicker: fromDate">
+                                <input type='text' id="inputFromDate" class="form-control dateCss" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><span style="color:red">*</span> To Date</label>
+                            <div class="input-group" id='ToDate' data-bind="datepicker: toDate">
+                                <input type='text' id="inputToDate" class="form-control dateCss" style="max-width: none" autocomplete="off" />
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center col-md-2">
+                        <br><br><br>
+                        @*<input class="btn btn-primary" value="Generate" type="button" data-bind=" enable: ((ko.unwrap(selectedUsers).length <=41 && ko.unwrap(selectedUsers).length>0 ) ||  ko.unwrap(selectedGroups) ) && toDate() && fromDate(), click: submit" />*@
+                        <input class="btn btn-primary" value="Generate" type="button" data-bind=" enable: toDate() && fromDate(), click: submit" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ko if:ko.unwrap($root.results).length -->
+
+<div class="col-lg-10">
+
+    <div class="panel panel-info">
+
+        <div class="panel-heading">
+            Results
+            <!-- ko if:ko.unwrap(selectedUsers).length<= 41 -->
+            @*data-bind="click:download.excel"*@
+            <a class="pull-right exportCss export" style="cursor:pointer"><b><u>Bulk Export</u></b></a>
+            <!-- /ko -->
+        </div>
+
+        <div class="panel-body">
+
+
+            <table class="table table-hover table-fixed">
+                <thead>
+                    <tr>
+                        <th class="col-md-2 EmployeeNumberCss">Employee Number</th>
+                        <th class="col-md-2 NameCss">Name</th>
+                        <th class="col-md-2 EmailCss">Email</th>
+                        <th class="col-md-1 IDNumberCss">ID Number</th>
+                        <th class="col-md-1 GenderCss">Gender</th>
+                        <th class="col-md-2 ContactNumberCss">Contact Number</th>
+                        <th class="col-md-1 DetailsCss">Details</th>
+                        <th class="col-md-1 DetailsCss">Export</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach:results">
+                    <tr>
+                        <td class="EmployeeNumberCss" data-bind="text:EmployeeNo"></td>
+                        <td class="NameCss" data-bind="text:FullName"></td>
+                        <td class="EmailCss" data-bind="text:EmailAddress"></td>
+                        <td class="IDNumberCss" data-bind="text:IDNumber"></td>
+                        <td class="GenderCss" data-bind="text:Gender"></td>
+                        <td class="ContactNumberCss" data-bind="text:ContactNumber"></td>
+                        <td class="DetailsCss"><a target="_blank" data-bind="attr:{href:$root.generateViewLink($data)}">View</a></td>
+                        <td><a href="javascript:void(0)" data-bind="click: $root.downloadUserReport.single.bind()">Export</a></td>
+                        @*<td><a href="javascript:void(0)" data-bind="click: $root.openSelectionModel.single.bind()">Export</a></td>*@
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="col-lg-2">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            Column toggle
+
+        </div>
+        <div class="panel-body">
+
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" class="CommonCss" name="Employee Number" onclick="fnEmployeeNo()" checked id="chkEmployeeNumber" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Employee Number</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Name" class="CommonCss" onclick="fnName()" checked id="chkName" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Name</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Email" onclick="fnEmail()" class="CommonCss" checked id="chkEmail" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Email</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="ID Number" onclick="fnIDNumber()" class="CommonCss" checked id="chkIDNumber" />
+                    <span class="slider round"></span>
+                </label>
+                <span>ID Number</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Gender" onclick="fnGender()" class="CommonCss" checked id="chkGender" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Gender</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Contact Number" onclick="fnContactNumber()" class="CommonCss" checked id="chkContactNumber" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Contact Number</span>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<!-- /ko -->
+
+<div class="modal fade" id="progressModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Report Generation</h4>
+            </div>
+            <div class="modal-body">
+                <span>Please wait while we generate your reports...</span><br><br>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        @*<button type="button" data-dismiss="modal" id="Accept" class="btn btn-primary">Continue test</button>
+                            <button type="button" id="btnNotAccept" data-dismiss="modal" class="btn btn-default" value="Send">Dismiss</button>*@
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div class="modal fade" id="optionModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Select Option</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <div id="btnToday" class="col-sm-4  col-sm-offset-2 hover-zoom">
+                            <a href="javascript:void(0)" data-bind="click: $root.downloadUserReport.single.bind()" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Today], true)" />
+                                Download report
+                            </a>
+                        </div>
+                        <div id="btnSchedule" class="col-sm-4 hover-zoom">
+                            <a href="javascript:void(0)" data-bind="click: $root.openEmailModel.single.bind()" class="no-underline">
+                                <img class="img-responsive" src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Schedule], true)" />
+                                Email report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="emailModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Email User Report</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <span class="required">*</span><label class="control-label">Enter Email</label>
+                    <input type="text" class="form-control" style="min-width:100%;" name="Title" id="inputValue" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button type="button" id="btnAddLabel" class="btn btn-primary">Send</button>
+                        <button type="button" class="btn btn-default" data-bind="click: $root.cancelEmailModel.single.bind()" >back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>*@
+<script type="text/javascript">
+    var userId = "";
+    var emailName = "";
+    function fnEmployeeNo() {
+
+        if ($('#chkEmployeeNumber').is(":checked")) {
+
+            $('.EmployeeNumberCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.EmployeeNumberCss').each(function () {
+                $(this).hide();
+            });
+        }
+    }
+    function fnName() {
+
+            if ($('#chkName').is(":checked")) {
+                $('.NameCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.NameCss').each(function () {
+                    $(this).hide();
+                });
+            }
+    }
+    function fnEmail() {
+
+            if ($('#chkEmail').is(":checked")) {
+                $('.EmailCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.EmailCss').each(function () {
+                    $(this).hide();
+                });
+            }
+    }
+    function fnIDNumber() {
+
+        if ($('#chkIDNumber').is(":checked")) {
+            $('.IDNumberCss').each(function () {
+                $(this).show();
+            });
+        } else {
+            $('.IDNumberCss').each(function () {
+                $(this).hide();
+            });
+        }
+    }
+    function fnGender() {
+
+            if ($('#chkGender').is(":checked")) {
+                $('.GenderCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.GenderCss').each(function () {
+                    $(this).hide();
+                });
+            }
+    }
+    function fnContactNumber() {
+            if ($('#chkContactNumber').is(":checked")) {
+                $('.ContactNumberCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.ContactNumberCss').each(function () {
+                    $(this).hide();
+                });
+            }
+    }
+
+    $(function () {
+
+        $('#Departments-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#Departments-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 350,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering:true
+            
+        });
+
+        $('#users-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#users-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 350,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering: true
+
+        });
+
+
+        $('#label-multiselect-Tags').attr("multiple", "multiple").val('');
+        $('#label-multiselect-Tags').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 350,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering: true
+
+        });
+
+        $('#groups-multiselect-demo').attr("multiple", "multiple").val('');
+        $('#groups-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 350,
+            enableFiltering: true,
+            maxHeight: 350,
+            enableCaseInsensitiveFiltering: true
+        });
+    });
+
+    var Controller = function (userId,users,groups) {
+
+        var self = this;
+        self.results = ko.observableArray();
+        self.users = ko.observableArray(users);
+        self.groups = ko.observableArray(groups);
+        self.selectedUsers = ko.observableArray();
+        self.selectedGroups = ko.observableArray();
+        self.selectedTags = ko.observableArray();
+        self.selectedUserId = ko.observable();
+        self.myProgressMode = ko.observable();
+
+
+        $('#users-multiselect-demo').change(function () {
+            var userIds = $(this).val();
+
+            if (userIds == null || typeof (userIds) == 'undefined') {
+                self.selectedUsers();
+            } else {
+                self.selectedUsers(userIds);
+            }
+
+        })
+
+        $('#groups-multiselect-demo').change(function () {
+            var groupIds = $(this).val();
+            self.selectedGroups(groupIds);
+        });
+        $('#label-multiselect-Tags').change(function () {
+            var tags = $(this).val();
+            self.selectedTags(tags);
+        });
+
+        @*$(document).on('blur', '#inputValue', function () {
+            emailName = $('#inputValue').val();
+        });
+
+        $(document).on('click', '#btnAddLabel', function () {
+            var check = true;
+            if (emailName === null || emailName === "" || emailName === undefined) {
+                $('#inputValue').addClass('requiredTxt');
+                check = false;
+            }
+
+            if (!check) {
+                notif({
+                    msg: "<b>Error :</b> Please enter the email address.",
+                    type: "error",
+                    multiline: true
+                });
+                return false;
+            } else {
+                 var tags = $('#label-multiselect-Tags').val();
+                if (tags === null || tags === "" || tags === undefined) {
+                    tags = "";
+                } 
+                var filterArray = new Array();
+                $('.CommonCss').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+
+                var url = '@Url.Action("UserZipUAP")' + '?'+ $.param({
+                    FromDate: ko.unwrap(vm.fromDate),
+                    ToDate: ko.unwrap(vm.toDate),
+                    UserIds: userId,
+                    ToggleFilter: $('#ToggleFilter').val(),
+                    Tags: ko.unwrap(vm.selectedTags),
+                    UriBase: '@AppSettings.Urls.ResolveUrl("~" + Url.Action("/IndividualReport"))'
+                }, true);
+                $("#emailModal").modal('hide');
+                self.downloadReport(url);
+            }
+        });*@
+
+
+        self.fromDate = ko.observable();
+        self.fromDate.subscribe(function (newValue) {
+            $('#ToDate').data('DateTimePicker').minDate(new Date(newValue));
+        });
+        self.toDate = ko.observable();
+        self.toDate.subscribe(function (newValue) {
+            $('#FromDate').data('DateTimePicker').maxDate(new Date(newValue));
+        });
+      
+        self.generateViewLink = function (o) {
+            var tags = $('#label-multiselect-Tags').val();
+            if (tags === null || tags === "" || tags === undefined) {
+                tags = "";
+            }
+       
+            return '@Url.Action("IndividualReport")' + '?' + $.param({ Tags: tags.toString(), UserId: ko.unwrap(o.Id), FromDate: ko.unwrap(self.fromDate), ToDate: ko.unwrap(self.toDate) });
+        }
+
+        self.submit = function () {
+            $('#LoadingImageDiv').show();
+            var tags = $('#label-multiselect-Tags').val();
+            if (tags === null || tags === "" || tags === undefined) {
+                self.selectedTags([]);
+            }
+            var userIds = $('#users-multiselect-demo').val();
+            if (userIds == null || typeof (userIds) == 'undefined') {
+                self.selectedUsers([]);
+            }
+
+            var groupId = $('#groups-multiselect-demo').val();
+            if (groupId === null || groupId === "" || groupId === undefined) {
+            self.selectedGroups([]);
+            }
+            var url = '@Url.Action("GetUserDetails")';
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        FromDate: ko.unwrap(vm.fromDate),
+                        ToDate : ko.unwrap(vm.toDate),
+                        UserIds: ko.unwrap(vm.selectedUsers),
+                        GroupIds: ko.unwrap(vm.selectedGroups),
+                        Tags: ko.unwrap(vm.selectedTags),
+                    }
+                })
+                .done(function (data) {
+                    self.results.removeAll();
+                    if (data && data.length) {
+                        for (var i = 0; i < data.length; i++)
+                            self.results.push(data[i]);
+                    }
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+        }
+        self.downloadUserReport = {
+            single: function (data, event) {
+                var tags = $('#label-multiselect-Tags').val();
+                if (tags === null || tags === "" || tags === undefined) {
+                    tags = "";
+                } 
+                var filterArray = new Array();
+                $('.CommonCss').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+
+                var url = '@Url.Action("UserZipUAP")' + '?'+ $.param({
+                    FromDate: ko.unwrap(vm.fromDate),
+                    ToDate: ko.unwrap(vm.toDate),
+                    UserIds: ko.unwrap(data.Id),
+                   // UserIds: userId,
+                    ToggleFilter: $('#ToggleFilter').val(),
+                    Tags: ko.unwrap(vm.selectedTags),
+                    UriBase: '@AppSettings.Urls.ResolveUrl("~" + Url.Action("/IndividualReport"))'
+                }, true);
+                $("#progressModal").modal('show');
+                //$("#optionModal").modal('hide');
+                self.downloadReport(url);
+            }
+        }
+        // self.openSelectionModel = {
+        //    single: function (data, event) {
+        //        $("#optionModal").modal('show');
+        //        userId = ko.unwrap(data.Id);
+        //    }
+        //}
+        //self.openEmailModel = {
+        //    single: function (data, event) {
+        //        $("#optionModal").modal('hide');
+        //        $("#emailModal").modal('show');
+        //    }
+        //}
+        //self.cancelEmailModel = {
+        //    single: function (data, event) {
+        //        $("#optionModal").modal('show');
+        //        $("#emailModal").modal('hide');
+        //    }
+        //}
+        self.download = {
+            excel: function () {
+                var tags = $('#label-multiselect-Tags').val();
+                if (tags === null || tags === "" || tags === undefined) {
+                    tags = "";
+                } 
+                var filterArray = new Array();
+                $('.CommonCss').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+
+                var url = '@Url.Action("ZipUAP")' + '?'+ $.param({
+                    FromDate: ko.unwrap(vm.fromDate),
+                    ToDate: ko.unwrap(vm.toDate),
+                    UserIds: ko.unwrap(vm.selectedUsers),
+                    GroupIds: ko.unwrap(vm.selectedGroups),
+                    ToggleFilter: $('#ToggleFilter').val(),
+                    Tags: tags.toString(),
+                    UriBase: '@AppSettings.Urls.ResolveUrl("~" + Url.Action("/IndividualReport"))'
+                }, true);
+                $("#progressModal").modal('show');
+                self.downloadReport(url);
+
+            }
+        };
+        self.downloadReport = function (url) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+
+            //request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //request.setRequestHeader("Content-length", url.length);
+
+            request.onload = function () {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                    $("#progressModal").modal('hide');
+                }
+            }
+            request.send();
+
+        };
+    };
+    var vm = new Controller(@Html.ToJson((string)ViewBag.Id),@Html.ToJson((IEnumerable<object>)ViewBag.Users),@Html.ToJson((IEnumerable<object>)ViewBag.Groups));
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+   
+  
+</script>

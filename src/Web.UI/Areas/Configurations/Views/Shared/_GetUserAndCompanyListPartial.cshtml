@@ -1,0 +1,167 @@
+﻿@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.ManageUserAndCompanyViewModel
+
+@{
+    var type = ViewBag.PageType;
+
+}
+@if (type == "AllCompany")
+{
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"> Company List </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example1" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Company Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Company Type
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Physical Address
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Website Address
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Action
+                                    </th>
+                                </tr>
+
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.CompanyList)
+                                {
+                                    <tr class="gradeA odd">
+                                        <td class="">
+                                            @Html.DisplayFor(modelItem => item.CompanyName)
+                                        </td>
+                                        <td>
+                                            @Html.HiddenFor(modelItem => item.Id)
+                                            @Html.DisplayFor(modelItem => item.CompanyType)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.PhysicalAddress)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.WebsiteAddress)
+                                        </td>
+                                        <td>
+                                            @if (item.Status == true)
+                                            {
+                                                <button id="btnActive" class="btn btn-success" type="button" onclick="return updateStatus('Active', '@(item.Id)', 'Company');"> Active </button>
+                                            }
+                                            else
+                                            {
+                                                <button id="btnInActive" class="btn btn-danger" type="button" onclick="return updateStatus('InActive', '@(item.Id)', 'Company');"> InActive </button>
+                                            }
+                                            @*|
+                                                <button class="btn btn-primary btn-mini" data-toggle="modal" data-target="#myModal" onclick="setUserId('@(item.Id)');">
+                                                    Change Password
+                                                </button>*@
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading"> Users List </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example2" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        First Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Mobile Number
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Email Address
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Role
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Employee Number
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.UserList)
+                                {
+                                    <tr class="gradeA odd">
+                                        <td>
+                                            @Html.HiddenFor(modelItem => item.Id)
+                                            @Html.DisplayFor(modelItem => item.FirstName)
+                                        </td>
+                                        <td>
+                                            @*@Html.DisplayFor(modelItem => item.LastName)*@
+                                            @Html.DisplayFor(modelItem => item.MobileNumber)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.EmailAddress)
+                                        </td>
+                                        <td>
+                                            @foreach (RoleViewModel roleLst in item.Roles)
+                                            {
+                                                @roleLst.RoleName
+                                                <br />
+                                            }
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.EmployeeNo)
+                                        </td>
+                                        <td>
+                                            @if (item.Status == true)
+                                            {
+                                                <button id="btnActive" class="btn btn-success" type="button" onclick="return updateStatus('Active', '@(item.Id)' , 'User');"> Active </button>
+                                            }
+                                            else
+                                            {
+                                                <button id="btnInActive" class="btn btn-danger" type="button" onclick="return updateStatus('InActive', '@(item.Id)', 'User');"> InActive </button>
+                                            }
+                                            @*|
+                                                <button class="btn btn-primary btn-mini" data-toggle="modal" data-target="#myModal" onclick="setUserId('@(item.Id)');">
+                                                    Change Password
+                                                </button>*@
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+<script type="text/javascript" language="javascript">
+    $(document).ready(function () {
+        //alert('pv');
+        $('#dataTables-example1').dataTable();
+        $('#dataTables-example2').dataTable();
+    });
+</script>

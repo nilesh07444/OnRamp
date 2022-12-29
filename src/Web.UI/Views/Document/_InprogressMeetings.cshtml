@@ -1,0 +1,36 @@
+﻿@model List<Ramp.Contracts.ViewModel.VirtualClassModel>
+
+<table id="inprogressMeeting" class="table table-hover table-fixed">
+    <thead>
+        <tr>
+           
+            <th>Meeting Room Name</th>
+            <th>Started at</th>
+            <th>Option</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+            <tr>
+                
+                <td>
+                    @item.VirtualClassRoomName
+                </td>
+                <td>
+                    @item.StartDateTime.ToShortTimeString()
+                </td>
+
+                <td>
+                    <div class="btn-group-xs">
+                        <button id="ip" class="btn btn-default btn-option" style="color: #262626; background-color: #f9f9f9">
+                            <span class="glyphicon glyphicon-log-in"></span> <a style="text-decoration:none;color:#262626;" href='@Url.Action("VirtualMeeting","Meeting",new { id=item.Id})' id="@item.Id" class="JoinMeeting"> Join Meeting</a>
+                        </button>
+
+                    </div>
+
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>

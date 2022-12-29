@@ -1,0 +1,65 @@
+﻿<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<div class="row">
+    <div class="col-lg-12">
+        <h4>Please select the users you want to assign the Virtual Meeting Room to: <br /></h4><br />
+
+        <div class="pull-right form-group form-inline text-center">
+
+            <select id="boot-multiselect-demo" multiple="multiple">
+                @foreach (var item in ViewBag.Groups) {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </select>
+
+
+        </div>
+
+    </div>
+
+
+</div>
+<div class="panel panel-info">
+    <div class="panel-heading">Who is this for?</div>
+    <div class="panel-body" style="padding: 0" id="divUsers">
+
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+
+               $('#boot-multiselect-demo').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: 250,
+            enableFiltering: true,
+            maxHeight: 350
+
+        });
+
+
+        $('#boot-multiselect-demo').change(function () {
+            var ids = $(this).val();
+            GetUserByGroups(ids);
+        });
+    });
+
+     function GetUserByGroups(ids) {
+
+         var virtualClass = $.get('@Url.Action("GetUserToVirtualClass", "VirtualMeeting")?groupIds=' + ids);
+
+        virtualClass.done(function (data) {
+
+            $("#divUsers").html(data);
+
+                });
+        virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        virtualClass.always(function () {
+
+                });
+    }
+</script>

@@ -1,0 +1,174 @@
+﻿@model Ramp.Contracts.ViewModel.VirtualClassModel
+@using System.Threading
+@using Web.UI.Code.Extensions
+@{
+    ViewBag.Title = "VirtualMeeting";
+    Layout = "~/Views/Shared/_Public.cshtml";
+}
+<script src="~/Scripts/jquery-ui.js"></script>
+<script src="~/Scripts/jquery.js"></script>
+<link href="~/Content/Areas/Document/Preview.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap.min.js"></script>
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+<script src='https://meet.jit.si/external_api.js'></script>
+@if (Model.IsPublicAccess && Model.Deleted==false)  {
+    <div class="row">
+
+        <div class="col-sm-offset-1 col-lg-10" data-bind="with:data">
+            <h1 class="lead">@Model.VirtualClassRoomName.ToUpper()</h1>
+
+            <h4><strong><span class="pageHeading_ref" data-bind="text:$root.enums.documentType[ko.unwrap(DocumentType)].toUpperCase() + ' REF: '"></span><span data-bind="text:ReferenceId"></span></strong></h4>
+
+            <h4><strong><span class="pageHeading_ref">VIRTUAL MEETING ROOM REF:</span><span> @Model.ReferenceId</span></strong></h4>
+            <div class="well">
+                <p>@Model.Description</p>
+            </div>
+
+            <br />
+
+            <div class="panel panel-info" data-bind="attr:{id:Id}">
+                <div class="panel-heading hidden-xs">
+
+                    <h4></h4>&nbsp;
+                    <p class="chapterName">@Model.VirtualClassRoomName</p>
+                    <span class="clearfix"></span>
+
+                </div>
+
+                <div id="meet">
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    <script>
+
+
+        const domain = '@ViewData["JitsiServerName"]';
+        const options = {
+            roomName: '@Model.VirtualClassRoomName'+'@Model.Id',
+
+            height: 500,
+            parentNode: document.querySelector('#meet'),
+
+            interfaceConfigOverwrite: {
+              LANG_DETECTION: true,
+              TOOLBAR_BUTTONS: ['microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+                                 'fodeviceselection', 'profile', 'chat', 'recording',
+             'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+        'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+        'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+        'e2ee'],
+              filmStripOnly: false,
+    SHOW_JITSI_WATERMARK: false,
+    JITSI_WATERMARK_LINK: '',
+    SHOW_WATERMARK_FOR_GUESTS: false,
+    SHOW_BRAND_WATERMARK: false,
+    BRAND_WATERMARK_LINK: '',
+    SHOW_POWERED_BY: false,
+
+        }
+        }
+
+        const api = new JitsiMeetExternalAPI(domain, options);
+        api.executeCommand('subject', ' ');
+        api.executeCommand('name', '@Thread.CurrentPrincipal.GetGivenName()');
+
+    </script>
+
+} else if (!Model.IsPublicAccess && Model.Deleted==false) {
+    <div class="modal fade" id="AlertMeetingModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">
+                        Permission Denied
+                    </h4>
+                </div>
+                <div class="modal-body" id="divViewParticipants">
+                    <span>The following meeting cannot be accessed publically. </span>
+                    <br />
+                    <br />
+                    <span id="shareMeetingUrl"></span>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            $('#AlertMeetingModal').modal('show');
+        });
+    </script>
+} else if (DateTime.Now < Convert.ToDateTime(Model.StartDate) && !Model.Deleted) {
+    <div class="modal fade" id="NotBegunMeetingModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Virtual Meeting Access</h4>
+                </div>
+                <div class="modal-body" id="divViewParticipants">
+                    <span>The meeting has not yet begun, Please see the meeting invitation details.</span>
+                    <br />
+                    <br />
+                    <span id="shareMeetingUrl"></span>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $('#NotBegunMeetingModal').modal('show');
+        });
+    </script>
+}
+@if (Model.Deleted == true) {
+
+    <div class="modal fade" id="CancelledMeetingModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Virtual Meeting Cancelled</h4>
+                </div>
+                <div class="modal-body" id="divViewParticipants">
+                    <span>The meeting that you are trying to join has been cancelled.</span>
+                    <br />
+                    <br />
+                    <span id="shareMeetingUrl"></span>
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $('#CancelledMeetingModal').modal('show');
+        });
+    </script>
+}

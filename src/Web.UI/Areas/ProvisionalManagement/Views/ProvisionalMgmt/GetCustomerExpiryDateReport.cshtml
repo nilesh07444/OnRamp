@@ -1,0 +1,180 @@
+﻿@using Ramp.Services.Helpers
+@using Web.UI.Code.Helpers
+@using Domain.Models
+@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.CompanyViewModelLong
+
+
+@{
+    Layout = null;
+}
+<style type="text/css">
+    abbr[title], abbr[data-original-title] {
+        border-bottom: none !important;
+        cursor: default !important;
+    }
+
+    li {
+        margin-bottom: 6px !important;
+    }
+</style>
+
+@*@if (Model.CompanyList != null && Model.CompanyList.Any())
+    { <ul class="list-group">
+
+            @foreach (var comp in Model.CompanyList)
+            {
+                if (comp.IsExpireReport == true)
+                {
+                    <li class="list-group-item ">
+                        <p>
+                            <i class="fa fa-user">
+                            </i>
+                            <strong style="color: #3a87ad">Company Name : @comp.CompanyName</strong>
+                            <br />
+
+                        <p style="display: inline; margin-left: 15px;"> Company Type :</p> <p style="color:red;display:inline;">  @comp.MontlyOrAnual </p>
+                        <br />
+                            <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px; margin-top: 10px;" title="Time">
+                                <i class="fa fa-clock-o">
+                                </i>
+
+                                <span style="color:red">
+                                    @comp.CompanyName @comp.ExpireMessage
+
+                                </span>
+                            </div>
+                        </p>
+                    </li>
+
+                }
+                else
+                {
+                    <li class="list-group-item ">
+                        <p>
+                            <i class="fa fa-user">
+                            </i>
+                            <strong style="color: #3a87ad">Company Name : @comp.CompanyName</strong>
+                            <br />
+                        <p style="display: inline; margin-left: 15px;"> Company Type :</p> <p style="color:red;display:inline;">  @comp.MontlyOrAnual </p>
+                        <br />
+                            <div style="color: rgba(111, 111, 111, 0.76); font-size: 13px; margin-top: 10px;" title="Time">
+                                <i class="fa fa-clock-o">
+                                </i>
+
+                                <span style="color:green">
+                                  @comp.CompanyName @comp.ExpireMessage
+
+                                </span>
+                            </div>
+                        </p>
+                    </li>
+
+                }
+
+
+            }
+
+        </ul>
+
+
+
+    }
+    else{
+
+          <ul>
+              <li>
+                  <label id="lblNoData">No Data Found</label>
+
+              </li>
+          </ul>
+
+
+    }*@
+
+
+
+
+
+
+<div class="row">
+    <div class="col-lg-12">
+        @*<div class="panel panel-info">
+            <div class="panel-heading"> Customer Company List </div>*@
+            @*<div class="panel-body">*@
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Company Name
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Created On
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Expire On
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                       Monthly/Yearly
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Auto Expire
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model !=null)
+                                {
+                                    if (Model.CompanyList.Count > 0) { 
+                                    foreach (CompanyViewModel item in Model.CompanyList)
+                                    {
+                                        <tr class="gradeA odd">
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.CompanyName)
+                                            </td>
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.createdDate)
+                                            </td>
+                                            <td class="">
+
+                                                @Html.DisplayFor(modelItem => item.ExpireMessage)
+                                            </td>
+                                            <td class="">
+                                                @Html.DisplayFor(modelItem => item.MontlyOrAnual)
+                                            </td>
+                                            <td class="">
+                                                @Html.CheckBoxFor(modelItem => item.AutoExpire, new { @Id = "item_status_" + item.Id, @class = "", @disabled = "disabled" })
+                                            </td>
+
+                                        </tr>
+                                    }
+                                    }else
+                                    { 
+                                     <tr class="">
+                                        <td colspan="5" style="text-align:center;">
+                                            No Record Found
+                                        </td>
+                                    </tr>
+                                    
+                                    }
+                                }
+                                else
+                                {
+                                    <tr class="">
+                                        <td colspan="5" style="text-align:center;">
+                                            No Record Found
+                                        </td>
+                                    </tr>
+
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @*</div>
+        </div>*@
+    </div>
+</div>

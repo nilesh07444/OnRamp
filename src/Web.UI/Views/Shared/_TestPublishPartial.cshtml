@@ -1,0 +1,107 @@
+﻿<!-- Button trigger modal -->
+@using (Html.BeginForm("Index", "ManageTrainingTest", new { area = "ManageTrainingTest" }))
+{
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" onclick="CloseButtonClick()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Test Publish</h4>
+                </div>
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel panel-default">
+                                @Html.ValidationSummary(true)
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            @Html.ValidationSummary(true)
+                                            <input id="hdUserId" name="UserId" type="hidden" />
+                                            <div class="form-group">
+                                                @Html.Label("Do you want to delete old test history?")
+                                                <input type="checkbox" id="idHistory" />
+                                                @*@Html.PasswordFor(model => model.Password, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.Password)*@
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.Label("Do you want to force people to retake this new test?")
+                                                <input type="checkbox" id="idForcetest" />
+                                                @*@Html.PasswordFor(model => model.ConfirmPassword, new { @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.ConfirmPassword)*@
+                                            </div>
+                                            @*<input type="submit" value="Save" class="btn btn-default" />*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="CloseButtonClick()">Close</button>
+                    <button type="button" class="btn btn-primary" id="btnSave">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    function CloseButtonClick() {
+        window.location.href = '@Url.Action("Index", "ManageTrainingTest")';
+    }
+
+    $('#btnSave').click(function () {
+        //
+        var id = $('#hdUserId').val();
+        if ($('#idHistory').is(":checked")) {
+            var status = $('#idHistory').is(":checked");
+            var actionUrl = "ManageTrainingTest/ChangeTrainingDraftPublishTest?trainingTestId=" + id + "&status=" + status + "";
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: { trainingGuidId: id, status: status },
+                success: function (data) {
+                    //$('#myModal').close();
+                    window.location.href = '@Url.Action("Index", "ManageTrainingTest")';
+                },
+                error: function (data) {
+                    //alert(data);
+                }
+            });
+        }
+        else if ($('#idForcetest').is(":checked")) {
+            var status = $('#idForcetest').is(":checked");
+            var actionUrl = "ManageTrainingTest/ForcePeopletoRetakeTest?trainingTestId=" + id + "&status=" + status + "";
+            $.ajax({
+                type: "GET",
+                url: actionUrl,
+                data: { trainingGuidId: id, status: status },
+                success: function (data) {
+                    //$('#myModal').close();
+                    window.location.href = '@Url.Action("Index", "ManageTrainingTest")';
+                },
+                error: function (data) {
+                    //alert(data);
+                }
+            });
+        }
+        /*else if ($('#idHistory').is(":checked") && $('#idForcetest').is(":checked")) {
+            var status = $('#idHistory').is(":checked");
+            var actionUrl = "ManageTrainingTest/ChangeTrainingDraftPublishTest?trainingTestId=" + id + "&status=" + status + "";
+            $.ajax({
+                type: "POST",
+                url: actionUrl,
+                data: { trainingGuidId: id, status: status },
+                success: function (data) {
+                    //$('#myModal').close();
+                    window.location.href = 
+                },
+                error: function (data) {
+                    //alert(data);
+                }
+            });
+        }*/
+    });
+</script>

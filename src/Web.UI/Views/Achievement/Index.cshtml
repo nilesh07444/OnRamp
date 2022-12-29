@@ -1,0 +1,285 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Common.Collections
+@model IPaged<CertificateListModel>
+
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+
+<style>
+    .requiredTxt {
+        border: solid red;
+    }
+
+    .required {
+        color: red;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-sm-12 ">
+            <div class="panel panel-info">
+                <div class="panel-heading clearfix" style="line-height: 34px;">
+                    Achievement Library
+                    @*<a data-bind="click:$root.editCertificate.bind()" style="border-left: solid 1px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer"><i class="glyphicon glyphicon-plus"></i></a>*@
+                    <a data-bind="click:$root.document.achievementModal.bind()" style="border-left: solid 1px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer"><i class="glyphicon glyphicon-plus"></i></a>
+                    <div class="pull-right">
+                        <form class="form-inline">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Achievement Search" data-bind="textInput:$root.query.MatchText" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" data-bind="click:$root.paging.submit.bind()"><span class="glyphicon glyphicon-search"></span></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div>
+                    @Html.Partial("~/Views/Achievement/_CertificateList.cshtml", Model)
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-sm-4" style="padding-top: 4px">
+                    Show <select data-bind="value: query.PageSize, options: paging.sizes"></select> entries
+                </div>
+                <div class="pull-right">
+                    <ul class="pagination" style="margin: 0 15px 20px 0;">
+                        <li data-bind="css:{'disabled' : ko.unwrap($root.query.IsFirstPage)}"><a href="#" data-bind="click:$root.paging.previousPage.bind()">&larr; Previous</a></li>
+                        <!-- ko foreach: $root.paging.visiblePages-->
+                        <li data-bind="css:{'active': ko.unwrap($root.query.PageIndex) + 1 == $data}"><a href="#" data-bind="click:$root.paging.goToPage.bind($data - 1), text: $data"></a></li>
+                        <!-- /ko -->
+                        <li data-bind="css:{'disabled' : ko.unwrap($root.query.IsLastPage)}"><a href="#" data-bind="click:$root.paging.nextPage.bind()">Next &rarr;</a></li>
+                    </ul>
+                </div>
+                <div class="pull-right" style="padding-top: 6px; margin-right: 2em;">Showing <span data-bind="text: query.PageIndex() * query.PageSize() + 1"></span> to <span data-bind="text: ko.unwrap(query.IsLastPage) ? query.TotalItems : (query.PageIndex() + 1) * query.PageSize()"></span> of <span data-bind="text: query.TotalItems"></span> entries</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addLabelModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Enter your Achievement details</h4>
+            </div>
+            <div>
+
+                <div id="achievementOpenDocument">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="associateModal" role="dialog" aria-labelledby="associateModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Documents Association</h4>
+            </div>
+
+            <div class="modal-body" id="associateDocument">
+
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-primary" value="Cancel">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<div class="row">
+        <div class="col-lg-12">
+            <button class="btn btn-default" href="javascript:void(0)" data-bind="click:$root.editCertificate.bind()">Add Certificate</button>
+            <br />
+            <br />
+            <div class="panel panel-info">
+                <div class="panel-heading">Certificates</div>
+                <div class="panel-body">
+                    <!-- ko if:ko.unwrap(data.Items).length > 0 -->
+                    <div class="container">
+                        <div class="row" data-bind="foreach:data.Items">
+                            <div class="col-xs-6 col-md-3">
+                                <div class="thumbnail">
+                                    <a data-bind="fancybox:{ autoSize:true }, attr:{ href:ThumbnailUrl, title:Description }" class="fancybox.image">
+                                        <img data-bind="attr:{src:ThumbnailUrl, title: 'Click to preview ' + Description()}" />
+                                    </a>
+                                    <div class="caption">
+                                        <!-- ko if: Description() === 'Default' -->
+                                        <h4>Default</h4>
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: Description() === 'Default' -->
+                                        <div style="text-align: right; margin-top: 5px">
+                                            <a href="javascript:void(0)" data-bind="click:$root.editCertificate.bind()" class="action" data-toggle="tooltip" data-placement="top" title="Edit" style="display: inline-block">
+                                                <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Edit], true)" class="img-circle" />
+                                            </a>
+                                            <a href="javascript:void(0)" data-bind="confirm:{message:'Are you sure?', delegate:$root.delete, model:$data}" class="action" data-toggle="tooltip" data-placement="top" title="Delete" style="display: inline-block">
+                                                <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Delete], true)" class="img-circle" />
+                                            </a>
+                                        </div>
+                                        <!-- /ko -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if:ko.unwrap(data.Items).length === 0 -->
+                    <h3>No Certificates</h3>
+                    <!-- /ko -->
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+<script>
+        @{
+            //(ViewBag.Links as IDictionary<string, string>)["edit"] = Url.Action("Edit", "Certificate", new {Area = "", Id = "{0}"});
+            ((IDictionary<string, string>)ViewBag.Links).Add("achievement:print", Url.Action("DownloadCertificate", "Achievement", new { Area = "" }));
+            ((IDictionary<string, string>)ViewBag.Links).Add("achievement:associate", Url.Action("GetDocument", "Achievement", new { Area = "" }));
+            ((IDictionary<string, string>)ViewBag.Links).Add("achievement:achievementOpen", Url.Action("GetAchievement", "Achievement", new { Area = "" }));
+            }
+    var vm = new app.data.listController(@Html.ToJson(Model),
+        @Html.ToJson((IDictionary<string, string>)ViewBag.Links),
+        @Html.ToJson((string)ViewBag.Mode));
+
+    vm.delete = function (listModel) {
+        $.ajax({
+            type: 'DELETE',
+            url: ko.unwrap(vm.links.delete) + '/' + ko.unwrap(listModel.Id),
+            statusCode: {
+                400: function (xhr, code, error) {
+                    notif({
+                        msg: "<b>Warning :</b> Delete Failed.",
+                        type: "warning",
+                        multiline: true
+                    });
+                },
+                403: function () {
+                    notif({
+                        msg: '<b>Warning :</b> Cannot delete certificate that is linked to test.',
+                        type: 'warning',
+                        multiline: true
+                    });
+                },
+                202: function () {
+                    notif({
+                        msg: "<b>Success :</b> Deleted Successfully.",
+                        type: "success"
+                    });
+                    vm.redirect(ko.unwrap(vm.links.index));
+                },
+                500: function () {
+                    notif({
+                        msg: "<b>Warning :</b> Delete Failed.",
+                        type: "warning",
+                        multiline: true
+                    });
+                }
+            }
+        });
+    };
+
+    vm.editCertificate = function (listModel) {
+        if (ko.unwrap(listModel.Id)) {
+            window.location.href = vm.links.edit.replace('%7B0%7D', ko.unwrap(listModel.Id));
+        } else {
+            window.location.href = vm.links.edit.replace('%7B0%7D', '');
+        }
+    };
+    vm.category = {
+        menu: {
+            match: ko.observable(),
+            selected: ko.observable(),
+            initialize: function () {
+                vm.category.menu.selected.subscribe(vm.category.handlers.filter);
+            }
+        },
+        handlers: {
+            filter: function (newValue, oldValue) {
+                if (newValue != oldValue)
+                    vm.query.Id(newValue != '00000000-0000-0000-0000-000000000000' ? newValue : null);
+            },
+            clear: function () {
+                vm.category.menu.match('');
+                vm.category.menu.selected('');
+            }
+        }
+    };
+    vm.category.menu.initialize();
+    vm.query.MatchText = ko.observable();
+    vm.paging.sizes = [10, 25, 50, 100];
+    vm.nav = {
+        getUrl: function (action) {
+            return vm.links['achievement:' + action];
+        }
+    };
+    vm.document = {
+        print: function (model) {
+            var url = vm.nav.getUrl('print') + '/' + ko.unwrap(model.UploadId);
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+            request.onload = function() {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                }
+            }
+            request.send();
+            },
+            associate: function (model) {
+                $('#associateModal').modal('show');
+                var url = vm.nav.getUrl('associate') + '/' + ko.unwrap(model.UploadId);
+                var request = new XMLHttpRequest();
+                request.open("GET", url);
+                request.onload = function () {
+                    $('#associateDocument').html(this.response);
+                }
+                request.send();
+        },
+        achievementModal: function () {
+            $('#addLabelModal').modal('show');
+            var url = vm.nav.getUrl('achievementOpen');
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.onload = function () {
+                $('#achievementOpenDocument').html(this.response);
+            }
+            request.send();
+        },
+    };
+
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+
+</script>

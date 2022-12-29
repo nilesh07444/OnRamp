@@ -1,0 +1,70 @@
+﻿@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+@model IEnumerable<Ramp.Contracts.ViewModel.DocumentListModel>
+
+<div class="table-responsive">
+    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+            <thead>
+                <tr role="row">
+                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;">
+                        Type
+                    </th>
+                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                        Ref Id
+                    </th>
+                    <th class="sorting" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                        Title
+                    </th>
+                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                        Description
+                    </th>
+                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                        Create Date
+                    </th>
+                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                        Options
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var document in Model)
+                {
+                    var type = VirtuaCon.EnumUtility.GetFriendlyName<DocumentType>(document.DocumentType);
+                    <tr class="gradeA odd">
+                        <td>
+                            @type
+                        </td>
+                        <td class="">
+                            @Html.DisplayFor(modelItem => document.ReferenceId)
+                        </td>
+                        <td class="">
+                            @Html.DisplayFor(modelItem => document.Title)
+                        </td>
+                        <td class="">
+                            @Html.DisplayFor(modelItem => document.Description)
+                        </td>
+                        <td class="">
+                            @Html.DisplayFor(modelItem => document.CreatedOn)
+                        </td>
+                        <td class="tooltip-demo">
+                            <a href="@Url.Action("Preview", document.DocumentType.ToString(), new {id = document.Id, companyId = ViewBag.CompanyId, Area = ""})"
+                               class="action" data-toggle="tooltip" data-placement="top" title="Preview">
+                                <img src="@Url.Content("~/Content/images/btnPreview.png")" class="img-circle" />
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+        $('.tooltip-demo').tooltip({
+            selector: "[data-toggle=tooltip]",
+            container: "body"
+        });
+        $('#dataTables-example').dataTable();
+    });
+</script>

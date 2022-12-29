@@ -1,0 +1,682 @@
+﻿@using System.Linq
+@using System.Linq
+@using Common.Enums
+@using Common.Web
+@using Domain.Customer
+@using Web.UI.Code.Extensions
+@using Web.UI.Models
+@using System.Threading
+@using Ramp.Contracts.Security
+@model Ramp.Contracts.ViewModel.CourseListModel
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+}
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<link href="~/Content/apex/apexcharts.css" rel="stylesheet" />
+<script src="~/Scripts/apex/apexcharts.js"></script>
+
+<body>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel-heading clearfix" style="line-height: 32px;">
+                <div class="pull-right">
+                    <form class="form-inline" data-bind="">
+                        <div class="input-group">
+                            <select style="Width: 150px" class="selectpicker" multiple data-bind="">
+                                <option data-bind="">Course Status</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Course Search" data-bind="" />
+                            <span class="input-group-btn">
+                                <button class=" btn btn-default btn-primary" type="button" data-bind=""><span class="glyphicon glyphicon-search"></span></button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="col-sm-12" data-bind="foreach: documents">
+        <div class="panel panel-info">
+            <div class="panel-heading clearfix" data-toggle="collapse" data-target="#Panelcolapse" data-bind="click: $root.collapse.bind(Id)" style="line-height: 32px;"><span data-bind=""></span> <span class="caret"></span></div>
+
+            <div class="panel-body collapse in">
+                <div class="well well-sm">
+                    @*Add course title*@
+                    <h3 data-bind="text: Title" style="text-align:center;"></h3>
+
+                    <hr />
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="col-lg-offset-2 col-lg-4">
+
+                                <img data-bind="attr: {src: CoverPicture}" style="width: 275px; height: 200px;" />
+                            </div>
+
+                            <div class="col-lg-4">
+                                @*Add course description*@
+                                <p data-bind="text: Description"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <br />
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="col-lg-3">
+                            <div class="well well-sm">
+                                @*Add course author*@
+                                <h5><b>Progress:</b> <span data-bind=""></span></h5>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="well well-sm">
+                                @*Add course status*@
+                                <h5><b>Status:</b> <span data-bind="text: Status"></span></h5>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3">
+                            <div class="well well-sm">
+                                @*Add course Admins*@
+                                <h5><b>Allocated Administrators:</b> <span data-bind="text: AllocatedAdminsName"></span></h5>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="well well-sm">
+                                @*Add course duration*@
+                                <h5><b>Days Left:</b> <span data-bind="text: ExpiryInDays"></span></h5>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <br />
+
+                <br />
+                <div class="row">
+                    <div class="col-lg-12">
+
+                        <div class="col-lg-9">
+                            <div class="well well-sm">
+                                <div style="text-align:center;">
+                                    <h4>Document Information</h4>
+                                    <br>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table table id="courses" class="dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th class="col-lg-3">Title</th>
+                                                <th class="col-lg-2">Date Assigned</th>
+                                                <th class="col-lg-2">Date Last Read</th>
+                                                <th>Status</th>
+                                                <th>Options</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: AssignedDocumentList">
+                                            <tr>
+                                                <td>
+                                                    <img class="img-circle center-block document-icon" style="width: 50px;" data-bind="attr: {src: $root.document.getIconUrl(DocumentType)}" />
+                                                </td>
+                                                <td class="col-lg-3">
+                                                    <span style="font-size:16px;font-weight:500;" data-bind="text:Title"></span>
+                                                </td>
+                                                <td class="col-lg-2">
+                                                    <strong style="font-size: 0.9em;" data-bind="text:ExpiryDate? vm.document.formatDateTime(ExpiryDate):''"></strong>
+                                                </td>
+                                                <td class="col-lg-2"><span data-bind="text:(LastViewedDate ? vm.document.formatDateTime(LastViewedDate) : 'Pending');"></span> </td>
+                                                <td>
+                                                    <div class="align-middle badge badge-default " data-bind="text:DocStatus"></div>
+                                                </td>
+                                                <td><div class="btn-group-xs" data-bind="html:vm.document.showOptionButton($data)"></div></td>
+
+
+
+
+
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3">
+                            <div class="well well-sm">
+                                <div style="text-align:center;">
+                                    <h4>Achievements</h4>
+                                    <br>
+                                </div>
+                                @*Add course duration*@
+                                <p>Points:</p> <span data-bind="text:Points"></span>
+                                @*Add course certificate preview*@
+                                <p>Certificate:</p> <img class="img-responsive coverPicture" data-bind="" />
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+</body>
+
+
+<script>
+    var vm = {
+        collapse : function (id) {
+            console.log("clicked on collapse ", id);
+        }
+    };
+
+     vm.document = {
+            getMoreInfo: function(model) {
+                return ko.unwrap(model.ReferenceId) + '\n' + 'Description: \n' + ko.unwrap(model.Description);
+         },
+         showOptionButton: function (row) {
+               var options = [];
+                        if (row.DocumentType === 2) {
+                            var testId = ko.unwrap(row.Id);
+                            var expired = moment(row.ExpiryDate).isBefore(moment());
+                            if (expired || row.AttemptsRemaining <= 0) {
+                                var status = vm.document.getStatus(row);
+                                var msg = row.AttemptsRemaining <= 0 ? 'No Remaining Attempts' : 'Test Expired';
+                                options.push('<a href="javascript:void(0)" title="' +
+                                    msg +
+                                    '" onclick="vm.document.testWarning(' +
+                                    expired +
+                                    ',' +
+                                    row.AttemptsRemaining +
+                                    ')" class="btn btn-default btn-option disabled" aria-disabled="true"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                    var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                        ResultId: testId
+                                    }, true);
+                                    options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                }
+                            }
+                            else {
+                                var status = vm.document.getStatus(row);
+                                if (status.toLowerCase() === "tryagain") {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Try Again</a>');
+                                } else {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                    if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                        var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                            ResultId: testId
+                                        }, true);
+                                        options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                    }
+                                }
+
+                            }
+                        }
+
+                     if (row.DocumentType === 6) {
+                            if (row.Status == 0) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + row.Id + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Start Activity Book</a>')
+                            } else if (row.Status == 4) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + row.Id + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Continue Activity Book</a>')
+                            } else if (row.Status == 5) {
+                                 options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookPreview", "ActivitybookSubmissionReport", new { Area = "Reporting" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-eye-open"></span> View Submission</a>')
+
+                            }
+                        }
+
+                        else if (row.DocumentType !== 2) {
+                            options.push('<a href="' +
+                                vm.document.getViewLink(row) +
+                                '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> View</a>')
+                        }
+                        if (row.Printable) {
+                            options.push('<a href="javascript:void(0)" onclick="vm.document.print(\'' +
+                                row.Id +
+                                '\', ' +
+                                row.DocumentType +
+                                ')" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download</a>');
+                        }
+                        if (row.CertificateUrl) {
+                            options.push('<a href="' +
+                                row.CertificateUrl +
+                                '" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download Certificate</a>');
+                        }
+                        return '<div class="btn-group-xs">' + options.join('&nbsp;');
+
+    },
+            getViewLink: function (model) {
+                var url = '';
+                switch (model.DocumentType) {
+                case 1:
+                    url = '@Url.Action("Preview", "TrainingManual", new {Area = ""})';
+                    break;
+                case 2:
+                    url = '@Url.Action("Preview", "Test", new {Area = ""})';
+                    break;
+                case 3:
+                    url = '@Url.Action("Preview", "Policy", new {Area = ""})';
+                    break;
+                case 4:
+                    url = '@Url.Action("Preview", "Memo", new {Area = ""})';
+                        break;
+                case 6:
+                    url = '@Url.Action("Preview", "Activitybook", new {Area = ""})';
+                    break;
+                default:
+                    break;
+                }
+                return url + '/' + model.Id;
+         },
+         AssignDate: function (row) {
+             return row.ExpiryDate === null
+                 ? vm.document.formatDateTime(data)
+                 : vm.document.formatDateTime(data) +
+                 '</br><strong style="font-size: 0.9em;">Expires: ' + vm.document.formatDateTime(row.ExpiryDate) + '</strong>';
+         },
+            getType: function(model) {
+                switch (ko.unwrap(model.DocumentType)) {
+                case 1:
+                    return 'Training Manual';
+                case 2:
+                    return 'Test';
+                case 3:
+                    return 'Policy';
+                case 4:
+                    return 'Memo';
+                case 6:
+                        return 'Activitybook';
+                }
+                return '';
+            },
+            getStatus: function (model) {
+                var expired = moment(model.ExpiryDate).isBefore(moment());
+                if (!expired && ko.unwrap(model.Status) === 2 && ko.unwrap(model.DocumentType) === 2 && ko.unwrap(model.AttemptsRemaining) >= 1) {
+                    return 'Tryagain';
+                } else {
+
+                    switch (ko.unwrap(model.Status)) {
+                        case 0:
+                            return 'Pending';
+                        case 1:
+                            if (model.DocumentType == 3) return 'Incomplete';
+                            return 'Viewed';
+                        case 2:
+                            return 'Failed';
+                        case 3:
+                            return 'Passed';
+                        case 4:
+                            if (model.DocumentType == 3) return 'Not Accepted'
+                            return 'Incomplete'; // Incomplete Not Accepted
+                        case 5:
+                            if (model.DocumentType == 1 || model.DocumentType == 4 || model.DocumentType == 6) return 'Complete'
+                            return 'Accepted';
+                    }
+                }
+
+                return '';
+            },
+         getIconUrl: function (model) {
+             switch (ko.unwrap(model)) {
+                case 1:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)';
+                case 2:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)';
+                case 3:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)';
+                case 4:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)';
+                case 6:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)';
+                }
+                return '';
+            },
+            formatDateTime: function (prop) {
+
+                return moment(prop).format('L LTS');
+            },
+            print: function (id, type) {
+
+                var url = '';
+                switch (type) {
+                case 1:
+                    url = '@Url.Action("Print", "TrainingManual", new {Area = ""})';
+                    break;
+                case 2:
+                    url = '@Url.Action("Print", "Test", new {Area = ""})';
+                    break;
+                case 3:
+                    url = '@Url.Action("Print", "Policy", new {Area = ""})';
+                    break;
+                case 4:
+                    url = '@Url.Action("Print", "Memo", new {Area = ""})';
+                        break;
+                case 6:
+                    url = '@Url.Action("DownloadPrintExcel", "Activitybook", new {Area = ""})';
+                    break;
+                default:
+                    break;
+                }
+
+                if (type == 7) {
+
+                    url = '@Url.Action("DownloadSubmissionsZip", "ActivitybookSubmissionReport", new { Area = "Reporting" })' + '?' + $.param({
+                        FromDate: "",
+                        ToDate: "",
+                        CheckListIds: id,
+                        CheckListId: id,
+                        ToggleFilter: ""
+
+                    }, true);
+                } else {
+                    url = url + '/' + id;
+
+                }
+
+                var request = new XMLHttpRequest();
+                request.open("GET", url);
+                request.responseType = 'blob';
+                request.onload = function() {
+                    var userAgent = window.navigator.userAgent;
+                    var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                    if (!allowBlob) {
+                        window.navigator.msSaveBlob(this.response,
+                            this.getResponseHeader('filename') || "download-" + $.now());
+                    } else {
+                        var url = window.URL.createObjectURL(this.response);
+                        var a = document.createElement("a");
+                        document.body.appendChild(a);
+                        a.href = url;
+                        a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                        a.click();
+                        window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                    }
+                };
+                request.send();
+            },
+            testWarning: function(expired, attemptsRemaining) {
+                if (notif) {
+                    var msg = '';
+                    if (attemptsRemaining <= 0) {
+                        msg = 'You have reached the maximum limit of attempts';
+                    } else if (expired) {
+                        msg = 'Test has expired';
+                    }
+                    notif({
+                        msg: msg,
+                        type: 'error'
+                    });
+                }
+            }
+        };
+
+    vm.documents = @Html.ToJson(Model);
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+
+    jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+        "alt-string-pre": function (a) {
+            return a.match(/alt="(.*?)"/)[1].toLowerCase();
+        },
+
+        "alt-string-asc": function (a, b) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "alt-string-desc": function (a, b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    });
+
+    //vm.filteredDocuments.subscribe(function (newValue) {
+    //    documentsTable.clear();
+    //    documentsTable.rows.add(newValue);
+    //    documentsTable.draw();
+    //});
+
+    //vm.filteredDocuments = ko.computed(function () {
+
+    //    if (self.filters().length === 0) {
+    //        return self.documents();
+    //    } else {
+    //        var documents = self.documents();
+    //        var filters = self.filters().map(function (item) {
+    //            var split = item.split(':');
+    //            return {
+    //                Type: split[0],
+    //                Id: split[1]
+    //            };
+    //        });
+    //        var statusFilters = $.grep(filters,
+    //            function (filter) {
+    //                return filter.Type === 'Status';
+    //            });
+    //        if (statusFilters.length === 1) {
+    //            var unread = statusFilters[0].Id === '1';
+    //            documents = $.grep(documents,
+    //                function (document) {
+    //                    {
+    //                        return unread
+    //                            ? document.LastViewedDate === null
+    //                            : document.LastViewedDate !== null;
+    //                    }
+    //                });
+    //        }
+    //        var types = $.grep(filters,
+    //            function (filter) {
+    //                return filter.Type === 'Type';
+    //            }).map(function (filter) {
+    //                return parseInt(filter.Id);
+    //            });
+    //        if (types.length !== 0 && types.length !== 4) {
+    //            documents = $.grep(documents,
+    //                function (document) {
+    //                    return types.indexOf(document.DocumentType) !== -1;
+    //                });
+    //        }
+
+    //        return documents;
+    //    }
+
+    //});
+
+    var documentsTable = $('#courses').DataTable({
+            drawCallback: function () {
+                $('[data-toggle="popover"]').popover({
+                    trigger: 'hover'
+                });
+            },
+            columns: [
+                {
+                    data: 'Id',
+                },
+                {
+                    data: 'DocumentType',
+                    render: function(data, type, row) {
+                        return '<img  title="' + vm.document.getType(row)+'" alt="' +
+                            vm.document.getType(row) +
+                            '" class="img-circle center-block document-icon" src="' +
+                            vm.document.getIconUrl(row) +
+                            '"/>';
+                    }
+                },
+                {
+                    data: 'Title',
+                    render: function (data, type, row) {
+                        var details = row.DocumentType + "~" + row.Title + "~" + row.TrainingLabels + "~" + row.Author;
+                        if (row.DocumentType === 2) {
+                            details += "~" + row.PassMarks + "~" + row.Duration;
+                        }
+                        return '<span title="' +
+                            vm.document.getMoreInfo(row) +
+                            '" style="font-size:14px;"   alt="' +
+                            data +
+                            '">' +
+                            data +
+                            '</span>&nbsp;&nbsp;' +
+
+                            '<a href="javascript:void(0)" data-toggle="popover" data-html="true" title="' + row.Title +'" id="' + details + '" class="fa fa-info-circle" style="color:#00a5e2;" onmouseover="bootstrapPopoverHandler(this)"></a>' +
+                            '<br></span>';
+                            //+ '<span style="font-size:12px;">Tags: <span style="font-size:12px;" ></span>' + row.TrainingLabels + '</span>' +
+                            //'<br></span>' + '<span style="font-size:12px;">Author: <span style="font-size:12px;" ></span>' + row.Author + '</span>';
+                    }
+                },
+                {
+                    data: 'AssignedDate',
+                    render: function(data, type, row) {
+                        return row.ExpiryDate === null
+                            ? vm.document.formatDateTime(data)
+                            : vm.document.formatDateTime(data) +
+                            '</br><strong style="font-size: 0.9em;">Expires: ' + vm.document.formatDateTime(row.ExpiryDate) + '</strong>';
+                    }
+                },
+                {
+                    data: 'LastViewedDate',
+                    render: function(data, type, row) {
+                        return data ? vm.document.formatDateTime(data) : 'Pending';
+                    }
+                },
+                {
+                    data: 'Status',
+                    render: function (data, type, row) {
+                        var status = vm.document.getStatus(row);
+                        return '<div class="align-middle badge badge-default status ' + status.toLowerCase() + '">' + status.toUpperCase() + '</div>';
+                    }
+                },
+                {
+                    data: null,
+                    render: function (data, type, row) {
+                        var options = [];
+                        if (row.DocumentType === 2) {
+                            var testId = ko.unwrap(row.Id);
+                            var expired = moment(row.ExpiryDate).isBefore(moment());
+                            if (expired || row.AttemptsRemaining <= 0) {
+                                var status = vm.document.getStatus(row);
+                                var msg = row.AttemptsRemaining <= 0 ? 'No Remaining Attempts' : 'Test Expired';
+                                options.push('<a href="javascript:void(0)" title="' +
+                                    msg +
+                                    '" onclick="vm.document.testWarning(' +
+                                    expired +
+                                    ',' +
+                                    row.AttemptsRemaining +
+                                    ')" class="btn btn-default btn-option disabled" aria-disabled="true"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                    var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                        ResultId: testId
+                                    }, true);
+                                    options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                }
+                            }
+                            else {
+                                var status = vm.document.getStatus(row);
+                                if (status.toLowerCase() === "tryagain") {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Try Again</a>');
+                                } else {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                    if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                        var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                            ResultId: testId
+                                        }, true);
+                                        options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                    }
+                                }
+
+                            }
+                        }
+
+                     if (row.DocumentType === 6) {
+                            if (row.Status == 0) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + row.Id + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Start Activity Book</a>')
+                            } else if (row.Status == 4) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + row.Id + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Continue Activity Book</a>')
+                            } else if (row.Status == 5) {
+                                 options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookPreview", "ActivitybookSubmissionReport", new { Area = "Reporting" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-eye-open"></span> View Submission</a>')
+
+                            }
+                        }
+
+                        else if (row.DocumentType !== 2) {
+                            options.push('<a href="' +
+                                vm.document.getViewLink(row) +
+                                '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> View</a>')
+                        }
+                        if (row.Printable) {
+                            options.push('<a href="javascript:void(0)" onclick="vm.document.print(\'' +
+                                row.Id +
+                                '\', ' +
+                                row.DocumentType +
+                                ')" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download</a>');
+                        }
+                        if (row.CertificateUrl) {
+                            options.push('<a href="' +
+                                row.CertificateUrl +
+                                '" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download Certificate</a>');
+                        }
+                        return '<div class="btn-group-xs">' + options.join('&nbsp;');
+                    }
+                }
+            ],
+          columnDefs: [
+                {
+                    targets: [0],
+                    visible: false,
+                    searchable: false
+                },
+                { type: 'alt-string', targets: [1, 2] },
+                { type: 'date', targets: [3, 4] },
+                { orderable: false, targets: [6] }
+            ], "language": {
+      "emptyTable": "You currently have no documents assigned to you."
+    },
+            paging: false,
+            searching: false,
+            info: false,
+            "aaSorting": []
+        });
+
+</script>

@@ -1,0 +1,141 @@
+﻿@using Ramp.Security.Authorization
+@using System.Threading
+@using Web.UI.Code.Extensions
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+
+<div class="row">
+    @*<a href="http://knowledgebase.onramp.co.za/?p=10" target="_blank">
+            <div style="float: right;">
+                <h2 class="helpText">Help</h2>
+            </div>
+        </a>*@
+
+    <div class="col-lg-12 page-header text-center">
+        <a href="@(Url.Content("~/Home/Index"))">
+            <img src="@(Url.Content("~/Content/images/logo.png"))" alt="OnRamp" style="max-height: 70px;" class="center-block img-responsive" />
+        </a>
+        <h3>Main Menu</h3>
+    </div>
+
+    <div class="container">
+        @if (Thread.CurrentPrincipal.IsInResellerRole())
+        {
+            <div class="row row-centered menu-row">
+                <div class="col-md-12">
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@Url.Action("ViewDocuments", "Admin", new { Area = "" })">
+                            <img src="@(Url.Content("~/Content/images/managePlyBooks.png"))" class="img-responsive" />
+                            <h4>
+                                <span class="label label-default shade">
+                                    Manage Documents
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@(Url.Content("~/CustomerManagement/CustomerMgmt"))">
+                            <img src="@(Url.Content("~/Content/images/customerMgmt.png"))" class="img-responsive" />
+                            <h4>
+                                <span class="label label-default shade">
+                                    Customer Management
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@(Url.Content("~/Home/AdminReports"))">
+                            <img src="@(Url.Content("~/Content/images/systemReport.png"))"class="img-responsive" id="systemReportId">
+                            <h4>
+                                <span class="label label-default shade">
+                                    Reports
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+        {
+            <div class="row row-centered menu-row">
+                <div class="col-md-12">
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@(Url.Content("~/ProvisionalManagement/ProvisionalMgmt"))">
+                            <img src="@(Url.Content("~/Content/images/provisionalMgmt.png"))" class="img-responsive" />
+                            <h4>
+                                <span class="label label-default shade">
+                                    Provisional Management
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@(Url.Content("~/CustomerManagement/CustomerMgmt"))">
+                            <img src="@(Url.Content("~/Content/images/customerMgmt.png"))" class="img-responsive" />
+                            <h4>
+                                <span class="label label-default shade">
+                                    Customer Management
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@(Url.Content("~/Configurations/ManagerUser"))">
+                            <img src="@(Url.Content("~/Content/images/manageUsersGroups.png"))" class="img-responsive" />
+                            <h4>
+                                <span class="label label-default shade">
+                                    Manage Users
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row row-centered menu-row">
+                <div class="col-md-12">
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@Url.Action("ViewDocuments", "Admin", new { Area = "" })">
+                            <img src="@(Url.Content("~/Content/images/managePlyBooks.png"))" class="img-responsive" />
+                            <h4>
+                                <span class="label label-default shade">
+                                    Manage Documents
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@Url.Action("Index", "Bundle", new { Area = "BundleManagement" })">
+                            <img src="@(Url.Content("~/Content/images/managePackage.png"))" class="img-responsive" />
+                            <h4>
+                                <span class="label label-default shade">
+                                    Manage Bundles
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                    <div class="col-md-4 col-centered menu-tile">
+                        <a href="@(Url.Content("~/Home/AdminReports"))">
+                            <img src="@(Url.Content("~/Content/images/systemReport.png"))" class="img-responsive" id="systemReportId">
+                            <h4>
+                                <span class="label label-default shade">
+                                    Reports
+                                </span>
+                            </h4>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+        $('.main-menu').hide();
+        
+    });
+    
+</script>

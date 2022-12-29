@@ -1,0 +1,274 @@
+﻿@using Web.UI.Code.Extensions
+@{
+    Layout = null;
+}
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+
+<script src="~/Scripts/jquery-ui.js"></script>
+<link href="~/Content/jquery-ui/themes/base/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/app/extension.common.js"></script>
+<style>
+    #sortable {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+
+    }
+
+     .policy-icon {
+            background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)') !important;
+            -ms-background-size: 24px;
+            background-size: 24px;
+            -ms-background-position: 0 !important;
+            background-position: 0 !important;
+        }
+
+        .memo-icon {
+            background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)') !important;
+            -ms-background-size: 24px;
+            background-size: 24px;
+            -ms-background-position: 0 !important;
+            background-position: 0 !important;
+        }
+
+        .test-icon {
+            background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)') !important;
+            -ms-background-size: 24px;
+            background-size: 24px;
+            -ms-background-position: 0 !important;
+            background-position: 0 !important;
+        }
+
+        .training-manual-icon {
+            background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)') !important;
+            -ms-background-size: 24px;
+            background-size: 24px;
+            -ms-background-position: 0 !important;
+            background-position: 0 !important;
+        }
+
+        .checklist-icon {
+            background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)') !important;
+            -ms-background-size: 24px;
+            background-size: 24px;
+            -ms-background-position: 0 !important;
+            background-position: 0 !important;
+        }
+
+</style>
+
+<form id="summaryForm">
+    <div class="modal-header modalSearch">
+        <h4 class="modal-title">You are about to complete your workflow</h4>
+    </div>
+    <div class="modal-body">
+        <p class="title">Title&nbsp;<span data-bind="text: vm2.WorkflowName"></span> </p>
+        <p class="noOfUsers">No of Groups</p>
+        
+        <ul id="sortable" data-bind="foreach:vm2.DocumentsInJSTree">
+            <li class="ui-state-default">
+                <div class="row">
+                    <div class="col-md-8">
+                        <span style='max-width: 50px'>
+                            <a class='btn'><span title="Hold and drag to rearrange" class='glyphicon glyphicon-sort uploadhandle' style='color: black'></span></a>
+                        </span>
+                        <img class="img-circle document-icon" style="width:20px" data-bind="attr: {src: getImage(type)}" />
+                        <span data-bind="text: text"></span>
+                    </div>
+                    <div class="col-md-4"> <p data-bind="text: vm2.selectedGroups().length" class="noOfUsers-value"></p></div>
+                </div>
+
+            </li>
+        </ul>
+
+    </div>
+    <div class="modal-footer">
+        <div class="text-center">
+            <h4>Please click here to complete the action</h4>
+            <div class="btn-group">
+                <button id="save" class="btn btn-primary" data-dismiss="modal">Save</button>
+                <button type="button" class="btn btn-default" onclick="onsummaryClose()">Cancel</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+
+<script>
+
+    function onsummaryClose() {
+        $("#assignconfirmModal").modal('hide')
+    }
+    $(function () {
+        $("#sortable").sortable();
+    });
+
+    getImage = function (type) {
+        console.log("type from get image ", type);
+        switch (type) {
+            case 1:
+                return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)';
+            case 2:
+                return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)';
+            case 3:
+                return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)';
+            case 4:
+                return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)';
+            case 6:
+                return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)';
+            default:
+                return '';
+        }
+    }
+
+    $("#save").click(() => {
+
+        var docs = [];
+        vm2.DocumentsInJSTree().forEach((d) => {
+            docs.push({
+                Id: d.id,
+                Title: d.text,
+                Type: d.type,
+                Order: 0,
+                AditionalMsg: ""
+            })
+        });
+
+        let data = {
+            Id: vm2.Id,
+            WorkflowName: vm2.WorkflowName,
+            SendNotiEnabled: vm2.SendNotiEnabled,
+            GroupIds: vm2.selectedGroups(),
+            DocumentList: docs
+        }
+
+                $('#LoadingImageDiv').show();
+            var url = '@Url.Action("AddAutoAssignWorkflow")';
+            $.ajax({
+                    method: 'POST',
+                url: url,
+                data: data
+                })
+                .done(function (data) {
+                    notif({
+                        msg: 'Your progress has been saved.',
+                        multiline: true,
+                        type: 'success'
+                    });
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                    //window.location.assign("/Document/MyDocuments");
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+    });
+
+     self.applyChanges = function () {
+
+                var additionalMsgs = "";
+                var orderId = [];
+                $('.additionalMsgCss').each(function () {
+                    var msg = $(this).val();
+                    var id = $(this).attr('role');
+                    orderId.push(id);
+                    if (additionalMsgs == "") {
+                        additionalMsgs = id + '~' + msg;
+                    } else {
+                        additionalMsgs = additionalMsgs + "^" + id + '~' + msg;
+                    }
+                    //if (additionalMessage == "") {
+                    //    additionalMsgs = additionalMessage;
+                    //} else {
+                    //    additionalMsgs = additionalMessage;
+                    //}
+
+                });
+
+                //new code start
+                var selectedUsersPerDocument = $.map(selectedUsers,
+                    function (item) {
+                        var reorderIndex = orderId.indexOf(item.documentId)
+
+                        if ($('#multiDateSelect').val() != null) {
+                            self.docAssignDate = $('#multiDateSelect').val();
+                        }
+                        return {
+                            DocumentId: item.documentId,
+                            DocumentType: item.documentType,
+                            UserId: item.userId,
+                            AssignedDate: self.docAssignDate,
+                            AdditionalMsg: additionalMsgs.toString(),
+                            MultipleAssignedDates: $('#multiDateSelect').val(),
+                            OrderNumber: reorderIndex
+                        };
+                    });
+                console.log("selected", selectedUsersPerDocument);
+
+                selectedUsersPerDocument.sort(function (a, b) {
+                    return a.OrderNumber - b.OrderNumber;
+                });
+
+                var url = self.selectedAction() === 'Assign'
+                    ? '@Url.Action("AssignDocumentsToUsers", "Send", new {Area = ""})'
+                    : '@Url.Action("UnassignDocumentsFromUsers", "Send", new {Area = ""})';
+
+                if (self.selectedAction() === 'Reassign') {
+                    url = '@Url.Action("ReassignDocumentsToUsers", "Send", new {Area = ""})';
+                }
+                $('#LoadingImageDiv').show();
+
+                $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        data: selectedUsersPerDocument
+                    }
+                }).done(function (data) {
+                    if (self.selectedAction() === 'Reassign') {
+                        notif({
+                            msg: '<b>Success -</b> Successfully reassign documents',
+                            type: 'success'
+                        });
+                    } else {
+                        notif({
+                            msg: '<b>Success -</b> Successfully ' +
+                                (self.selectedAction() === 'Assign' ? 'assigned' : 'unassigned') +
+                                ' documents',
+                            type: 'success'
+                        });
+                    }
+
+                    // Clear page selections
+                    self.selectedUsersPerDocument.removeAll();
+                    self.selectedDocuments.removeAll();
+                    $('.selectpicker').selectpicker('deselectAll');
+                    self.selectedTypes.removeAll();
+                    self.selectedAction(null);
+                    //$('#actionModal').modal('show');
+                    window.location.reload();
+                }).fail(function () {
+                    if (self.selectedAction() === 'Assign') {
+                        notif({
+                            msg: '<b>Error -</b> Error Assigning documents',
+                            type: 'error'
+                        });
+                    } else {
+                        notif({
+                            msg: '<b>Error -</b> Failed to ' +
+                                (self.selectedAction() === 'Reassign' ? 'reassign' : 'unassign' + ' documents'),
+                            type: 'error'
+                        });
+                    }
+                    window.location.reload();
+                }).always(function () {
+                    $('#LoadingImageDiv').hide();
+                });
+            }
+</script>

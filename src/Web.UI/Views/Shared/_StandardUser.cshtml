@@ -1,0 +1,279 @@
+﻿@using Ramp.Security.Authorization
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Areas.CustomerManagement.Controllers
+@using Web.UI.Areas.ManageTrainingTest.Controllers
+@using Web.UI.Code.Extensions
+@using Web.UI.Controllers
+@using Web.UI.Areas.Reporting.Controllers
+@using Web.UI.Areas.Feedback.Controllers
+@using Web.UI.Areas.Configurations.Controllers
+@using System.Threading
+@using Domain.Models
+
+@if (Thread.CurrentPrincipal.IsInAdminRole())
+{
+    <div id="allNavigation" class="navbar navbar-default navbar-inner-menu" role="navigation" style="margin-bottom: 0px;">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#midMenu">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div id="midMenu" class="navbar-collapse collapse navbar-inner">
+                <ul class="nav navbar-nav">
+                    <li role="menuitem" class="@Html.IsActive("Administrator", "Home")">
+                        <a href="@Url.Action("Administrator", "Home", new {Area = ""})">Home</a>
+                    </li>
+                    @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentCreator.ToString()))
+                    {
+                        if (Html.CanAccess<DocumentController>(a => a.Index(null)))
+                        {
+                            <li role="menuitem" class="@Html.IsActive("Index", "Document")">
+                                <a href="@Url.Action("Index", "Document", new {Area = ""})" onclick="removeNode()">Build</a>
+                            </li>
+                        }
+                    }
+
+                    @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.Publisher.ToString()))
+                    {
+                        if (Html.CanAccess<SendController>(a => a.Index()))
+                        {
+                            <li role="menuitem" class="@Html.IsActive("Index", "Send")">
+                                <a href="@Url.Action("Index", "Send", new {Area = ""})">Send</a>
+                            </li>
+                        }
+                    }
+
+                    @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.Reporter.ToString()))
+                    {
+
+                        if (Html.CanAccess<HomeController>(m => m.AdminReports()) ||
+                        Html.CanAccess<IndividualDevelopmentRecordReportController>(m => m.Index(null)) ||
+                        Html.CanAccess<ExternalTrainingProviderReportController>(m => m.Index(null)) ||
+                        Html.CanAccess<TrainingActivityReportController>(m => m.Index(null)))
+                        {
+                            <li class="dropdown @Html.IsActive("AdminReports", "Home")" id="trackDropdown">
+                                <a class="dropdown-toggle dropdown-link" id="track-menu-dropdown" aria-haspopup="true" aria-expanded="true" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">Track <span class="caret"></span></a>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="track-menu-dropdown">
+                                    @if (Html.CanAccess<FeedbackController>(a => a.ContentFeedbackReport()))
+                                    {
+                                        <li>
+                                            <a href="@(Url.Content("~/Feedback/ContentFeedbackReport"))">
+                                                Document Feedback Report
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (Html.CanAccess<ManageTrainingTestController>(a => a.FocusAreaReport()))
+                                    {
+                                        <li>
+                                            <a href="@(Url.Action("FocusAreaReport", "ManageTrainingTest", new { Area = "ManageTrainingTest" }))">
+                                                Focus Area Report
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (Html.CanAccess<InteractionReportController>(a => a.Index()))
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("Index", "InteractionReport", new { Area = "Reporting" })"> Interaction Report</a>
+                                        </li>
+                                    }
+                                    @if (Html.CanAccess<PointsStatementController>(a => a.Index(null)))
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("Index", "PointsStatement", new { Area = "Reporting" })">
+                                                Points Statement Report
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (Html.CanAccess<UserActivityAndPerformanceReportController>(a => a.Index(null)))
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("Index", "UserActivityAndPerformanceReport", new { Area = "Reporting" })">
+                                                User Activity & Performance Report
+                                            </a>
+                                        </li>
+                                    }
+                                    @if (Html.CanAccess<ActivitybookSubmissionReportController>(a => a.Index(null)) && PortalContext.Current.UserCompany.EnableChecklistDocument)
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("Index", "ActivitybookSubmissionReport", new { Area = "Reporting" })">
+                                                Activity Book Submission Report
+                                            </a>
+                                        </li>
+                                    }
+                                    @if (Html.CanAccess<ManagerUserController>(a => a.UserCorrespondenceDetails()))
+                                    {
+                                        <li>
+                                            <a href="@Url.Content("~/Configurations/ManagerUser/UserCorrespondenceDetails")">
+                                                User Correspondence Report
+                                            </a>
+                                        </li>
+                                    }
+                                    @if (Html.CanAccess<ManagerUserController>(a => a.UserActivityDetails()))
+                                    {
+                                        <li>
+                                            <a href="@Url.Action("UserActivityDetails", "ManagerUser", new { Area = "Configurations" })">
+                                                User Login Report
+                                            </a>
+                                        </li>
+                                    }
+
+
+                                    @if (PortalContext.Current.UserCompany.EnableVirtualClassRoom)
+                                    {
+                                        <li role="menuitem" id="liMeetingReport">
+                                            <a style="cursor:pointer" href="@Url.Action("Index", "MeetingReport", new { Area = "Reporting" })">
+                                                Virtual Meeting Attendance Report
+                                            </a>
+                                        </li>
+
+                                    }
+
+                                    <li role="menuitem" id="liDocumentAuditReport">
+                                        <a style="cursor:pointer" href="@Url.Action("Index", "DocumentAudit", new { Area = "Reporting" })">
+                                            Document Audit Report
+                                        </a>
+                                    </li>
+
+                                    @if (EnabledTrainingActivityLoggingModule || roles.Contains(Ramp.Contracts.Security.Role.TrainingActivityReporter.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.TrainingActivityAdmin.ToString()))
+                                    {
+                                        <li role="menuitem" id="liMeetingReport">
+                                            <a style="cursor:pointer" href="@Url.Action("Index", "TrainingActivitylogReport", new {Area = "Reporting"})">
+                                                Training Activity Report
+                                            </a>
+                                        </li>
+
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    }
+
+                    @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageTags.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageVirtualMeetings.ToString()))
+                    {
+                        if (PortalContext.Current.UserCompany.EnableVirtualClassRoom)
+                        {
+                            if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageVirtualMeetings.ToString()))
+                            {
+                                <li role="menuitem" id="liMeetingRoom" class="@Html.IsActive("Index", "VirtualMeeting")">
+                                    <a href="@Url.Action("Index", "VirtualMeeting", new { Area = "" })">
+                                        Virtual Meetings
+                                    </a>
+                                </li>
+                            }
+                        }
+
+                        if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageTags.ToString()))
+                        {
+
+                            if (Html.CanAccess<TagController>(a => a.Index()))
+                            {
+                                <li class="@Html.IsActive("Index", "Tag")">
+                                    <a href="@Url.Action("Index", "Tag", new {Area = ""})">
+                                        <i class="" aria-hidden="true"></i> Tags
+                                    </a>
+                                </li>
+                            }
+                        }
+                    }
+
+                    @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.UserAdmin.ToString()))
+                    {
+                        if (Html.CanAccess<CustomerMgmtController>(a => a.ManageOwnCustomerCompanyUser(Guid.Empty, Guid.Empty, null, null))
+                                                                    || Html.CanAccess<ManageGroupsController>(a => a.Index(null, null))
+                                                                    || Html.CanAccess<CustomerMgmtController>(a => a.CustomerUserSelfSignUpNotApproved()))
+                        {
+                            <li class="dropdown @Html.IsActive("Index", "UserMgmt")" role="menuitem">
+                                <a href="@Url.Action("Index", "UserMgmt", new {Area = "UserManagement" , companyId = PortalContext.Current.UserCompany.Id, userId = Guid.Empty, companyName = PortalContext.Current.UserCompany.CompanyName})">
+                                    User Management
+                                </a>
+                            </li>
+
+                        }
+
+                    }
+
+                    @*@if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageTags.ToString())) {
+
+                                <li class="@Html.IsActive("Index", "Certificate")">
+                                    <a href="@Url.Action("Index", "Certificate", new {Area = ""})">
+                                        <i class="" aria-hidden="true"></i> Achievements
+                                    </a>
+                                </li>
+                        }*@
+
+
+
+                    @if (EnabledTrainingActivityLoggingModule || roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.TrainingActivityAdmin.ToString()))
+                    {
+                        <li class="dropdown @Html.IsActive("LogTraining", "Home")" role="menuitem">
+                            <a class="dropdown-toggle dropdown-link" id="logtraining-menu-dropdown" data-hover="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" href="javascript:void(0)">Training <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="send-menu-dropdown">
+                                @if (Html.CanAccess<ExternalTrainingProviderController>(a => a.Index(null)))
+                                {
+                                    <li>
+                                        <a href="@Url.Action("Index", "ExternalTrainingProvider", new {Area = ""})">
+                                            <i class="" aria-hidden="true"></i> External Training Providers Management
+                                        </a>
+                                    </li>
+                                }
+                                @if (Html.CanAccess<TrainingActivityController>(a => a.Index(null)))
+                                {
+                                    <li>
+                                        <a href="@Url.Action("Index", "TrainingActivitylog", new {Area = ""})">
+                                            <i class="" aria-hidden="true"></i> Training Activity Management
+                                        </a>
+                                    </li>
+                                }
+                                <li role="menuitem" id="liMeetingReport">
+                                    <a style="cursor:pointer" href="@Url.Action("Index", "TrainingActivitylogReport", new {Area = "Reporting"})">
+                                        Training Activity Report
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </li>
+
+                    }
+
+
+
+                    @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.PortalAdmin.ToString()))
+                    {
+                        if (Html.CanAccess<CustomerMgmtController>(m => m.CustomerAdminSetting()))
+                        {
+
+                            <li role="menuitem" class="@Html.IsActive("CustomerAdminSetting", "CustomerMgmt")">
+                                <a href="@(Url.Action("CustomerAdminSetting", "CustomerMgmt", new {Area = "CustomerManagement"  , companyId = PortalContext.Current.UserCompany.Id}))">Settings</a>
+                            </li>
+
+
+                        }
+                    }
+                </ul>
+                <div class="navbar-form navbar-right search">
+                    <div class="input-group">
+                        <input type="search" placeholder="Document Search" tabindex="-1" class="form-control" id="sb_tb" value="" name="q">
+                        <span class="input-group-btn">
+                            <button id="searchId" class="btn btn-primary"><i class=" glyphicon glyphicon-search"></i></button>
+                        </span>
+                    </div>
+                    <div class="hover-container" hidden="hidden">
+                        <div id="SearchFilter" class="search-advanced small-text align-left" style="display: none;">
+                            <b>Search within:<br></b>
+                            <br />
+                            <input type="radio" id="sb_kw" name="sbo" value="0" checked="checked"><label for="sb_kw">PlayBook</label><br>
+                            <input type="radio" id="sb_qa" name="sbo" value="1"><label for="sb_qa">Playbook Test</label><br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

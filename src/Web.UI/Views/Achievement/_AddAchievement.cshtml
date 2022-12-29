@@ -1,0 +1,285 @@
+@model Ramp.Contracts.ViewModel.CertificateModel
+@using Common.Web
+
+<style>
+    .requiredTxt {
+        border: solid red;
+    }
+
+    .required {
+        color: red;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+    .cursor {
+        cursor: pointer;
+    }
+
+    /*input[type="file"] {
+        display: none;
+    }
+
+    .custom-file-upload {
+    border: 3px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    }*/
+</style>
+
+<div class="modal-body" id="addachievement">
+    <p>Please enter your certificate details below. Please ensure your uploaded certificate is in JPG formet and 2480 pixels * 3508 pixels</p><br>
+    <div class="form-group">
+        <span class="required">*</span><label class="control-label">Achievement Title</label>
+        <input id="certTitle" type="text" class="form-control" style="min-width:100%;" name="Title" />
+    </div>
+    <div class="form-group">
+        <span class="required">*</span><label class="control-label">Upload Certificate</label>
+        <input id="certImage" type="file" class="form-control" style="min-width:100%;" accept="image/*" />
+       @*<label class="custom-file-upload form-control" style="min-width:100%">
+         <input id="certImage" type="file" class="form-control" style="min-width:100%" accept="image/*"/>
+       Choose file
+       </label>*@
+        @*<div id="inputs" class="hidden">
+        </div>
+        <div data-bind="if: errors">
+            <p data-bind="text: errors()['Upload']" style="color: red;"></p>
+        </div>*@
+    </div>
+
+</div>
+<div class="modal-footer">
+    <div class="text-right">
+        <div class="btn-group">
+            <button id="btnAddcert" type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var achiTitle = "";
+    var achiImage = "";
+    var ImageResponse;
+    $(document).on('blur', '#certTitle', function () {
+        achiTitle = $('#certTitle').val();
+    });
+
+    $(document).on('change', '#certImage', function () {
+        achiImage = $('#certImage').val();     
+    });
+
+        $(document).on('click', '#btnAddcert', function () {
+            var check = true;
+            if (achiTitle === null || achiTitle === "" || achiTitle === undefined) {
+                check = false;
+            } else if (achiImage === null || achiImage === "" || achiImage === undefined) {
+                check = false;
+            }
+            if (!check) {
+                notif({
+                    msg: "<b>Error :</b> Please enter all required fields",
+                    type: "error",
+                    multiline: true
+                });
+                return false;
+            } else {
+                var data = new FormData();
+        var files = $("#certImage").get(0).files;
+        if (files.length > 0) {
+            data.append("HelpSectionImages", files[0]);
+        }
+        var url = '@Url.Action("Upload", "Achievement", new {Area = ""})';
+        $.ajax({
+            url: url,
+            type: "POST",
+            processData: false,
+            contentType: false,
+            data: data,
+            success: function (response) {
+                ImageResponse = response;
+                var certificateData = {
+                    Upload: ImageResponse,
+                    Description: "",
+                    UploadId: ImageResponse.Id,
+                    Title: achiTitle,
+                    ThumbnailUrl: "",
+                    CreatedOn: null,
+                    Type: ""
+                }
+                var url = '@Url.Action("AddCertificate", "Achievement", new {Area = ""})';
+        $.ajax({
+            method: 'POST',
+            url: url,
+            data: {
+                model: certificateData
+            },
+            success: function (response) {
+                notif({
+                    msg: "<b>Error :</b> Achievement added successfully",
+                    type: "error",
+                    multiline: true
+                });
+                window.location.reload();
+            },
+            error: function (er) {
+                notif({
+                    msg: "<b>Error :</b> Error adding achievement",
+                    type: "error",
+                    multiline: true
+                });
+            }
+
+        });
+            },
+            error: function (er) {
+                notif({
+                    msg: "<b>Error :</b> Please upload a JPG file that is A4 in size (ie. 2480x3508) and has a resolution of 300 dpi.",
+                    type: "error",
+                    multiline: true
+                });
+               // achiImage = "";
+            }
+
+        });            
+            }
+        });
+
+
+    @{
+        // (ViewBag.Links as IDictionary<string, string>).Add("defaultImageUrl", Url.Content("~/Content/images/imgDoc.png"));
+        // (ViewBag.Links as IDictionary<string, string>).Add("uploadLink", Url.Action("Upload", "Achievement", new {Area = ""}));
+    }
+    var vm1 = app.data.crudController(@Html.ToJson(Model),
+        @Html.ToJson((IDictionary<string, string>) ViewBag.Links),
+        @Html.ToJson((string) ViewBag.Mode));
+
+    _init();
+
+    vm1.data.Title = ko.observable();
+
+    function _upload_click(data) {
+        if (ko.unwrap(vm1.data.Upload)) {
+            var u = ko.unwrap(vm1.data.Upload);
+            if (ko.unwrap(u.DeleteUrl)) {
+                bootbox.confirm(
+                    'Are you sure you want to Replace the Certificate with a new one?<br/>Once a new file is uploaded the current file will be removed',
+                    function(result) {
+                        if (result) {
+                            vm1.data.Upload(null);
+                            _upload_addAndExecute(data);
+                        }
+                    });
+            }
+        } else {
+            _upload_addAndExecute(data);
+        }
+    }
+
+    function _upload_addAndExecute(data) {
+        $('#upload').remove();
+        var input = $(
+            '<input data-bind="fileUpload:new ko.observable(), fileuploadOptions:vm1.upload.options(),valueProperty:vm1.data.Upload" class="hidden" type="file" name="files[]" accept="image/jpeg" />');
+        $(input).prependTo('#inputs');
+        ko.applyBindingsToNode(input[0], null, data);
+        $(input).trigger('click');
+        return true;
+    }
+
+    function _upload_options() {
+        return {
+            showProgress: false,
+            url: vm1.links.uploadLink,
+            before: vm1.upload.eventHandlers.before,
+            success: vm1.upload.eventHandlers.success,
+            error: vm1.upload.eventHandlers.error,
+            autoupload: true
+        };
+    }
+
+    function _upload_eventHandlers_before(element, fileName, valueProperty) {
+        if (fileName.toLowerCase().indexOf('.jpg') > -1 ||
+            fileName.toLowerCase().indexOf('.jpeg') > -1) {
+            vm1.upload.loading.show();
+            return true;
+        }
+        notif({
+            msg: 'Please Select An Image To Upload',
+            type: 'error'
+        });
+        return false;
+    }
+
+    function _upload_eventHandlers_success(data, textStatus, xhr, valueProperty) {
+        var u = ko.unwrap(vm1.data.Upload);
+        vm1.data.Upload(ko.mapping.fromJS(ko.mapping.toJS(valueProperty)));
+        vm1.upload.loading.hide();
+
+        var errors = vm1.errors();
+        if (errors != null && errors.hasOwnProperty("Upload")) {
+            delete errors["Upload"];
+            vm1.errors(errors);
+        }
+    }
+
+    function _upload_eventHandlers_error() {
+        var errors = vm1.errors();
+        errors = errors != null ? errors : {};
+        errors['Upload'] = 'Please upload a JPG file that is A4 in size (ie. 1920x1080) and has a resolution of 300 dpi.';
+        vm1.errors(errors);
+
+        vm1.upload.loading.hide();
+    }
+
+    function _upload_loading_show() {
+        $('#LoadingImageDiv').show();
+    }
+
+    function _upload_loading_hide() {
+        $('#LoadingImageDiv').hide();
+    }
+
+    function _upload() {
+        return {
+            click: _upload_click,
+            options: _upload_options,
+            eventHandlers: {
+                before: _upload_eventHandlers_before,
+                success: _upload_eventHandlers_success,
+                error: _upload_eventHandlers_error
+            },
+            loading: {
+                show: _upload_loading_show,
+                hide: _upload_loading_hide
+            }
+        };
+    }
+
+    function _init() {
+        vm1.upload = _upload();
+        vm1.data.Title = ko.observable(vm1.data.Title);
+        if (ko.unwrap(vm1.data.Upload)) {
+            vm1.originalUpload = vm1.data.Upload;
+            vm1.data.Upload = ko.observable(vm1.data.Upload);
+            if (!ko.isObservable(vm1.data.Upload))
+                vm1.data.Upload = ko.observable(vm1.data.Upload);
+        } else {
+            vm1.data = {};
+            vm1.data.Upload = ko.observable(null);
+        }
+        vm1.data.changed = ko.observable(false);
+        vm1.data.Upload.subscribe(function(newValue) {
+            if (newValue !== null) {
+                vm1.data.changed(true);
+            }
+        });
+        vm1.cancel = function() {
+            window.location.href = vm1.links.index;
+        };
+    }
+
+    ko.applyBindings(vm1, document.getElementById('addachievement'));
+
+</script>

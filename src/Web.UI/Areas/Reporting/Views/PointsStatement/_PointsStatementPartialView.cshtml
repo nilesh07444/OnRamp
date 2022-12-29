@@ -1,0 +1,633 @@
+﻿@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+@model Ramp.Contracts.ViewModel.PointsStatementViewModel
+@{ 
+
+    List<PointsStatementViewModel.DataItem> docData = ViewBag.Records;
+}
+<style>
+    .bootstrap-tagsinput {
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+        padding: 0;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+
+    .switch {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+        .switch + span {
+            vertical-align: middle;
+        }
+
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .slider:before {
+        -ms-transform: translateX(1em);
+        -webkit-transform: translateX(1em);
+        transform: translateX(1em);
+    }
+
+    .slider.round {
+        border-radius: 0.7em;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+    .arrangeHeader {
+        background-color: #555;
+        border-color: #bce8f1;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    .hover-zoom {
+        zoom: 1;
+    }
+
+        .hover-zoom:hover {
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            -ms-transition: transform .15s ease-in-out;
+            -o-transition: transform .15s ease-in-out;
+            -webkit-transition: transform .15s ease-in-out;
+            transition: transform .15s ease-in-out;
+            transform: scale(1.1)
+        }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+
+
+
+<div class="col-lg-10">
+
+    @if (docData.Any()) {
+    <div class="panel-heading">
+        Summary
+        @if (Model.Data.Count <= 50) {
+            <a href="javascript:void(0);" id="All" class="exportAll default pull-right" data-exportformid="test"><b><u>Export </u></b></a>
+        }
+    </div>
+
+    }
+
+    @foreach (var item in docData) {
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Summary
+                <a href="javascript:void(0);" id="@item.User.Id" class="export default pull-right" data-exportformid="test"><b><u>Export To Excel</u></b></a>
+            </div>
+            <table class="table table-hover table-fixed" id="statement">
+
+                <tr>
+                    <th class="EmployeeCodeCss">Employee Code</th>
+                    <th class="UserCss">User</th>
+                    <th class="CategoryCss">Category</th>
+                    <th class="DocumentTypeCss">Document Type</th>
+                    <th class="TitleCss">Title</th>
+                    <th class="DateCss">Date</th>
+                    @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments) {
+                        <th class="AccessCss">Access</th>
+                    }
+                    <th class="ResultCss">Result</th>
+                    <th class="PointsCss">Points</th>
+                </tr>
+
+                <tbody>
+                    @foreach (var data in Model.Data.Where(c => c.User.Id == item.User.Id)) {
+                        <tr>
+                            <td class="EmployeeCodeCss">@data.User.EmployeeNo</td>
+                            <td class="UserCss">@data.User.FullName.Trim()</td>
+                            <td class="CategoryCss">@data.Category.Trim()</td>
+                            <td class="DocumentTypeCss">@(VirtuaCon.EnumUtility.GetFriendlyName<DocumentType>(data.DocumentType))</td>
+                            <td class="TitleCss">@data.DocumentTitle.Trim()</td>
+                            <td class="DateCss">@data.Date</td>
+
+                            @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments) {
+                                if (@data.IsGlobalAccessed) {
+                                    <td class="AccessCss">Global</td>
+                                } else {
+                                    <td class="AccessCss">Assigned</td>
+                                }
+                            }
+
+                            @if (data.Result == PointsStatementResult.Failed || data.Result == PointsStatementResult.No) {
+                                <td class="danger ResultCss">@(VirtuaCon.EnumUtility.GetFriendlyName<PointsStatementResult>(data.Result))</td>
+                            } else {
+                                <td class="ResultCss">@(VirtuaCon.EnumUtility.GetFriendlyName<PointsStatementResult>(data.Result))</td>
+                            }
+                            <td class="PointsCss">
+                                @data.Points
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+
+
+</div>
+<div class="col-lg-2">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            Column toggle
+
+        </div>
+        <div class="panel-body">
+
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" class="CommonCss" name="Employee Code" checked id="chkEmployeeCode" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Employee Code</span>
+            </div>
+
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="User" class="CommonCss" checked id="chkUser" />
+                    <span class="slider round"></span>
+                </label>
+                <span>User</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Category" class="CommonCss" checked id="chkCategory" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Category</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Document Type" class="CommonCss" checked id="chkDocumentType" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Document Type</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Title" class="CommonCss" checked id="chkTitle" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Title</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Date" class="CommonCss" checked id="chkDate" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Date</span>
+            </div>
+            @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments)
+            {
+                <div class="form-group">
+                    <label class="switch">
+                        <input type="checkbox" name="Access" class="CommonCss" checked id="chkAccess" />
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Access</span>
+                </div>
+            }
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Result" class="CommonCss" checked id="chkResult" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Result</span>
+            </div>
+            <div class="form-group">
+                <label class="switch">
+                    <input type="checkbox" name="Points" class="CommonCss" checked id="chkPoints" />
+                    <span class="slider round"></span>
+                </label>
+                <span>Points</span>
+            </div>
+                       
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exportModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Export</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please select the field you would like to export</p>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                Document Usages
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <input type="checkbox" name="Date" value="Date" class="CommonCssValue" checked id="checkViewDate" />
+                                    <span>View Date</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" class="CommonCssValue" name="Duration" value="Duration" id="checkDuration" />
+                                    <span>Duration</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                Document Properties
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <input type="checkbox" name="Title" value="Title" class="CommonCssValue" checked id="checkTitle" />
+                                    <span>Title</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Document Type" class="CommonCssValue" checked value="Document Type" id="checkType" />
+                                    <span>Type</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Access" class="CommonCssValue" value="Access" checked id="checkAccess" />
+                                    <span>Access</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Result" class="CommonCssValue" value="Result" checked id="checkResult" />
+                                    <span>Result</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Points" class="CommonCssValue" value="Points" checked id="checkPoints" />
+                                    <span>Points</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Category" class="CommonCssValue" value="Category" checked id="checkCategory" />
+                                    <span>Category</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                User Properties
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <input type="checkbox" name="Employee Code" class="CommonCssValue" checked value="Employee Code" id="checkEmployeeCode" />
+                                    <span>Employee Code</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="User" value="User" class="CommonCssValue" checked id="checkFullName" />
+                                    <span>Full Name</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Gender" value="Gender" class="CommonCssValue" id="checkGender" />
+                                    <span>Gender</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="ID Number" value="ID Number" class="CommonCssValue" id="checkIDNumber" />
+                                    <span>ID Number</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Race" value="Race" class="CommonCssValue" id="checkRace" />
+                                    <span>Race</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Mobile Number" value="Mobile Number" class="CommonCssValue" id="checkMobileNumber" />
+                                    <span>Mobile Number</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Email" value="Email" class="CommonCssValue" id="checkEmail" />
+                                    <span>Email</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="checkbox" name="Group" class="CommonCssValue" value="Group" id="checkGroup" />
+                                    <span>Group</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="text-center">
+                    <div class="btn-group">
+                        <button type="button" class="exportReport btn btn-primary" data-exportformid="test">Export</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var userId = "";
+    function download(params) {
+        var url = '@Url.Action("DownloadEXCEL")?' + params;
+        var request = new XMLHttpRequest();
+        request.open('GET', url);
+        request.responseType = 'blob';
+        request.onload = function() {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response, this.getResponseHeader('filename') || 'download-' + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement('a');
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || 'download-' + $.now();
+                a.click();
+                window.setTimeout(function() { document.body.removeChild(a); }, 500);
+            }
+        };
+        request.onreadystatechange = function() {
+            if (this.readyState === 4) {
+                $('#LoadingImageDiv').hide();
+            }
+        };
+        $('#LoadingImageDiv').show();
+        request.send();
+    }
+    function downloadAll(params) {
+        var url = '@Url.Action("DownloadEXCELZip")?' + params;
+        var request = new XMLHttpRequest();
+        request.open('GET', url);
+        request.responseType = 'blob';
+        request.onload = function() {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response, this.getResponseHeader('filename') || 'download-' + $.now());
+            } else {
+                var url = window.URL.createObjectURL(this.response);
+                var a = document.createElement('a');
+                document.body.appendChild(a);
+                a.href = url;
+                a.download = this.getResponseHeader('filename') || 'download-' + $.now();
+                a.click();
+                window.setTimeout(function() { document.body.removeChild(a); }, 500);
+            }
+        };
+        request.onreadystatechange = function() {
+            if (this.readyState === 4) {
+                $('#LoadingImageDiv').hide();
+            }
+        };
+        $('#LoadingImageDiv').show();
+        request.send();
+    }
+
+    $(function () {
+        $(".export").on('click',
+            function () {
+               // $("#exportModal").modal('show');
+                userId = $(this).attr('id');
+                if (userId !== 'All')
+                    $('#UserId').val(userId)
+
+                var filterArray = new Array();
+                //$('.CommonCss').each(function () {
+                //    if ($(this).is(':checked')) {
+                //        filterArray.push($(this).attr('name'));
+                //        $('#ToggleFilter').val(filterArray.join());
+                //    }
+                //});
+
+                $('.CommonCssValue').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+                
+                var formId = $(this).data('exportformid');
+                
+                var form = $('#' + formId);
+                var params = form.serialize();
+                download(params);
+
+                //if (userId !== 'All')
+                //    $('#UserId').val(userId)
+
+                //var filterArray = new Array();
+                //$('.CommonCss').each(function () {
+                //    if ($(this).is(':checked')) {
+                //        filterArray.push($(this).attr('name'));
+                //        $('#ToggleFilter').val(filterArray.join());
+                //    }
+                //});
+
+                //var formId = $(this).data('exportformid');
+                //var form = $('#' + formId);
+                //var params = form.serialize();
+                //download(params);
+            });
+
+        $(".exportReport").on('click',
+            function () {
+                if (userId !== 'All')
+                    $('#UserId').val(userId)
+
+                var filterArray = new Array();
+                //$('.CommonCss').each(function () {
+                //    if ($(this).is(':checked')) {
+                //        filterArray.push($(this).attr('name'));
+                //        $('#ToggleFilter').val(filterArray.join());
+                //    }
+                //});
+
+                $('.CommonCssValue').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+                
+                var formId = $(this).data('exportformid');
+                
+                var form = $('#' + formId);
+                var params = form.serialize();
+                download(params);
+                $("#exportModal").modal('hide');
+            });
+
+        $(".exportAll").on('click',
+            function () {
+                var id = $(this).attr('id');
+                if (id !== 'All')
+                    $('#UserId').val(id)
+
+                var filterArray = new Array();
+                $('.CommonCss').each(function () {
+                    if ($(this).is(':checked')) {
+                        filterArray.push($(this).attr('name'));
+                        $('#ToggleFilter').val(filterArray.join());
+                    }
+                });
+
+                var formId = $(this).data('exportformid');
+                var form = $('#' + formId);
+                var params = form.serialize();
+                downloadAll(params);
+            });
+
+        $('#chkEmployeeCode').click(function () {
+            if ($(this).is(":checked")) {
+                $('.EmployeeCodeCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.EmployeeCodeCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+
+
+        $('#chkUser').click(function () {
+            if ($(this).is(":checked")) {
+                $('.UserCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.UserCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkCategory').click(function () {
+            if ($(this).is(":checked")) {
+                $('.CategoryCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.CategoryCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkDocumentType').click(function () {
+            if ($(this).is(":checked")) {
+                $('.DocumentTypeCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.DocumentTypeCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkTitle').click(function () {
+            if ($(this).is(":checked")) {
+                $('.TitleCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.TitleCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkDate').click(function () {
+            if ($(this).is(":checked")) {
+                $('.DateCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.DateCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkAccess').click(function () {
+            if ($(this).is(":checked")) {
+                $('.AccessCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.AccessCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkResult').click(function () {
+            if ($(this).is(":checked")) {
+                $('.ResultCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.ResultCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+        $('#chkPoints').click(function () {
+            if ($(this).is(":checked")) {
+                $('.PointsCss').each(function () {
+                    $(this).show();
+                });
+            } else {
+                $('.PointsCss').each(function () {
+                    $(this).hide();
+                });
+            }
+        });
+    });
+</script>

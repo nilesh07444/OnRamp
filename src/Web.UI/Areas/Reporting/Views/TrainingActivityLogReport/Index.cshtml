@@ -1,0 +1,516 @@
+﻿@using Web.UI.Code.Extensions
+@using System.Threading
+@model Ramp.Contracts.ViewModel.TrainingActivityModel
+@{
+    ViewBag.Title = "Index";
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole()) {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    } else {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+}
+
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<style>
+    .requiredTxt {
+        border: solid red;
+    }
+
+    input, select {
+        max-width: 100%;
+    }
+
+    .required {
+        color: red;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+    .cursor {
+        cursor: pointer;
+    }
+
+    .switches {
+        vertical-align: middle;
+        position: relative;
+        display: inline-block;
+        width: 2.4em;
+        height: 1.4em;
+    }
+
+        .switches input {
+            display: none;
+        }
+
+    .sliders {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        -ms-transition: .4s;
+        -o-transition: .4s;
+        transition: .4s
+    }
+
+        .sliders:before {
+            position: absolute;
+            content: "";
+            height: 1em;
+            width: 1em;
+            left: 0.2em;
+            bottom: 0.2em;
+            background-color: white;
+            -webkit-transition: .4s;
+            -ms-transition: .4s;
+            -o-transition: .4s;
+            transition: .4s;
+        }
+
+    input:checked + .sliders {
+        background-color: #27b899;
+    }
+
+
+
+        input:checked + .sliders:before {
+            -ms-transform: translateX(1em);
+            -webkit-transform: translateX(1em);
+            transform: translateX(1em);
+        }
+
+    .sliders.round {
+        border-radius: 0.7em;
+    }
+
+        .sliders.round:before {
+            border-radius: 50%;
+        }
+</style>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            <span>Training Activity Report</span>
+        </h1>
+        <div class="well well-sm">
+            The training activity report allows you to capture on OnRamp, You can filter theses records based on date ranges and other inputs, and you can export this contect to Excel and Pdf.
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <b>All mandatory filters are marked with <span style="color:red">*</span></b>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Filtering Options
+            </div>
+
+            <div class="panel-body">
+                <div class="col-md-12">
+
+                    <div class="col-md-4 col-sm-offset-1">
+
+                        <div class="form-group">
+                            <span class="required">*</span>  @Html.Label("From")
+                            <div class="input-group date" id='toDate'>
+
+                                @Html.TextBoxFor(m => m.From, new { @class = "form-control requiredClass date", @id = "txtStartDate", @autocomplete = "off" })
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <span class="required">*</span>  @Html.Label("To")
+                            <div class="input-group date" id='FromDate'>
+                                @Html.TextBoxFor(m => m.To, new { @class = "form-control requiredClass date", @id = "txtEndDate", @autocomplete = "off" })
+                                <span class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group" id="divInternalTrainingProvider">
+                            <label>Trainers: </label>
+                            <div class="input-group">
+                                @Html.DropDownList("ddlTrainers", Model.TrainersList, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group" id="divExternalTrainingProvider" style="display:none;">
+                            <span>Trainers</span>
+                            <div class="input-group">
+                                @Html.DropDownList("ddlExternalTrainingProvider", Model.ExternalTrainingProviderList, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Trainees </label>
+                            <div class="input-group">
+                                @Html.DropDownList("ddlTrainees", Model.TraineesList, new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center col-md-2">
+                        
+                        <br>        <br>        <br>     <br>        <br>        <br>
+                        <input class="btn btn-primary" value="Generate" id="btnGenerate" type="button" disabled />
+                    </div>
+
+
+                    <div class="col-md-4 col-sm-offset-1">
+                        <div class="form-group">
+                            <label>Cost Range From: </label>
+                            @Html.TextBoxFor(m => m.CostRangeFrom, new { @class = "form-control ", @onkeypress = "return onlyNumberWithDot(event);", @id = "txtCostRangeFrom", @autocomplete = "none", style = "min-width: 100%" })
+                        </div>
+                        <div class="form-group">
+                            <label>Cost Range To: </label>
+                            @Html.TextBoxFor(m => m.CostRangeTo, new { @class = "form-control ", @onkeypress = "return onlyNumberWithDot(event);", @id = "txtCostRangeTo", @autocomplete = "none", style = "min-width: 100%" })
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <span class="required">*</span>
+                            <label>Type: </label>
+
+                            @Html.DropDownListFor(m => m.TrainingActivityType, Model.TrainingActivityTypeList, new { @class = "form-control requiredClass", style = "width: 65%" })
+                        </div>
+
+                        <div class="form-group">
+                            <label> Training Labels</label>
+                            <div class="input-group">
+                                @Html.DropDownList("ddlTrainingLabel", Model.TrainingLabelList, new { @class = "form-control " })
+                            </div>
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="col-lg-12" id="divTrainingLogReport" style="display:none;">
+
+    <div class="panel panel-info">
+
+        <div class="panel-heading">
+            Results
+            
+            <a class="pull-right exportCss" style="cursor:pointer" data-bind="click:download.excel"><b><u>Export To Excel</u></b></a>
+           
+        </div>
+
+        <div class="panel-body"  id="divTrainingActivityLogReport">
+
+
+            
+        </div>
+    </div>
+</div>
+<script>
+    $('.date').datetimepicker({
+        format: 'MM/DD/YYYY',
+        useCurrent: false
+    });
+
+
+    $('#divExternalTrainingProvider').hide();
+
+    $('#ddlTrainingLabel').attr("multiple", "multiple").val('');
+    $('#ddlTrainingLabel').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+        buttonWidth: 250,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    $('#ddlExternalTrainingProvider').attr("multiple", "multiple").val('');
+    $('#ddlExternalTrainingProvider').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+        buttonWidth: 250,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+    $('#ddlTrainees').attr("multiple", "multiple").val('');
+    $('#ddlTrainees').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+        buttonWidth: 250,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+    $('#ddlTrainers').attr("multiple", "multiple").val('');
+    $('#ddlTrainers').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+        buttonWidth: 250,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    $('#TrainingActivityType').change(function () {
+        var type = $("#TrainingActivityType option:selected").text();
+        if (type === 'External') {
+            $('#divExternalTrainingProvider').show();
+            $('#divInternalTrainingProvider').hide();
+        } else {
+            $('#divExternalTrainingProvider').hide();
+            $('#divInternalTrainingProvider').show();
+        }
+        if (type == "External") {
+
+            $('.ExternalInvoiceCss').each(function () {
+                $(this).show();
+            });
+            $('.BursaryInvoiceCss').each(function () {
+                $(this).hide();
+            });
+
+        } else if (type == "Bursary") {
+
+            $('.BursaryInvoiceCss').each(function () {
+                $(this).show();
+            });
+            $('.ExternalInvoiceCss').each(function () {
+                $(this).hide();
+            });
+
+        } else {
+            $('.ExternalInvoiceCss').each(function () {
+                $(this).hide();
+            });
+            $('.BursaryInvoiceCss').each(function () {
+                $(this).hide();
+            });
+
+        }
+    });
+    function fnCheckRequired() {
+        var from = $("#txtStartDate").val();
+        var to = $("#txtEndDate").val();
+        var trainingType = $("#TrainingActivityType").val();
+        if (to === '' || to === null || to === undefined || from === '' || from === null || from === undefined || trainingType === '' || trainingType === '10' || trainingType === null || trainingType === undefined) {
+            $('#btnGenerate').attr('disabled', 'disabled');
+        } else {
+            $('#btnGenerate').removeAttr('disabled', 'disabled');
+        }
+
+        
+    }
+
+    $(function () {
+
+        $('#btnGenerate').click(function () {
+            checkValidation();
+
+        });
+
+        $('#txtEndDate').blur(function () {
+            fnCheckRequired();
+        });
+        $('#txtStartDate').blur(function () {
+            fnCheckRequired();
+        });
+        $('#TrainingActivityType').change(function () {
+
+            fnCheckRequired();
+        });
+
+    });
+    /******************this is used to filter the Training Activity log and Validate as well before get report****************/
+    function checkValidation() {
+        var trainingLabels = $("#ddlTrainingLabel option:selected").toArray().map(item => item.text).join();
+        var trainers = $('#ddlTrainers').val();
+        var externalTrainingProviders = $('#ddlExternalTrainingProvider').val();
+        var trainees = $('#ddlTrainees').val();
+        var from = $("#txtStartDate").val();
+        var to = $("#txtEndDate").val();
+        var costRangeTo = $('#txtCostRangeTo').val();
+        var costRangeFrom = $('#txtCostRangeFrom').val();
+        
+        var trainingType = $("#TrainingActivityType").val();
+        var check = true;
+
+        if (trainingLabels !== undefined && trainingLabels !== null && trainingLabels !== "") {
+            trainingLabels = trainingLabels.toString();
+        }
+
+        if (trainers !== undefined && trainers !== null && trainers !== "") {
+            trainers = trainers.toString();
+        }
+
+        if (externalTrainingProviders !== undefined && externalTrainingProviders !== null && externalTrainingProviders !== "") {
+            externalTrainingProviders=externalTrainingProviders.toString();
+        }
+
+        if (trainees !== undefined && trainees !== null && trainees !== "") {
+           trainees=trainees.toString();
+        }
+
+        $('.requiredClass').each(function () {
+            var val = $(this).val();
+            if (val === '' || val === null || val === undefined) {
+                $(this).addClass('requiredTxt');
+                check = false;
+            } else {
+                $(this).removeClass('requiredTxt');
+            }
+
+        });
+        if (!check) {
+            notif({
+                msg: "<b>Error :</b> Please ensure that all fields that are required are filled in.",
+                type: "error",
+                multiline: true
+            });
+        }
+
+
+        if (from != "" && from != null && to != null && to != "") {
+
+            if (Date.parse(from) > Date.parse(to)) {
+                notif({
+                    msg: "<b>Error :</b> Please ensure that your start date and time is before your end date and time.",
+                    type: "error",
+                    multiline: true
+                });
+                check = false;
+            }
+
+        }
+
+        if (check) {
+
+             $('#LoadingImageDiv').show();
+            var url = '@Url.Action("GetTrainingLogFilter", "TrainingActivityLogReport", new { Area = "Reporting" })';
+
+            $.ajax({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        fromDate: from,
+                        toDate : to,
+                        trainers: trainers,
+                        trainees: trainees,
+                        trainingLables: trainingLabels,
+                        externalTrainingProviders: externalTrainingProviders,
+                        trainingType: trainingType,
+                        costRangeFrom: costRangeFrom,
+                        costRangeTo: costRangeTo
+                    }
+                })
+                .done(function (data) {
+                    $('#divTrainingActivityLogReport').html(data);
+                    $('#divTrainingLogReport').show();
+                })
+                .always(function() {
+                    $('#LoadingImageDiv').hide();
+                });
+        }
+
+    }
+
+    //Except only numbers for textbox
+    function onlyNumberWithDot(event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        if (charCode == 46) {
+            return true;
+        }
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+    //Except only numbers for textbox
+    function onlyNumbers(event) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+        return true;
+    }
+    var Controller = function () {
+
+        var self = this;
+        self.download = {
+            excel: function () {
+                var trainingLabels = $("#ddlTrainingLabel option:selected").toArray().map(item => item.text).join();
+                var trainers = $('#ddlTrainers').val();
+                var externalTrainingProviders = $('#ddlExternalTrainingProvider').val();
+                var trainees = $('#ddlTrainees').val();
+                var from = $("#txtStartDate").val();
+                var to = $("#txtEndDate").val();
+                var costRangeTo = $('#txtCostRangeTo').val();
+                var costRangeFrom = $('#txtCostRangeFrom').val();
+
+                var trainingType = $("#TrainingActivityType").val();
+
+                var url = '@Url.Action("DownloadExcelLog")' + '?' + $.param({
+                    FromDate: from,
+                    ToDate: to,
+                    Trainees: trainees,
+                    Trainers: trainers,
+                    TrainingLables: trainingLabels,
+                    ExternalTrainingProviders: externalTrainingProviders,
+                    TrainingType: trainingType,
+                    CostRangeFrom: costRangeFrom,
+                    CostRangeTo: costRangeTo,
+                    UriBase: '@AppSettings.Urls.ResolveUrl("~" + Url.Action("/TrainingActivityLogReport"))'
+                }, true);
+                $("#progressModal").modal('show');
+                self.downloadReport(url);
+
+            }
+        };
+        self.downloadReport = function (url) {
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+
+            //request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //request.setRequestHeader("Content-length", url.length);
+
+            request.onload = function () {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                    $("#progressModal").modal('hide');
+                }
+            }
+            request.send();
+
+        };
+    };
+     var vm = new Controller();
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+</script>

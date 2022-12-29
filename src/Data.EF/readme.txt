@@ -1,0 +1,1 @@
+﻿Create your DB Context classes and any EF related logic in this Assembly

@@ -1,0 +1,45 @@
+﻿@model List<Ramp.Contracts.ViewModel.UserViewModel>
+
+@{
+    Layout = null;
+}
+<div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>User Name</th>
+                <th>Average Rating</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @foreach (var user in Model)
+            {
+                var username =!string.IsNullOrWhiteSpace(user.LastName) ? !string.IsNullOrWhiteSpace(user.FirstName) ? string.Format("{0}, {1}",user.LastName,user.FirstName) : user.LastName : user.FirstName;
+                <tr>
+                    <td>@username</td>
+                    <td>
+                        <input value="@(user.AverageUserRating)" disabled="disabled" class="CompanyUserRatings form-control" name="CompanyUserRatings" data-min="0" data-max="5" data-step="1" data-size="xs" style="display: none;">
+                    </td>
+                    <td>
+                        <button class="btn btn-info btn-sm CompanyUserSurveyDetails" id="@(user.Id)" style="cursor: pointer">
+                            <i class="fa fa-eye"></i>  View
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="panel panel-info" style="display: none; margin: 0px 18px 16px 14px;" id="CompanyUsersHistoryDiv">
+    <div class="panel-heading">
+        Customer Users Rating History
+    </div>
+    <div class="panel-body" id="CompanyUsersHistoryTableData">
+        <div class="col-lg-12" style="display: none; text-align: center;" id="CompanyUsersHistoryNoDataDiv">
+            <label id="lblNoData">No Data Found</label>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,412 @@
+﻿@using Web.UI.Code.Extensions
+<div id="manageCategoriesModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-bind="with:$root.modals.manageCategories">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch">
+                <button type="button" class="close" data-dismiss="" data-bind="click:close.bind()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Manage Document Categories</h4>
+            </div>
+            <div class="modal-body">
+                <div style="max-width: 300px;">
+                    <div class="input-group">
+                        <input type="search" id="categorySearch" placeholder="Search" class="form-control" />
+                        <span class="input-group-btn">
+                            <button id="categorySearchClear" class="btn btn-default">
+                                <span class="fa fa-close"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+                <br />
+                <div id="tree"></div>
+            </div>
+            <div class="modal-footer" style="text-align: center">
+                To manage categories, right-click a category and select an option. <br /> To move documents and categories drag and drop it in the desired location.
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #jstree-marker, .vakata-context {
+        z-index: 1100;
+    }
+    #manageCategoriesModal {
+        overflow-x: auto;
+    }
+    #manageCategoriesModal .modal-dialog {
+        display: table;
+    }
+    .policy-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+
+    .memo-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .test-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .training-manual-icon {
+        background-image: url('@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .checklist-icon {
+        background-image: url('../../content/images/checklist.png') !important;
+         -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+    .custom-icon {
+        background-image: url('../../content/images/customdocument.png') !important;
+        -ms-background-size: 24px;
+        background-size: 24px;
+        -ms-background-position: 0 !important;
+        background-position: 0 !important;
+    }
+</style>
+
+<script>
+    $(function() {
+        var tree = $('#tree');
+        var to = false;
+        $('#categorySearch').keyup(function() {
+            if (to) {
+                clearTimeout(to);
+            }
+            to = setTimeout(function() {
+                    var value = $('#categorySearch').val();
+                    tree.jstree(true).search(value);
+                },
+                250);
+        });
+        $('#categorySearchClear').click(function(e) {
+            $('#categorySearch').val('')
+                .trigger('keyup').focus();
+        });
+
+        tree.jstree({
+            core: {
+                data: {
+                    url: '@Url.Action("JsTreeWithDocuments", "Category", new { Area = "" })'
+                },
+
+                multiple: false,
+                check_callback: function (operation, node, node_parent, node_position, more) {
+                    if (operation === 'move_node') {
+                        if (node.text === 'Default') {
+                            return false;
+                        }
+                        if (node.type !== 'default' && node_parent.type === 'default') {
+                            if (node_parent.text === 'Category') {
+                                return false;
+                            }
+                            return true;
+                        }
+                        if (node.type === 'default' && node_parent.type === 'default') {
+                            return true;
+                        }
+                        return false;
+                    } else if (operation === 'delete_node') {
+                        var descendants = $.map(node.children_d,
+                            function(id) {
+                                return $('#tree').jstree(true).get_node(id);
+                            });
+                        if (containsDocument(descendants)) {
+                            notif({
+                                msg: 'Categories that contain documents cannot be deleted.',
+                                type: 'error'
+                            });
+                            return false;
+                        }
+                        return true;
+                    }
+                }
+            },
+            contextmenu: {
+
+                items: function(node) {
+                    var tree = $('#tree').jstree(true);
+                    if (node.type === 'default') {
+                        if (node.text === 'Category' || node.text === 'Default') {
+                            return {
+                                createCategory: {
+                                    label: 'Create',
+                                    action: createCategory
+                                }
+                            };
+                        }
+                        return {
+                            renameCategory: {
+                                label: 'Rename',
+                                action: function(obj) {
+                                    tree.edit(node);
+                                }
+                            },
+                            deleteItem: {
+                                label: 'Delete',
+                                action: function(obj) {
+                                    bootbox.confirm(
+                                        'Are you sure you want to delete the "' + node.text + '" category?',
+                                        function(result) {
+                                            if (result) tree.delete_node(node);
+                                        });
+                                }
+                            },
+                            createCategory: {
+                                label: 'Create',
+                                action: createCategory
+                            }
+                        }
+                    } else {
+                        return {};
+                    }
+
+                    function createCategory(obj) {
+                        tree.create_node(node,
+                            {
+                                text: generateTitle(),
+                                id: generateUUID()
+                            });
+                    }
+
+                    function generateTitle() {
+                        var newNodeTitle = "New Category";
+                        var newNum = 1;
+                        var tree = $('#tree').jstree(true);
+                        var nodes = $.map(tree.get_node('#').children_d,
+                            function(id) {
+                                return tree.get_node(id);
+                            });
+                        var unnamedCategories = $.grep(nodes,
+                            function(node) {
+                                var pattern = /^New Category(?: \(\d+\))?$/;
+                                return node.type === 'default' && pattern.test(node.text);
+                            });
+                        if (unnamedCategories.length > 0) {
+                            var categoryNumbers = $.map(unnamedCategories,
+                                function(node) {
+                                    if (node.text === newNodeTitle) return 1;
+                                    var pattern = /^New Category \((\d+)\)$/;
+                                    var match = pattern.exec(node.text);
+                                    var num = parseInt(match[1], 10);
+                                    return num;
+                                });
+                            newNum = lowestMissing(categoryNumbers);
+                        }
+
+                        if (newNum === 1) {
+                            return newNodeTitle;
+                        }
+                        return newNodeTitle + ' (' + newNum + ')';
+                    }
+
+                    function lowestMissing(arr) {
+                        arr.sort(function (a, b) { return a - b; });
+                        var max = arr[arr.length - 1];
+                        if (arr.length === max) return max + 1;
+                        for (var i = 1; i < max; i++) {
+                            if (arr.indexOf(i) === -1) {
+                                return i;
+                            }
+                        }
+                    }
+                }
+            },
+            sort: function(a, b) {
+                var n1 = this.get_node(a);
+                var n2 = this.get_node(b);
+
+                if (n1.type === 'default' && n1.type === n2.type) { // folders
+                    return (n1.text > n2.text) ? 1 : -1;
+                } else if (n1.type === 'default' || n2.type === 'default') {
+                    return (n1.type !== 'default') ? 1 : -1; // folder first
+                } else {
+                    return (n1.text > n2.text) ? 1 : -1;
+                }
+            },
+            types: {
+                Memo: {
+                    icon: 'memo-icon'
+                },
+                Policy: {
+                    icon: 'policy-icon'
+                },
+                Test: {
+                    icon: 'test-icon'
+                },
+                TrainingManual: {
+                    icon: 'training-manual-icon'
+                },
+                Checklist: {
+                    icon: 'checklist-icon'
+                },
+                custom: {
+                    icon: 'custom-icon'
+                },
+               default: {
+                    icon: 'glyphicon glyphicon-plus-sign category-icon'
+                }
+            },
+            plugins: ['search', 'sort', 'dnd', 'contextmenu', 'types']
+        });
+
+        tree
+            .on('create_node.jstree',
+                function (event, data) {
+                    var node = $.extend(true, {}, data.node);
+                    if (isUnique(node)) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("Create", "Category", new { Area = "" })',
+                            data: { title: node.text, id: node.id, parentId: node.parent }
+                        }).done(function (data) {
+                            var tree = $('#tree').jstree(true);
+                            tree.edit(node.id);
+                            notif({
+                                msg: 'Your category has been created successfully.',
+                                type: 'success'
+                            });
+                        }).fail(function (xhr, status) {
+                            notif({
+                                msg: 'Your category could not be created. Please try again.',
+                                type: 'error'
+                            });
+                            refreshTree();
+                        });
+                    } else {
+                        notif({
+                            msg: 'Category "' + node.text + '" already exists.',
+                            type: 'error'
+                        });
+                        refreshTree();
+                    }
+                })
+            .on('rename_node.jstree',
+                function (event, data) {
+                    var node = $.extend(true, {}, data.node);
+                    if (data.text === data.old) return;
+                    if (isUnique(node)) {
+                        $.ajax({
+                            type: 'PUT',
+                            url: '@Url.Action("Rename", "Category", new { Area = "" })',
+                            data: { id: node.id, title: node.text }
+                        }).done(function (data) {
+                            notif({
+                                msg: 'Successfully renamed category.',
+                                type: 'success'
+                            });
+                        }).fail(function (xhr, status) {
+                            notif({
+                                msg: 'Failed to rename category.',
+                                type: 'error'
+                            });
+                            refreshTree();
+                        });
+                    } else {
+                        notif({
+                            msg: 'Category ' + node.text + ' already exists.',
+                            type: 'error'
+                        });
+                        refreshTree();
+                    }
+                })
+            .on('delete_node.jstree',
+                function (event, data) {
+                    $.ajax({
+                        method: 'DELETE',
+                        url: '@Url.Action("Delete", "Category", new { Area = "" })',
+                        data: { id: data.node.id }
+                    }).done(function (data) {
+                        notif({
+                            msg: 'Successfully deleted category.',
+                            type: 'success'
+                        });
+                    }).fail(function (xhr, status) {
+                        refreshTree();
+                    });
+                })
+            .on('move_node.jstree',
+                function (event, data) {
+                    debugger
+                    $('#tree').jstree(true)._open_to(data.node.id);
+                    var node = $.extend(true, {}, data.node);
+                    if (data.old_parent !== data.parent) {
+                        $.ajax({
+                            method: 'PUT',
+                            url: '@Url.Action("UpdateNodeParent", "Category", new { Area = "" })',
+                            data: { id: data.node.id, parentId: data.parent, type: data.node.original.type }
+                        }).done(function (data) {
+                            notif({
+                                msg: 'Your category has been moved successfully.',
+                                type: 'success'
+                            });
+                        }).fail(function (xhr, status) {
+                            notif({
+                                msg: 'Your category could not be moved. Please try again.',
+                                type: 'error'
+                            });
+                            refreshTree();
+                        });
+                    }
+                })
+            .on('open_node.jstree',
+                function (event, data) {
+                    if (_adjustPageFooter) _adjustPageFooter();
+                });
+
+    });
+
+    function refreshTree() {
+        $('#tree').jstree(true).refresh();
+    };
+
+    function isUnique(node) {
+        var tree = $('#tree').jstree(true);
+        var collection = tree.get_node('#').children_d;
+        collection = $.map(collection,
+            function(id) {
+                return tree.get_node(id);
+            });
+        for (var i = 0; i < collection.length; i++) {
+            if (node.id === collection[i].id || collection[i].type !== 'default') continue;
+            var current = collection[i].text;
+            current = current.toLowerCase().replace(' ', '').trim();
+            if (current.indexOf('\n') > 0) {
+                current = current.substring(0, current.indexOf('\n'));
+            }
+            if (node.text.toLowerCase().replace(' ', '').trim() === current) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function containsDocument(collection) {
+        for (var i = 0; i < collection.length; i++) {
+            if (collection[i].type !== 'default') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+</script>

@@ -1,0 +1,964 @@
+﻿@using System.Threading
+@using Common.Enums
+@using Common.Web
+@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+
+@{
+
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">Interaction Report</h1>
+        <div class="well well-sm">
+            This report allows you to view a summary of interaction on the selected documents, for a group of users, category of documents and within a date range. You can view the detail of the interaction on each document by clicking on the link.
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <b>All mandatory filters are marked with <span style="color:red">*</span></b>
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Filtering Options
+                <a href="javascript:void(0)" class="pull-right" style="cursor: pointer" data-bind="click: download"><b><u>Bulk Export</u></b></a>
+            </div>
+            <div class="panel-body">
+                <div class="col-md-3 col-sm-offset-1">
+                    <div class="form-group">
+                        <label>Groups</label><br />
+                        <select id="groups-multiselect-demo" style="width:100%">
+                            @foreach (var item in ViewBag.Groups)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                    @*<div class="form-group">
+                            <label>Department</label><br />
+                            <select id="Department-multiselect" style="width:100%">
+                                @foreach (var item in ViewBag.Departments)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        </div>*@
+
+                    <div class="form-group">
+                        <label>Categories</label><br />
+                        <select id="categories-multiselect-demo">
+                            @foreach (var item in ViewBag.Categories)
+                            {
+                                <option value="@item.Value">@item.Text.Trim()</option>
+                            }
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-3">
+                    <div class="form-group">
+                        <label>Document Type</label><br>
+
+                        <select id="documentType-multiselect-demo">
+                            @if (PortalContext.Current.UserCompany.EnableChecklistDocument)
+                            {
+                                foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)))
+                                {
+                                    if (item.Key != 0 && item.Key != 5)
+                                    {
+                                        <option value="@item.Key">@item.Value</option>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType)))
+                                {
+                                    if (item.Key != 0 && item.Key != 5)
+                                    {
+                                        <option value="@item.Key">@item.Value</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tags</label><br>
+
+                        <select id="label-multiselect-Tags">
+                            @if (ViewBag.Labels != null)
+                            {
+                                foreach (var item in ViewBag.Labels)
+                                {
+                                    <option value="@item.Name">@item.Name</option>
+                                }
+                            }
+                        </select>
+
+
+                    </div>
+
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <div class="form-group">
+                        <label><span style="color:red"><b>*</b></span> From Date</label>
+                        <div id="fromDate" class="input-group" data-bind="datepicker: fromDate">
+                            <input id="txtFromdate" type="text" class="form-control cssDatePicker" style="max-width: none" autocomplete="off" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label><span style="color:red"><b>*</b></span> To Date</label>
+                        <div id="toDate" class="input-group" data-bind="datepicker: toDate">
+                            <input id="txtTodate" type="text" class="form-control cssDatePicker" style="max-width: none" autocomplete="off" />
+                            <span class="input-group-addon">
+                                <i class="fa fa-calendar"></i>
+                            </span>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="col-md-2 col-sm-offset-1">
+                    <br /><br /><br />
+                    <input class="btn btn-primary" value="Generate" type="button" data-bind="enable: toDate() && fromDate(), click: submit" />
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ko if: hasData -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('1') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Training Manual
+        <!-- ko if: interactions.trainingManual().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'trainingManual')"><b><u>Bulk Export Training Manual's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Allocated</th>
+                <th class="col-md-1">Interacted</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.trainingManual">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Allocated"></td>
+                <td data-bind="text: Interacted"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 1)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.trainingManual().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="5" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('4') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Memo
+        <!-- ko if: interactions.memo().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'memo')"><b><u>Bulk Export Memo's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Allocated</th>
+                <th class="col-md-1">Interacted</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.memo">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Allocated"></td>
+                <td data-bind="text: Interacted"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 4)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.memo().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="5" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('3') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Policy
+        <!-- ko if: interactions.policy().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'policy')"><b><u>Bulk Export Policies</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Allocated</th>
+                <th class="col-md-1">Yet to Interact</th>
+                <th class="col-md-1">View Later</th>
+
+                <th class="col-md-1">Not Accepted</th>
+                <th class="col-md-1">Accepted</th>
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.policy">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Allocated"></td>
+                <td data-bind="text: YetToInteract"></td>
+                <td data-bind="text: ViewLater"></td>
+
+                <td data-bind="text: Rejected"></td>
+                <td data-bind="text: Accepted"></td>
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 3)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.policy().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="7" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('2') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Test
+        <!-- ko if: interactions.test().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'test')"><b><u>Bulk Export Test's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Allocated</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Passed</th>
+                <th class="col-md-1">Failed</th>
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.test">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Allocated"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td data-bind="text: Passed"></td>
+                <td data-bind="text: Failed"></td>
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 2)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.test().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="6" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('6') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Activity Book
+        <!-- ko if: interactions.checkList().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'checkList')"><b><u>Bulk Export Activity Book's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Allocated</th>
+                <th class="col-md-1">Interacted</th>
+                <th class="col-md-1">Yet to Interact</th>
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.checkList">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Allocated"></td>
+                <td data-bind="text: Interacted"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 6)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.checkList().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="5" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('5') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Custom Document
+        <!-- ko if: interactions.customDocuments().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'customDocuments')"><b><u>Bulk Export Custom Document</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Allocated</th>
+                <th class="col-md-1">Interacted</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.customDocuments">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Allocated"></td>
+                <td data-bind="text: Interacted"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId,7)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.trainingManual().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="5" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<br />
+
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('1') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Global Training Manual
+        <!-- ko if: interactions.globaltrainingManual().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'globalTrainingManual')"><b><u>Bulk Export Global Training Manual's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+
+                <th class="col-md-1">Interacted</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.globaltrainingManual">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Interacted"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 1)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.globaltrainingManual().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="5" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('4') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Global Memo
+        <!-- ko if: interactions.globalmemo().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'globalmemo')"><b><u>Bulk Export Global Memo's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Interacted</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.globalmemo">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Interacted"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 4)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.globalmemo().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="5" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('3') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Global Policy
+        <!-- ko if: interactions.globalpolicy().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'globalpolicy')"><b><u>Bulk Export Global Policies</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Yet to Interact</th>
+                <th class="col-md-1">View Later</th>
+
+                <th class="col-md-1">Not Accepted</th>
+                <th class="col-md-1">Accepted</th>
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.globalpolicy">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: YetToInteract"></td>
+                <td data-bind="text: ViewLater"></td>
+
+                <td data-bind="text: Rejected"></td>
+                <td data-bind="text: Accepted"></td>
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 3)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.globalpolicy().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="7" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('2') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Global Test
+        <!-- ko if: interactions.globaltest().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'globaltest')"><b><u>Bulk Export Global Test's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Passed</th>
+                <th class="col-md-1">Failed</th>
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.globaltest">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td data-bind="text: Passed"></td>
+                <td data-bind="text: Failed"></td>
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 2)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.globaltest().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="6" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- ko if: selectedDocumentTypes().length === 0 || selectedDocumentTypes().indexOf('6') !== -1 -->
+<div class="panel panel-info">
+    <div class="panel-heading">
+        Global Activity Book
+        <!-- ko if: interactions.globalcheckList().length > 0-->
+        <div class="pull-right">
+            <a class="" style="cursor:pointer; color:white;" data-bind="click:$root.excelSubmissions.bind($data, 'globalcheckList')"><b><u>Bulk Export Global Activity Book's</u></b></a>
+        </div>
+        <!-- /ko -->
+    </div>
+    <table class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th class="col-md-1">Allocated</th>
+                <th class="col-md-1">Yet to Interact</th>
+
+                <th class="col-md-1">Link</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: interactions.globalcheckList">
+            <tr>
+                <td data-bind="text: Title"></td>
+                <td data-bind="text: Interacted"></td>
+                <td data-bind="text: YetToInteract"></td>
+
+                <td>
+                    <a data-bind="attr: {href: $root.detailUrl(DocumentId, 6)}" title="Detail" target="_blank"><i class="glyphicon glyphicon-link"></i></a>
+                </td>
+            </tr>
+        </tbody>
+        <!-- ko if: interactions.globalcheckList().length === 0 -->
+        <tbody>
+            <tr>
+                <td colspan="5" class="text-center">No Data</td>
+            </tr>
+        </tbody>
+        <!-- /ko -->
+    </table>
+</div>
+<!-- /ko -->
+<!-- /ko -->
+<div class="modal fade" id="progressModal2" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modalSearch ">
+                <h4 class="modal-title">Export Submission</h4>
+            </div>
+            <div class="modal-body">
+                <span>Please wait while we export submissions...</span><br><br>
+            </div>
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    $('#label-multiselect-Tags').attr("multiple", "multiple").val('');
+    $('#label-multiselect-Tags').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 280,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+
+    });
+    $('#Department-multiselect').attr("multiple", "multiple").val('');
+    $('#Department-multiselect').multiselect({
+        includeSelectAllOption: true,
+        buttonWidth: 280,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+
+    });
+    $('#groups-multiselect-demo').attr("multiple", "multiple").val('');
+    $('#groups-multiselect-demo').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+        buttonWidth:280,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    $('#categories-multiselect-demo').attr("multiple", "multiple").val('');
+    $('#categories-multiselect-demo').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+    buttonWidth: 280,
+        enableFiltering: true,
+        maxHeight: 350,
+        enableCaseInsensitiveFiltering: true
+    });
+
+    $('#documentType-multiselect-demo').attr("multiple", "multiple").val('');
+    $('#documentType-multiselect-demo').multiselect({
+        includeSelectAllOption: true,
+        nonSelectedText: 'None selected',
+  buttonWidth: 280,
+        enableFiltering: false,
+        maxHeight: 350
+    });
+
+    var Controller = function(categories, groups) {
+        var self = this;
+        self.hasData = ko.observable(false);
+        self.categories = categories;
+        self.groups = groups;
+
+        self.fromDate = ko.observable();
+        self.fromDate.subscribe(function(newValue) {
+            $('#toDate').data('DateTimePicker').minDate(new Date(newValue));
+            self.hasData(false);
+        });
+        self.toDate = ko.observable();
+        self.toDate.subscribe(function(newValue) {
+            $('#fromDate').data('DateTimePicker').maxDate(new Date(newValue));
+            self.hasData(false);
+        });
+        self.selectedDepartments = ko.observableArray();
+        self.selectedGroups = ko.observableArray();
+        self.selectedGroups.subscribe(function(changes) {
+            self.hasData(false);
+        }, null, 'arrayChange');
+
+        $('#groups-multiselect-demo').change(function () {
+            self.selectedGroups($(this).val());
+        })
+        $('#Department-multiselect').change(function () {
+            self.selectedDepartments($(this).val());
+        })
+        self.selectedCategories = ko.observableArray();
+        self.selectedCategories.subscribe(function (changes) {
+            self.hasData(false);
+        }, null, 'arrayChange');
+
+        $('#categories-multiselect-demo').change(function () {
+            self.selectedCategories($(this).val());
+        })
+
+        self.selectedDocumentTypes = ko.observableArray();
+        self.selectedDocumentTypes.subscribe(function (changes) {
+            self.hasData(false);
+        }, null, 'arrayChange');
+
+        $('#documentType-multiselect-demo').change(function () {
+            self.selectedDocumentTypes($(this).val());
+        })
+
+        self.enums = {
+            documentType: @Html.ToJson(PortalContext.Current.UserCompany.EnableChecklistDocument? EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)) : EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType)))
+        };
+        self.documentTypes = $.map(self.enums.documentType,
+            function(i, index) {
+                if (index != 0 && index != 5) {
+                    return {
+                        id: index,
+                        name: i
+                    };
+                }
+            }).reverse();
+
+        self.interactions = {
+            trainingManual: ko.observableArray(),
+            memo: ko.observableArray(),
+            policy: ko.observableArray(),
+            test: ko.observableArray(),
+            checkList: ko.observableArray(),
+            globaltrainingManual: ko.observableArray(),
+            globalmemo: ko.observableArray(),
+            globalpolicy: ko.observableArray(),
+            globaltest: ko.observableArray(),
+            globalcheckList: ko.observableArray(),
+            customDocuments: ko.observableArray()
+        }
+
+        self.submit = function() {
+            if (!self.fromDate() || !self.toDate()) {
+                notif({
+                    msg: 'From and To dates are required',
+                    type: 'warning'
+                });
+                return;
+            }
+
+            $('#LoadingImageDiv').show();
+            var tags = $('#label-multiselect-Tags').val();
+            if (tags === null || tags === "" || tags === undefined) {
+                tags = "";
+            }
+
+            $.ajax({
+                url: '@Url.Action("InteractionReportData")',
+                method: 'POST',
+                data: {
+                    trainingLabels: tags.toString(),
+                    fromDate: self.fromDate(),
+                    toDate: self.toDate(),
+                    groupIds: self.selectedGroups() || [],
+                    departments: self.selectedDepartments()||[],
+                    categoryIds: self.selectedCategories() || [],
+                    documentTypes: (self.selectedDocumentTypes() || []).map(function(item) {
+                        return parseInt(item);
+                    })
+                }
+            }).done(function (data) {
+           
+                self.interactions.trainingManual(data.TrainingManualInteractions);
+                self.interactions.memo(data.MemoInteractions);
+                self.interactions.policy(data.PolicyInteractions);
+                self.interactions.test(data.TestInteractions);
+                self.interactions.checkList(data.CheckListInteractions);
+
+                self.interactions.globaltrainingManual(data.GlobalTrainingManualInteractions);
+                self.interactions.globalmemo(data.GlobalMemoInteractions);
+                self.interactions.globalpolicy(data.GlobalPolicyInteractions);
+                self.interactions.globaltest(data.GlobalTestInteractions);
+                self.interactions.globalcheckList(data.GlobalCheckListInteractions);
+                self.interactions.customDocuments(data.CustomDocumentsInteractions);
+                self.hasData(true);
+            }).always(function() {
+                $('#LoadingImageDiv').hide();
+            });
+        }
+
+
+        self.excelSubmissions = function (event, data) {
+            //console.log('ko.toJs...', ko.toJS(event));
+            var docType = ko.toJS(event);
+            var obj = null;
+            switch (docType) {
+                case "checkList":
+                    obj = ko.toJS(data.interactions.checkList);
+                case "memo":
+                    obj = ko.toJS(data.interactions.memo);
+                case "trainingManual":
+                    obj = ko.toJS(data.interactions.trainingManual);
+                case "policy":
+                    obj = ko.toJS(data.interactions.policy);
+                case "test":
+                    obj = ko.toJS(data.interactions.test);
+                case "globalcheckList":
+                    obj = ko.toJS(data.interactions.globalcheckList);
+                case "globalTrainingManual":
+                    obj = ko.toJS(data.interactions.globaltrainingManual);
+                case "globalmemo":
+                    obj = ko.toJS(data.interactions.globalmemo);
+                case "globalpolicy":
+                    obj = ko.toJS(data.interactions.globalpolicy);
+                case "globaltest":
+                    obj = ko.toJS(data.interactions.globaltest);
+                case "customDocuments":
+                    obj = ko.toJS(data.interactions.customDocuments);
+            }
+
+            var url = '@Url.Action("DownloadSubmissionsZip")' + '?type=' + docType + '&' + $.param({
+                FromDate: ko.unwrap(vm.fromDate),
+                ToDate: ko.unwrap(vm.toDate)
+                //,
+                //CheckListIds: obj[0].DocumentId,
+                //Status: ko.unwrap(vm.selectedStatus),
+                //Access: ko.unwrap(vm.selectedAccess),
+                //CheckListId: obj[0].DocumentId
+            }, true);
+            self.downloadReport(url);
+        }
+
+        self.downloadReport = function (url) {
+            $('#progressModal2').modal('show');
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+
+            //request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            //request.setRequestHeader("Content-length", url.length);
+
+            request.onload = function () {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function () { document.body.removeChild(a); }, 500);
+                }
+            }
+            request.send();
+            setTimeout(function () { $('#progressModal2').modal('hide'); }, 2500);
+        };
+        self.download = function () {
+            if (!self.fromDate() || !self.toDate()) {
+                notif({
+                    type: 'warning',
+                    msg: 'Date range is required for this report.'
+                });
+                return;
+            }
+            var tags = $('#label-multiselect-Tags').val();
+            if ($('#label-multiselect-Tags').val() === null || $('#label-multiselect-Tags').val() === "" || $('#label-multiselect-Tags').val() === undefined) {
+                tag = "";
+            }
+
+            var url = '@Url.Action("DownloadEXCEL", "InteractionReport")?' +
+                $.param({
+                        FromDate: self.fromDate(),
+                        ToDate: self.toDate(),
+                        GroupIds: self.selectedGroups() || [],
+                CategoryIds: self.selectedCategories() || [],
+                TrainingLabels:tags?.toString(),
+                        DocumentTypes: (self.selectedDocumentTypes() || []).map(function(item) {
+                            return parseInt(item);
+                        })
+                    },
+                    true);
+            var request = new XMLHttpRequest();
+            request.open("GET", url);
+            request.responseType = 'blob';
+            request.onload = function() {
+                var userAgent = window.navigator.userAgent;
+                var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                if (!allowBlob) {
+                    window.navigator.msSaveBlob(this.response,
+                        this.getResponseHeader('filename') || "download-" + $.now());
+                } else {
+                    var url = window.URL.createObjectURL(this.response);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.href = url;
+                    a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                    a.click();
+                    window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                }
+            }
+            request.onreadystatechange = function() {
+                if (this.readyState === 4) {
+                    $('#LoadingImageDiv').hide();
+                }
+            };
+            $('#LoadingImageDiv').show();
+            request.send();
+        };
+
+        self.detailUrl = function(id, documentType) {
+            return '@Url.Action("Detail")?' +
+                $.param({
+                        DocumentId: id,
+                        DocumentType: documentType,
+                        FromDate: self.fromDate(),
+                        ToDate: self.toDate(),
+                        GroupIds: self.selectedGroups()
+                    },
+                    true);
+        }
+    }
+    var vm = new Controller(
+        @Html.ToJson((IEnumerable<SerializableSelectListItem>) ViewBag.Categories),
+        @Html.ToJson((IEnumerable<SerializableSelectListItem>) ViewBag.Groups));
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+</script>

@@ -1,0 +1,404 @@
+﻿@using Ramp.Security.Authorization
+@using System.Threading
+@using Web.UI.Code.Extensions
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.PdfViewer
+
+@{
+    var version = System.Reflection.Assembly.GetAssembly(typeof(Web.UI.App_Start.RampSecurityConfig)).GetName().Version.ToString();
+}
+
+<!DOCTYPE HTML
+          PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv=“X-UA-Compatible” content="IE=11" />
+    <title>OnRamp Online Training Portal</title>
+    @Styles.Render("https://cdn.syncfusion.com/ej2/17.4.51/material.css")
+    @Scripts.Render("https://cdn.syncfusion.com/ej2/17.4.51/dist/ej2.min.js")
+    @Styles.Render("~/bundles/css")
+    <link href="~/Content/admin.css?v=@version" rel="stylesheet" />
+    @Scripts.Render("~/bundles/js")
+    <script src="~/Scripts/app/app.common.js?v=@version"></script>
+    <script src="~/Scripts/app/app.datamodel.js?v=@version"></script>
+
+    <script src="~/Scripts/app/app.viewmodel.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.common.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.ajaxprefilter.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.editortemplates.js?v=@version"></script>
+    <script src="~/Scripts/app/extension.extenders.js?v=@version"></script>
+    <script src="~/Scripts/app/extensions.validation.js?v=@version"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+
+    <script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.js"></script>
+    <script src="~/Scripts/app/SignatureManger.js?v=@version"></script>
+    @*Changes made by Pawan*@
+    <script src="~/Scripts/jstree.js"></script>
+    @if (HttpContext.Current.IsDebuggingEnabled)
+    {
+        <link rel="stylesheet" href="~/Content/ContentTools/build/content-tools.min.css" />
+        <link rel="stylesheet" href="~/Content/fancyBox/source/jquery.fancybox.css" />
+    }
+    else
+    {
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/contenttools/1.3.1/content-tools.min.css" />
+        <link rel="stylesheet" href="~/Content/hopscotch/dist/css/hopscotch.min.css" />
+        <link rel="stylesheet" href="~/Content/fancyBox/source/jquery.fancybox.css" />
+    }
+    @RenderSection("scripts", false)
+
+
+    @Html.Partial("_NotifyPartial")
+
+
+
+    @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.ApplyCustomCss && File.Exists(Server.MapPath("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css")))
+    {
+        var customCssPath = Url.Content("~/Content/" + PortalContext.Current.UserCompany.Id.ToString() + "-custom.css");
+        <link id="ApplyCustomCss" href="@customCssPath" rel="stylesheet" />
+    }
+
+    @RenderSection("scripts", false)
+    @Html.Partial("_NotifyPartial")
+
+    <style>
+            @Html.Raw(PortalContext.Current.EmbedCss())
+    </style>
+
+
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div id="LoadingImageDiv" class="modal-backdrop fade in" style="background-color: #FFF !important; display: none">
+                <div style="left: 47%; position: absolute !important; top: 34%;">
+                    <p>
+                        <img src="@(Url.Content("~/Content/images/Preloader_3.gif"))" />
+                    </p>
+                    <label>Loading</label>
+                </div>
+            </div>
+            <nav class="navbar navbar-default navbar-fixed-top" id="allNavigation">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <a class="navbar-brand visible-xs" href="#">
+                            <img class="img-responsive" src="@Url.Content("~/images/powered.PNG")" style="max-height:100%" />
+                        </a>
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topMenu">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="companyId" value="" />
+                    <div id="topMenu" class="navbar-collapse collapse">
+                        <div class="row top-menu">
+                            <ul class="nav navbar-nav navbar-left">
+                                <li>
+                                    <a href="javascript:Void(0);" style="color:white" class="welcome">Welcome @Thread.CurrentPrincipal.GetGivenName() </a>
+                                </li>
+                            </ul>
+
+                            <ul class="nav navbar-top-links navbar-right" welcome=welcome>
+                                <li>
+                                    <a style="color:white" href="@(Url.Content("~/Account/EditMyProfile/" + Thread.CurrentPrincipal.GetId()))">My Profile</a>
+                                </li>
+                                <li>
+                                    <a style="color:white" href="@(Url.Content("~/Configurations/Settings/Create"))">Settings</a>
+                                </li>
+                                <li>
+                                    <a style="color:white" href="@(Url.Content("~/Account/LogOff"))" id="logoutLink">Logout</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="row main-menu">
+                            <div class="center-block">
+                                <ul class="nav navbar-nav navbar-inner-menu" id="midMenu">
+
+                                    @if (Thread.CurrentPrincipal.IsInGlobalAdminRole()) {
+                                        <li id="m1" class="menuItem col-md-3 text-center">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" href="@(Url.Content("~/Home/Index"))">
+                                                <img class="img-responsive hidden-xs " src="@(Url.Content("~/Content/images/smDashboard.png"))" />
+                                                Dashboard
+                                            </a>
+                                        </li>
+                                        <li class="dropdown menuItem col-md-2 text-center" id="m3">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">
+                                                <img class="img-responsive  hidden-xs" src="@(Url.Content("~/Content/images/smProvisionalMgmt.png"))" />
+                                                Provisional Management <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu subMenu" role="menu">
+                                                <li>
+                                                    <a id="AddResellerCompany" class="subMenuLink" href="@(Url.Content("~/ProvisionalManagement/ProvisionalMgmt"))">
+                                                        <i class="fa fa-tasks"></i>  Add/Edit Provisional Reseller Companies
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/ProvisionalManagement/ProvisionalMgmt/ReassignCompanyUser"))">
+                                                        <i class="fa fa-users"></i>  Re-Assign Customers To Provisional Companies
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Configurations/ManagerUser/CustomerCompaniesLinkedToProvisionalUser"))">
+                                                        <i class="fa fa-link"></i>  View Linked Customer Companies
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li class="dropdown menuItem col-md-2 text-center" id="m6">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">
+                                                <img class="img-responsive  hidden-xs" src="@(Url.Content("~/Content/images/smManagePlyBooks.png"))" />
+                                                Manage Documents <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu subMenu" role="menu">
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Action("ViewDocuments", "Admin", new { Area = "" })">
+                                                        <i class="fa fa-eye"></i>  View Documents
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Action("CopyDocuments", "Admin", new { Area = "" })">
+                                                        <i class="fa fa-repeat"></i>   Copy Documents
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Home/UploadTrophy"))">
+                                                        <i class="fa fa-repeat"></i>   Upload Trophy
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li class="dropdown menuItem col-md-2 text-center">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">
+                                                <img class="img-responsive hidden-xs img-responsive" src="@(Url.Content("~/Content/images/smManagePackage.png"))" />
+                                                Management <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu subMenu" role="menu">
+                                                <li>
+                                                    <a class="menuLink" href="@(Url.Content("~/CustomerManagement/CustomerMgmt"))">
+                                                        <i class="glyphicon glyphicon-stats"></i> Customer Management
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Action("Index", "Bundle", new { Area = "BundleManagement" })">
+                                                        <i class="glyphicon glyphicon-stats"></i> Bundle Management
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Action("Manage","IconSet",new { Area = ""}))">
+                                                        <i class="glyphicon glyphicon-stats"></i> Icon Management
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="menuLink" href="@(Url.Content("~/Configurations/ManagerUser"))">
+                                                        <i class="glyphicon glyphicon-stats"></i> User Management
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li class="dropdown menuItem col-md-3 text-center">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">
+                                                <img class="img-responsive hidden-xs img-responsive" src="@(Url.Content("~/Content/images/systemReport.png"))" />
+                                                Reports <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu subMenu" role="menu">
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/CustomerManagement/CustomerMgmt/ViewCustomerSurvey"))">
+                                                        <i class="glyphicon glyphicon-stats"></i>  Company Survey Stats Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Categories/Categories/ViewCategoryStatistics"))">
+                                                        <i class="glyphicon glyphicon-stats"></i>  Category Certification & Utilization Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Action("Index", "PointsStatement", new {Area="Reporting"})">
+                                                        <i class="glyphicon glyphicon-stats"></i>  Points Statement
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/TestHistoryReport"))">
+                                                        <i class="glyphicon glyphicon-stats"></i>  Test History Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Configurations/ManagerUser/KpiReport"))">
+                                                        <i class="glyphicon glyphicon-stats"></i>  User KPI Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Configurations/ManagerUser/UserActivityDetails"))">
+                                                        <i class="fa fa-user"></i>  User Activities Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Content("~/Configurations/ManagerUser/UserCorrespondenceDetails")">
+                                                        <i class="fa fa-user"></i>  User Correspondence Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Content("~/ProvisionalManagement/ProvisionalMgmt/GetUserFrequency")">
+                                                        <i class="fa fa-user"></i>   User Login Stats Report
+                                                    </a>
+                                                </li>
+
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Content("~/ProvisionalManagement/ProvisionalMgmt/CustomerExpiryDateReport")">
+                                                        <i class="fa fa-user"></i>  Customer Expiry Date Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/ProvisionalManagement/ProvisionalMgmt/GetUsersLoginStatistics"))">
+                                                        <i class="fa fa-user"></i> Company User Login Stats Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Content("~/Home/ErrorLogShow")">
+                                                        <i class="fa fa-user"></i> Error Logs
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    }
+                                    @if (Thread.CurrentPrincipal.IsInResellerRole()) {
+                                        <li id="m1" class="menuItem col-md-3 text-center">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" href="@(Url.Content("~/Home/Index"))">
+                                                <img class="img-responsive hidden-xs " src="@(Url.Content("~/Content/images/smDashboard.png"))" />
+                                                Dashboard
+                                            </a>
+                                        </li>
+                                        <li id="m4" class="menuItem col-md-3 text-center">
+                                            <a class="menuLink" href="@(Url.Content("~/CustomerManagement/CustomerMgmt"))">
+                                                <img class="img-responsive  hidden-xs" src="@(Url.Content("~/Content/images/smCustomerMgmt.png"))" />
+                                                Customer Management
+                                            </a>
+                                        </li>
+                                        <li class="dropdown menuItem col-md-3 text-center" id="m6">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">
+                                                <img class="img-responsive  hidden-xs" src="@(Url.Content("~/Content/images/smManagePlyBooks.png"))" />
+                                                Manage Documents <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu subMenu" role="menu">
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Action("ViewDocuments", "Admin", new { Area = "" })">
+                                                        <i class="fa fa-eye"></i>  View Documents
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li class="dropdown menuItem col-md-3 text-center">
+                                            <a class="dropdown-toggle menuLink" data-hover="dropdown" data-toggle="dropdown" href="javascript:void(0)">
+                                                <img class="img-responsive hidden-xs img-responsive" src="@(Url.Content("~/Content/images/systemReport.png"))" />
+                                                Reports <span class="caret"></span>
+                                            </a>
+                                            <ul class="dropdown-menu subMenu" role="menu">
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Categories/Categories/ViewCategoryStatistics"))">
+                                                        <i class="glyphicon glyphicon-stats"></i>  Category Certification & Utilization Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Action("Index", "PointsStatement", new {Area="Reporting"})">
+                                                        <i class="glyphicon glyphicon-stats"></i>  Points Statement
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/ManageTrainingTest/ManageTrainingTest/TestHistoryReport"))">
+                                                        <i class="glyphicon glyphicon-stats"></i>  Test History Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Configurations/ManagerUser/KpiReport"))">
+                                                        <i class="glyphicon glyphicon-stats"></i>  User KPI Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@(Url.Content("~/Configurations/ManagerUser/UserActivityDetails"))">
+                                                        <i class="fa fa-user"></i>  User Activities Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Content("~/Configurations/ManagerUser/UserCorrespondenceDetails")">
+                                                        <i class="fa fa-user"></i>  User Correspondence Report
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="subMenuLink" href="@Url.Content("~/ProvisionalManagement/ProvisionalMgmt/GetUserFrequency")">
+                                                        <i class="fa fa-user"></i>   User Login Stats Report
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+
+
+    <div class="container-fluid" id="main-wrapper">
+        @RenderBody()
+    </div>
+    <div class="modal fade" id="customModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+
+        <div class="alert alert-success" style="background: #27B899; color: white; height:50px">
+        </div>
+        <p class="hidden-xs" style="position: absolute; ">
+            <a href="@Href("~/")">
+                <img src="~/images/powered.PNG" style="width:180px; margin-left:15px;" />
+            </a>
+        </p>
+        <p class="pull-right" style="color: #106B64;display:inline;">Powered by OnRamp &copy;@DateTime.Now.Year <br /> @version</p>
+
+    </footer>
+    <script type="text/javascript">
+        function _adjustPageFooter() {
+            var hidden = $('.main-menu').attr('style') ? $('.main-menu').attr('style').indexOf('display: none') > -1 : false;
+            if (hidden) {
+                $('#main-wrapper').attr('style', 'min-height:82%');
+                $('#main-wrapper').attr('style', 'padding-top:0;');
+            } else if (!$('#midMenu').is(':hidden')) {
+                $('#main-wrapper').attr('style', 'padding-top:' + ($('#midMenu').height() + 15) + 'px');
+            } else
+                $('#main-wrapper').attr('style', '');
+
+        };
+        $(function () {
+            _adjustPageFooter();
+            $(window).on('resize', _adjustPageFooter);
+        });
+    </script>
+    @Scripts.Render("~/bundles/jquery")
+    @RenderSection("scripts", required: false)
+    @Html.EJS().ScriptManager()
+</body>
+</html></style>
+    </head>

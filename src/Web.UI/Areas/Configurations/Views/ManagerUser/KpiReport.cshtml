@@ -1,0 +1,217 @@
+﻿@using Domain.Customer.Models
+@using Web.UI.Code.Extensions
+@using Domain.Enums
+@using Ramp.Security.Authorization
+@using System.Threading
+@model Ramp.Contracts.ViewModel.UserKpiReportViewModel
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = "../../../../Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "../../../../Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<div class="row">
+    <div class="col-lg-12">
+        @*<h1 class="page-header">@ViewBag.Title</h1>*@
+        <h1 class="page-header">User KPI Report</h1>
+        @Html.Label("Description :")
+        <div class="form-group input-group">
+            <p>
+                The User Performance Report allows you to view a specific user's activity and performance in the OnRamp system for a given period.  At a glance, you will be able to determine the level of compliance of a given user.</br></br>
+
+                This Report shows which Playbooks have been allocated to the specified user, whether or not they have engaged with the content of each Playbook that has been allocated, 
+                and whether or not they have passed the allocated Test for that content.
+                This Report also provides Test results for any Tests that the specified user account has been allocated.
+            </p>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info">
+    <div class="panel-heading">OnRamp Online Training Portal</div>
+    <div class="panel-body">
+        @using (Html.BeginForm())
+        {
+            if (Model.Companies.Any())
+            {
+                <div class="form-group col-md-2">
+                    <div class="input-group date" id='CompanyId'>
+                        @Html.Label("Company")
+                        <div class="form-group input-group">
+                            @Html.DropDownList("CustomerCompanyId", Model.Companies.ToSelectList(c => c.Id.ToString(), c => c.CompanyName), "Select Company", new { @class = "form-control", onchange = "this.form.submit();" })
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="form-group col-md-2">
+                <div class="input-group date" id='UserId'>
+                    @Html.Label("User")
+                    <div class="form-group input-group">
+                        @Html.DropDownList("UserId", Model.Users.ToSelectList(c => c.Id.ToString(), c => c.FullName), "Select User", new { @class = "form-control", onchange = "this.form.submit();" })
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group col-md-2">
+                <div class="input-group date" id='FromDate'>
+                    @Html.Label("From Date")
+                    <div class="form-group input-group">
+                        <input type='text' name="From" id="inputFromDate" class="form-control" value="@Request.Form["From"]" />
+                        <span class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group col-md-2">
+                <div class="input-group date" id='ToDate'>
+                    @Html.Label("To Date")
+                    <div class="form-group input-group">
+                        <input type='text' name="To" id="inputToDate" class="form-control" value="@Request.Form["To"]" />
+                        <span class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="panel panel-info">
+    <div class="panel-heading">Activity</div>
+
+    <table class="table table-bordered table-hover table-striped">
+        <tr>
+            <th>Total Logins</th>
+            <th>Frequency / Week</th>
+        </tr>
+        <tr>
+            <td>@Model.LoginCount</td>
+            <td>@Model.LoginFrequency</td>
+        </tr>
+    </table>
+
+    <div class="panel-body">
+        <div id="bar-chart">
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        var d = [{User:'Total Logins vs Frequency / Week', LoginCount:@Model.LoginCount, LoginFrequency:@Model.LoginFrequency }];
+
+        Morris.Bar({
+            element: 'bar-chart',
+            data: d,
+            xkey: 'User',
+            ykeys: ['LoginCount', 'LoginFrequency'],
+            labels: ['Total Logins', 'Frequency / Week'],
+            hideHover: 'auto',
+            resize: true
+        });
+    });
+</script>
+
+<div class="panel panel-info">
+    <div class="panel-heading">Playbook Allocations</div>
+    @if (Model.TrainingGuideStatistics.Any())
+    {
+        <table class="table table-striped table-hover">
+            <tr>
+                <th>Playbook</th>
+                <th>Looked At</th>
+                <th>Result</th>
+                <th></th>
+            </tr>
+            @foreach (var item in Model.TrainingGuideStatistics)
+            {
+                <tr>
+                    <td>@item.Guide</td>
+                    <td>@item.LookedAt</td>
+                    @if (item.Passed)
+                    {
+                        <td>Passed</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+                    <td></td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-danger" style="margin: 6px">
+            There are no Playbook allocations to show
+        </div>
+    }
+</div>
+
+<div class="panel panel-info">
+    <div class="panel-heading">Test Results</div>
+    @if (Model.TestResults.Any())
+    {
+        <table class="table table-striped table-hover">
+            <tr>
+                <th>Date</th>
+                <th>Playbook</th>
+                <th>Result</th>
+                <th>Score</th>
+            </tr>
+            @foreach (var item in Model.TestResults)
+            {
+                <tr>
+                    <td>@item.TestDate</td>
+                    <td>@item.Guide</td>
+                    @if (item.Result)
+                    {
+                        <td>Passed</td>
+                    }
+                    else
+                    {
+                        <td>Failed</td>
+                    }
+                    <td>@item.Score/@item.MaxScore (@Math.Round((item.Score / item.MaxScore * 100),2)%)</td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-danger" style="margin:6px">
+            There are no Test results to show
+        </div>
+    }
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#ToDate').datetimepicker({
+            defaultDate: new Date(),
+            format: 'DD MMM YYYY'
+        });
+        $('#FromDate').datetimepicker({
+            defaultDate: moment().subtract(7, 'days'),
+            format: 'DD MMM YYYY'
+        });
+
+        $('#ToDate').on('dp.change', function () {
+            $(this).closest('form').submit();
+        });
+
+        $('#FromDate').on('dp.change', function () {
+            $(this).closest('form').submit();
+        });
+    });
+</script>

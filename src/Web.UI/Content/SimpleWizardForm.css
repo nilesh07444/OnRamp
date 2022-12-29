@@ -1,0 +1,37 @@
+﻿.wizard-step {
+     display: none; /* Must be hidden to begin with, this is later changed by the javascript */
+}
+
+.wizard-step ol {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.wizard-step li {
+    margin: 5px 0px;
+}
+
+.wizard-step label {
+    float: left;
+    min-width: 100px;
+    margin-right: 10px;
+}
+
+.wizard-confirmation {
+     display: none; /* Must be hidden to begin with, this is later changed by the javascript */
+}
+
+.wizard-confirmation #validation-summary {
+    margin: 25px 0px 0px;
+    font-weight: bold;
+    color: #f00;
+}
+
+.wizard-nav {
+     margin: 25px 0px 0px;
+}
+
+.wizard-nav input[type="button"] {
+     width: 100px;
+}

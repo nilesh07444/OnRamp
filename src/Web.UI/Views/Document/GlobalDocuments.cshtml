@@ -1,0 +1,759 @@
+﻿
+@using System.Linq
+@using Common.Enums
+@using Common.Web
+@using Domain.Customer
+@using Web.UI.Code.Extensions
+@using Ramp.Security.Authorization
+@using System.Threading
+@using Ramp.Contracts.Security
+@model IEnumerable<Ramp.Contracts.ViewModel.DocumentListModel>
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    ViewBag.Title = "OnRAMP Online Training Platform";
+
+}
+
+<style>
+    .document-icon {
+        max-width: 60px;
+    }
+
+    .toggleButton {
+        background: transparent;
+        border: none;
+    }
+
+    .align {
+        align-content: center;
+    }
+
+    .status {
+        width: 75%;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 5px;
+    }
+
+    .pending {
+        background-color: #ffa500;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .viewed {
+        background-color: #0276FD;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .failed {
+        background-color: #c40000;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .passed {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .complete {
+        background-color: #00cc00;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .incomplete {
+       background-color: #e86741;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .btn-option {
+        margin-bottom: 5px;
+    }
+
+
+    .fancybox-inner {
+        overflow: hidden !important;
+    }
+
+    .company-logo {
+        max-width: 100%;
+    }
+
+    @@media (min-width: 992px) {
+        .col-md-5ths {
+            width: 20%;
+            float: left;
+        }
+    }
+
+    .menu-tile:hover {
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        transition: transform .15s ease-in-out;
+        transform: scale(1.1)
+    }
+</style>
+<script src="~/Scripts/jstree.js"></script>
+<link href="~/Content/jstree/dist/themes/default/style.css" rel="stylesheet" />
+<div class="row">
+    <div class="col-lg-12">
+        @if (PortalContext.Current.UserCompany.EnableCategoryTree) {
+            <div class="col-sm-2">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class=" panel panel-info " data-bind="with:$root.category.menu" style="overflow-x:auto;">
+                            <div class="panel-heading clearfix" style="line-height: 34px;">
+                                Categories
+                                @if (Thread.CurrentPrincipal.IsInRole(Role.CustomerAdmin)) {
+
+                                    <div class="pull-right">
+                                        <a data-bind="click:$root.modals.manageCategories.open.bind()" title="Manage Categories" style="border-left: solid 1px; padding-left: 0.5em; cursor: pointer; color: white"><i class="glyphicon glyphicon-pencil"></i></a>
+                                    </div>
+
+                                }
+                            </div>
+                            <div class="panel-body">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search" style="max-width:unset" data-bind="textInput:match" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" data-bind="click:$root.category.handlers.clear.bind()"><span class="fa fa-close"></span></button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="categoryTree" data-bind="jstreeWithSearch:options,jstreeOptions: {plugins:['search', 'types'], types: {default: {icon: 'glyphicon glyphicon-plus-sign category-icon'}}},valueProperty:selected,filterProperty:match" style="min-height:800px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-10 ">
+                <div class="panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        Learn More
+                        <div class="pull-right">
+                           
+                            <form class="form-inline" onsubmit="return false">
+                                <div class="input-group">
+                                    <select class="selectpicker" multiple data-bind="foreach:$root.enums.filterGroup,selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'},selectedOptions:$root.filters">
+                                        <optgroup data-bind="attr:{label:title},foreach:options">
+                                            <option data-bind="text:Name,attr:{value:Id}"></option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" id="txtSearchText" class="form-control" placeholder="Document or Tag Search" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" id="btnSearch" data-bind="click:$root.SearchFilter.bind()"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+
+            
+                        </div>
+                        </div>
+
+                    <div class="table-responsive">
+                        <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Type</th>
+                                    <th>Title</th>
+                                    <th>Date Last Read</th>
+                                    <th>Status</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        } else {
+
+            <div class="col-sm-10 ">
+                <div class="panel panel-info">
+                    <div class="panel-heading clearfix" style="line-height: 34px;">
+                        Learn More
+                        <div class="pull-right">
+                           
+                            <form class="form-inline" onsubmit="return false">
+                                <div class="input-group">
+                                    <select class="selectpicker" multiple data-bind="foreach:$root.enums.filterGroup,selectPicker:{size:'10',width:'auto',noneSelectedText:'Filter'},selectedOptions:$root.filters">
+                                        <optgroup data-bind="attr:{label:title},foreach:options">
+                                            <option data-bind="text:Name,attr:{value:Id}"></option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" id="txtSearchText" class="form-control" placeholder="Document Search" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button" id="btnSearch" data-bind="click:$root.SearchFilter.bind()"><span class="glyphicon glyphicon-search"></span></button>
+                                    </span>
+                                </div>
+                            </form>
+                              
+                               
+                            </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="documents" class=" dataTable table-hover table-fixed" style="overflow:hidden; word-wrap:normal | break-word;" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Type</th>
+                                    <th>Title</th>
+                                    <th>Date Last Read</th>
+                                    <th>Status</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<br>
+@Html.Partial("~/Views/Category/ManageCategoryModalPartial.cshtml")
+<script>
+
+    jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+        "alt-string-pre": function ( a ) {
+            return a.match(/alt="(.*?)"/)[1].toLowerCase();
+        },
+
+        "alt-string-asc": function( a, b ) {
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        },
+
+        "alt-string-desc": function(a,b) {
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+    } );
+
+    ko.observableArray.fn.subscribeArrayChanged = function(addCallback, deleteCallback) {
+        this.subscribe(function(changes) {
+                for (var i = 0, j = changes.length; i < j; i++) {
+                    switch (changes[i].status) {
+                    case 'deleted':
+                        if (deleteCallback) deleteCallback(changes[i].value);
+                        break;
+                    case 'added':
+                        if (addCallback) addCallback(changes[i].value);
+                        break;
+                    }
+                }
+            },
+            null,
+            'arrayChange');
+    };
+
+
+    $(function () {
+         $(document).on('keypress', function (e) {
+            if (e.which == 13) {
+                var searchText = $('#txtSearchText').val();
+               $('#LoadingImageDiv').show();
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("GlobalDocumentsByFilter", "Document", new { Area = "" }))",
+                    data: { searchText: searchText },
+                    success: function (result) {
+                        vm.documents(result);
+                        $('#LoadingImageDiv').hide();
+                    }
+                });
+            }
+        });
+        
+    });
+    function Controller() {
+        var self = this;
+        //self.unreadDocuments = ko.observableArray();
+        self.readDocuments = ko.observableArray();
+        self.documents = ko.observableArray();
+        self.filters = ko.observableArray();
+        self.types = [
+            { title: 'Training Manual', value: 1 },
+            { title: 'Test', value: 2 },
+            { title: 'Policy', value: 3 },
+            { title: 'Memo', value: 4 },
+            { title: 'Activity Book', value: 6 }
+        ];
+        self.selectedUnreadTypes = ko.observableArray([]);
+        self.selectedReadTypes = ko.observableArray([]);
+
+        self.filteredDocuments = ko.computed(function () {
+            if (self.filters().length === 0) {
+                return self.documents();
+            } else {
+                var documents = self.documents();
+                var filters = self.filters().map(function(item) {
+                    var split = item.split(':');
+                    return {
+                        Type: split[0],
+                        Id: split[1]
+                    };
+                });
+                var statusFilters = $.grep(filters,
+                    function(filter) {
+                        return filter.Type === 'Status';
+                    });
+                if (statusFilters.length === 1) {
+                    var unread = statusFilters[0].Id === '1';
+                    documents = $.grep(documents,
+                        function(document) {
+                            {
+                                return unread
+                                    ? document.LastViewedDate === null
+                                    : document.LastViewedDate !== null;
+                            }
+                        });
+                }
+                var types = $.grep(filters,
+                    function(filter) {
+                        return filter.Type === 'Type';
+                    }).map(function(filter) {
+                    return parseInt(filter.Id);
+                    });
+                if (types.length !== 0 && types.length !== 4) {
+                    documents = $.grep(documents,
+                        function(document) {
+                            return types.indexOf(document.DocumentType) !== -1;
+                        });
+                }
+
+                return documents;
+            }
+
+        });
+
+            self.SearchFilter = function () {
+            var searchText = $('#txtSearchText').val();
+               $('#LoadingImageDiv').show();
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("GlobalDocumentsByFilter", "Document", new { Area = "" }))",
+                    data: { searchText: searchText },
+                    success: function (result) {
+                        vm.documents(result);
+                        $('#LoadingImageDiv').hide();
+                    }
+                })
+        };
+
+        self.document = {
+            getMoreInfo: function(model) {
+                return ko.unwrap(model.ReferenceId) + '\n' + 'Description: \n' + ko.unwrap(model.Description);
+            },
+            getViewLink: function(model) {
+                var url = '';
+                switch (model.DocumentType) {
+                case 1:
+                    url = '@Url.Action("Preview", "TrainingManual", new {Area = ""})';
+                    break;
+                case 2:
+                    url = '@Url.Action("Preview", "Test", new {Area = ""})';
+                    break;
+                case 3:
+                    url = '@Url.Action("Preview", "Policy", new {Area = ""})';
+                    break;
+                case 4:
+                    url = '@Url.Action("Preview", "Memo", new {Area = ""})';
+                        break;
+                case 6:
+                    url = '@Url.Action("Preview", "Activitybook", new {Area = ""})';
+                    break;
+                default:
+                    break;
+                }
+                return url + '/' + model.Id + "?isGlobal=true" ;
+            },
+            getType: function(model) {
+                switch (ko.unwrap(model.DocumentType)) {
+                case 1:
+                    return 'Training Manual';
+                case 2:
+                    return 'Test';
+                case 3:
+                    return 'Policy';
+                case 4:
+                    return 'Memo';
+                case 6:
+                        return 'Activitybook';
+                }
+                return '';
+            },
+            getStatus: function(model) {
+                switch (ko.unwrap(model.Status)) {
+                    case 0:
+                        return 'Pending';
+                    case 1:
+                        return 'Viewed';
+                    case 2:
+                        return 'Failed';
+                    case 3:
+                        return 'Passed';
+                    case 4:
+                        return 'Incomplete';
+                    case 5:
+                        return 'Complete';
+                }
+                return '';
+            },
+            getIconUrl: function(model) {
+                switch (ko.unwrap(model.DocumentType)) {
+                case 1:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TrainingManualType], true)';
+                case 2:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.TestType], true)';
+                case 3:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.PolicyType], true)';
+                case 4:
+                        return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.MemoType], true)';
+                case 6:
+                    return '@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.CheckListType], true)';
+                }
+                return '';
+            },
+            formatDateTime: function(prop) {
+                return moment(prop).format('L LTS');
+            },
+            print: function(id, type) {
+                var url = '';
+                switch (type) {
+                case 1:
+                    url = '@Url.Action("Print", "TrainingManual", new {Area = ""})';
+                    break;
+                case 2:
+                    url = '@Url.Action("Print", "Test", new {Area = ""})';
+                    break;
+                case 3:
+                    url = '@Url.Action("Print", "Policy", new {Area = ""})';
+                    break;
+                case 4:
+                    url = '@Url.Action("Print", "Memo", new {Area = ""})';
+                        break;
+                case 6:
+                    url = '@Url.Action("DownloadPrintExcel", "Activitybook", new {Area = ""})';
+                    break;
+                default:
+                    break;
+                }
+                url = url + '/' + id;
+
+                var request = new XMLHttpRequest();
+                request.open("GET", url);
+                request.responseType = 'blob';
+                request.onload = function() {
+                    var userAgent = window.navigator.userAgent;
+                    var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+                    if (!allowBlob) {
+                        window.navigator.msSaveBlob(this.response,
+                            this.getResponseHeader('filename') || "download-" + $.now());
+                    } else {
+                        var url = window.URL.createObjectURL(this.response);
+                        var a = document.createElement("a");
+                        document.body.appendChild(a);
+                        a.href = url;
+                        a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                        a.click();
+                        window.setTimeout(function() { document.body.removeChild(a); }, 500);
+                    }
+                };
+                request.send();
+            },
+            testWarning: function(expired, attemptsRemaining) {
+                if (notif) {
+                    var msg = '';
+                    if (attemptsRemaining <= 0) {
+                        msg = 'You have reached the maximum limit of attempts';
+                    } else if (expired) {
+                        msg = 'Test has expired';
+                    }
+                    notif({
+                        msg: msg,
+                        type: 'error'
+                    });
+                }
+            }
+        };
+    };
+
+    var vm = new Controller();
+
+         vm.category = {
+        menu: {
+            match: ko.observable(),
+            selected: ko.observable(),
+            options: ko.observableArray(),
+            initialize: function () {
+                vm.category.menu.selected.subscribe(vm.category.handlers.filter);
+            }
+        },
+        handlers: {
+            filter: function (newValue, oldValue) {
+                $('#LoadingImageDiv').show();
+                $.ajax({
+                    type: "POST",
+                    url: "@(Url.Action("GlobalDocumentsByCategory", "Document", new { Area = "" }))",
+                    data: { categoryId: newValue },
+                    success: function (result) {
+                        vm.documents(result);
+                        $('#LoadingImageDiv').hide();
+                    }
+                })
+            },
+            clear: function () {
+                vm.category.menu.match('');
+                vm.category.menu.selected('');
+            }
+        }
+    };
+
+
+    vm.enums = {};
+    vm.enums.documentType = @Html.ToJson(PortalContext.Current.UserCompany.EnableChecklistDocument? EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)) : EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType)));
+    vm.enums.readStatus = ['Read', 'Unread'];
+
+    vm.enums.filterGroup = [
+        {
+            title: 'Type',
+            options: $.map(vm.enums.documentType,
+                function(i, index) {
+                    if (index != 0 && index != 5 && index!=7) {
+                        return { Id: 'Type:' + index, Name: i };
+                    }
+                }).reverse()
+        },
+        {
+            title: 'Status',
+            options: $.map(vm.enums.readStatus,
+                function(i, index) {
+                    return { Id: 'Status:' + index, Name: i };
+                })
+        }
+    ];
+     vm.modals = {
+        manageCategories: {
+            open: function () {
+                $('#manageCategoriesModal').modal('show');
+            },
+            close: function () {
+                $('#manageCategoriesModal').modal('hide');
+            }
+        }
+    }
+
+    vm.category.menu.options = ko.observableArray(@Html.ToJson((IEnumerable<Ramp.Contracts.ViewModel.JSTreeViewModel>)ViewBag.Categories));
+    vm.category.menu.initialize();
+
+    $(function () {
+        //$('#categoryTree').jstree('open_node', '00000000-0000-0000-0000-000000000000');
+        $('#manageCategoriesModal').on('hidden.bs.modal',
+            function () {
+                $('#LoadingImageDiv').show();
+                window.setTimeout(function () { window.location = window.location; }, 1000);
+            });
+        var documentsTable = $('#documents').DataTable({
+            drawCallback: function () {
+                $('[data-toggle="popover"]').popover({
+                    trigger: 'hover'
+                });
+            },
+            columns: [
+                {
+                    data: 'Id',
+                },
+                {
+                    data: 'DocumentType',
+                    render: function(data, type, row) {
+                        return '<img alt="' +
+                            vm.document.getType(row) +
+                            '" class="img-circle center-block document-icon" src="' +
+                            vm.document.getIconUrl(row) +
+                            '"/>';
+                    }
+                },
+                {
+                    data: 'Title',
+                    render: function (data, type, row) {
+                        var details = row.DocumentType + "~" + row.Title + "~" + row.TrainingLabels + "~" + row.Author;
+                        if (row.DocumentType === 2) {
+                            details += "~" + row.PassMarks + "~" + row.Duration;
+                        }
+                        return '<span style="font-size:14px;" title="' +
+                            vm.document.getMoreInfo(row) +
+                            '"  alt="' +
+                            data +
+                            '" >' +
+                            data +
+                            '</span>&nbsp;&nbsp;' +
+                            '<a href="javascript:void(0)" data-toggle="popover" data-html="true" title="' + row.Title + '" id="' + details + '" class="fa fa-info-circle" style="color:#00a5e2;" onmouseover="bootstrapPopoverHandler(this)"></a>' +
+                            '<br></span>';
+                            //'<br></span>' + '<span style="font-size:12px;">Tags: <span style="font-size:12px;" ></span>' + row.TrainingLabels + '</span>' +
+                            //'<br></span>' + '<span style="font-size:12px;">Author: <span style="font-size:12px;" ></span>' + row.Author + '</span>';
+                    }
+                },
+                {
+                    data: 'LastViewedDate',
+                    render: function(data, type, row) {
+                        return data ? vm.document.formatDateTime(data) : 'Pending';
+                    }
+                },
+                {
+                    data: 'Status',
+                    render: function (data, type, row) {
+                        var status = vm.document.getStatus(row);
+                        return '<div class="align-middle badge badge-default status ' + status.toLowerCase() + '">' + status.toUpperCase() + '</div>';
+                    }
+                },
+                {
+                    data: null,
+                    render: function(data, type, row) {
+                        var options = [];
+                        if (row.DocumentType === 2) {
+                            var testId = ko.unwrap(row.Id);
+                            var expired = moment(row.ExpiryDate).isBefore(moment());
+                            if (expired || row.AttemptsRemaining <= 0) {
+                                var status = vm.document.getStatus(row);
+                                var msg = row.AttemptsRemaining <= 0 ? 'No Remaining Attempts' : 'Test Expired';
+                                options.push('<a href="javascript:void(0)" title="' +
+                                    msg +
+                                    '" onclick="vm.document.testWarning(' +
+                                    expired +
+                                    ',' +
+                                    row.AttemptsRemaining +
+                                    ')" class="btn btn-default btn-option disabled" aria-disabled="true"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                    var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                        ResultId: testId
+                                    }, true);
+                                    options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                }
+                            }
+                            else {
+                                var status = vm.document.getStatus(row);
+                                if (status.toLowerCase() === "tryagain") {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Try Again</a>');
+                                } else {
+                                    options.push('<a href="' +
+                                        vm.document.getViewLink(row) +
+                                        '" class="btn btn-default btn-option takeTestCss"><span class="glyphicon glyphicon-edit"></span> Take Test</a>');
+                                    if (data.EmailSummary && data.HighlightAnswersOnSummary && (status ?.toLowerCase() == "passed" || status ?.toLowerCase() == "failed")) {
+                                        var url = '@Url.Action("DownloadPDF", "TestReport")' + '?' + $.param({
+                                            ResultId: testId
+                                        }, true);
+                                        options.push('<a href="' + url +'" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Download Transcript</a>');
+                                    }
+                                }
+
+                            }
+                        }
+                        var param = row.Id + "?isGlobal=true";
+                     if (row.DocumentType === 6) {
+                            if (row.Status == 0) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + param + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Start Activity Book</a>')
+                            } else if (row.Status == 4) {
+                                options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                options.push('<a href="@Url.Action("ActivitybookComplete", "Activitybook", new { Area = "" })/' + param + ' "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> Continue Activity Book</a>')
+                            } else if (row.Status == 5) {
+                                 options.push('<a href="' +
+                                    vm.document.getViewLink(row) +
+                                    '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>')
+                                 options.push('<a href="@Url.Action("ActivitybookReportPreview", "ActivitybookSubmissionReport", new { Area = "Reporting" })/' + row.Id + '?checkUser=@Thread.CurrentPrincipal.GetId().ToString() "  class="btn btn-default btn-option"><span class="glyphicon glyphicon-edit"></span> View Submission</a>')
+                            }
+                        }
+
+                        else if (row.DocumentType !== 2) {
+                            options.push('<a href="' +
+                                vm.document.getViewLink(row) +
+                                '" class="btn btn-default btn-option ViewCss"  onClick="return CheckPendingTestOpenOrClose();"><span class="glyphicon glyphicon-eye-open"></span> View</a>')
+                        }
+                        if (row.Printable) {
+                            options.push('<a href="javascript:void(0)" onclick="vm.document.print(\'' +
+                                row.Id +
+                                '\', ' +
+                                row.DocumentType +
+                                ')" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download</a>');
+                        }
+                        if (row.CertificateUrl && row.DocumentType === 2) {
+                            var url = "/Upload/Get/" + row.CertificateUrl;
+                            options.push('<a href="' +
+                                url +
+                                '" target="_blank" class="btn btn-default btn-option"><span class="glyphicon glyphicon-download-alt"></span> Download Certificate</a>');
+                        }
+                        return '<div class="btn-group-xs">' + options.join('&nbsp;');
+                    }
+                }
+            ],
+          columnDefs: [
+                {
+                    targets: [0],
+                    visible: false,
+                    searchable: false
+                },
+                { type: 'alt-string', targets: [1, 2] },
+                { type: 'date', targets: [3, 4] },
+                { orderable: false, targets: [5] }
+            ],
+            paging: false,
+            searching: false,
+            info: false,
+            "aaSorting": []
+        });
+
+        vm.filteredDocuments.subscribe(function(newValue) {
+            documentsTable.clear();
+            documentsTable.rows.add(newValue);
+            documentsTable.draw();
+        });
+
+        ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+
+        vm.documents(@Html.ToJson(Model));
+        $('#categoryTree').jstree('open_all');
+        //$('#categoryTree').jstree('open_node', '00000000-0000-0000-0000-000000000000');
+        @*vm.unreadDocuments(@Html.ToJson(Model.Where(x => !x.LastViewedDate.HasValue).ToList()));
+        vm.readDocuments(@Html.ToJson(Model.Where(x => x.LastViewedDate.HasValue).ToList()));*@
+    });
+    function bootstrapPopoverHandler(ele) {
+        var $el = $(ele);
+        var id = $(ele).attr('id')
+        var arr = id.split('~');
+        var docType = arr[0];
+        var title = arr[1];
+        var trainingLabel = arr[2];
+        var author = arr[3];
+        var content = "<span style='font-size:12px'>Tags: </span> <span style='font-size:12px;'>" + trainingLabel + "</span><br>";
+        content += "<span style='font-size:12px'>Author: </span> <span style='font-size:12px;'>" + author + "</span>";
+        if (docType == "2") {
+            content += "<br><span style='font-size:12px'>Pass Mark: </span> <span style='font-size:12px;'>" + arr[4] + "%</span>";
+            content += "<br><span style='font-size:12px'>Duration: </span> <span style='font-size:12px;'>" + arr[5] + " minutes </span>";
+        }
+        //$el.attr('data-toggle', 'popover');
+        //$el.attr('data-trigger', 'onhover');
+        //$el.attr('data-html', 'true');
+        $el.attr('data-placement', 'right');
+        $el.attr('data-content', content);
+        $el.popover();
+    }
+</script>

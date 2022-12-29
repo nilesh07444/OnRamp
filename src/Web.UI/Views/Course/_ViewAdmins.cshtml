@@ -1,0 +1,47 @@
+﻿
+@model IEnumerable<Ramp.Contracts.ViewModel.UserModelShort>
+    @using Ramp.Contracts.ViewModel
+<table id="documents" class="table table-hover table-fixed">
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>Email Address</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ToList())
+        {
+            <tr>
+                <td>
+                    @item.Name
+                </td>
+                <td>
+                    @item.Email
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+@*@if (ViewBag.ExternalUser != null && ((List<ExternalMeetingUserModel>)ViewBag.ExternalUser).Count>0) {
+    <br /> <h4>External Participants</h4><br />
+    <table id="externalUser" class="table table-hover table-fixed">
+        <thead>
+            <tr>
+                <th>Email Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in (List<ExternalMeetingUserModel>)ViewBag.ExternalUser) {
+                <tr>
+                    
+                    <td>
+                        @item.EmailAddress
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+}*@

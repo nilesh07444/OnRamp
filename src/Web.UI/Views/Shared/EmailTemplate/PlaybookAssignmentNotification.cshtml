@@ -1,0 +1,41 @@
+﻿@using Web.UI.Helpers
+@model Ramp.Contracts.ViewModel.AssignmentNotificationViewModel
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+}
+<style type="text/css">
+    h2, p, h4 {
+        font-family: Calibri;
+    }
+
+</style>
+<h2>Playbook Notification</h2>
+
+<p>
+    Dear @Model.CustomerUserFirstName,
+
+    <br />
+    <br />
+    @{ 
+        string reference;
+        if (!string.IsNullOrEmpty(Model.Title))
+        {
+            reference = Model.Title;
+        }
+        else
+        {
+            reference = Model.ReferenceId;
+        }
+        }
+        Please note that you have been assigned the following playbook : <strong>@reference</strong>
+
+    <br />
+    <br />
+
+    Click <a href="@Url.ActionWithAbsoluteUrl("~/Playbook/" + @Model.ReferenceId )">here</a> to view the playbook you've been assigned.
+
+    <br />
+    <br />
+</p>
+
+<img src="@Url.ActionWithAbsoluteUrl("~/images/powered.png")" alt="Powered by ONRAMP" />

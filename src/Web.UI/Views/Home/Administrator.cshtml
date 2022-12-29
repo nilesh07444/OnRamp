@@ -1,0 +1,423 @@
+﻿@using Ramp.Security.Authorization
+@using Web.UI.Code.Extensions
+@using Web.UI.Controllers
+@using System.Threading
+@{
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+
+    var admin_menu_tiles = new[]
+    {
+Html.CanAccess<DocumentController>(a => a.Index(null)),
+Html.CanAccess<SendController>(a => a.Index()),
+Html.CanAccess<HomeController>(m => m.AdminReports())
+}.Count(t => t);
+
+    var tile_col = string.Empty;
+    var tile_offset = string.Empty;
+    switch (admin_menu_tiles)
+    {
+        case 3:
+            tile_col = "col-md-2";
+            tile_offset = "col-md-offset-3";
+            break;
+        case 2:
+            tile_col = "col-md-3";
+            tile_offset = "col-md-offset-3";
+            break;
+        default: // 1
+            tile_col = "col-md-6";
+            tile_offset = "col-md-offset-3";
+            break;
+    }
+
+    var roles = SessionManager.GetRolesForCurrentlyLoggedInUser().ToList();
+    var hasHeader = PortalContext.Current != null && PortalContext.Current.UserCompany != null && (PortalContext.Current.UserCompany.DashboardVideoFile != null || PortalContext.Current.UserCompany.ShowCompanyLogoOnDashboard || PortalContext.Current.UserCompany.ShowCompanyNameOnDashboard);
+}
+
+@if (ViewData["Message"] != null)
+{
+
+    if (Convert.ToString(ViewData["Message"]) == "true" || Convert.ToString(ViewData["Message"]) == "True")
+    {
+        @:<script>notif({ msg: "<b>Success :</b>Self sign up account activated, please login into your portal.", type: "success", });</script>
+    }
+    else
+    {
+        @:<script>notif({ msg: "<b>Success :</b> You details have been submitted for approval, Your administrator will get in contact.", type: "success", });</script>
+    }
+}
+
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<style>
+    #page-wrapper { padding: 0; }
+
+    .quote-div {
+        background-image: url(@Url.Content("~/Content/images/Layout/OR_pattern_quote.jpg"));
+        -ms-background-repeat: no-repeat;
+        background-repeat: no-repeat;
+        -ms-background-size: cover;
+        background-size: cover;
+        -ms-background-position: center;
+        background-position: center;
+        min-height: 142px;
+        overflow: auto;
+        margin: 0;
+        padding: 3em;
+    }
+
+    .fancybox-inner {
+        overflow: hidden !important;
+    }
+
+    .company-logo { max-width: 100%; }
+
+    @@media (min-width: 992px) {
+        .col-md-5ths {
+            width: 20%;
+            float: left;
+        }
+
+        .menu-row {
+            padding-bottom: @(hasHeader ? 0 : 125)px;
+        }
+    }
+
+    .menu-tile:hover {
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        -ms-transition: transform .15s ease-in-out;
+        -o-transition: transform .15s ease-in-out;
+        -webkit-transition: transform .15s ease-in-out;
+        transition: transform .15s ease-in-out;
+        transform: scale(1.1)
+    }
+
+    .play-circle {
+        font-size: 64px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -36px;
+        margin-left: -36px;
+    }
+
+    .play-circle:hover{
+       -ms-transition: transform .15s ease-in-out;
+       -o-transition: transform .15s ease-in-out;
+       -webkit-transition: transform .15s ease-in-out;
+       -ms-transition: transform .15s ease-in-out;
+       -o-transition: transform .15s ease-in-out;
+       -webkit-transition: transform .15s ease-in-out;
+       transition: transform .15s ease-in-out;
+       transform: scale(1.3);
+       cursor: pointer;
+    }
+
+    .video-thumbnail {
+        -moz-filter: opacity(50%);
+        -webkit-filter: opacity(50%);
+        filter: opacity(50%);
+    }
+
+    .header-row {
+        min-height: @(hasHeader ? 250 : 125)px;
+    }
+
+        hr {
+  border: 0;
+  height: 1px;
+  background-image: -webkit-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -moz-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+  background-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
+}
+
+
+</style>
+
+<div class="container">
+    <div class="row header-row">
+        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && (PortalContext.Current.UserCompany.DashboardVideoFile != null || PortalContext.Current.UserCompany.ShowCompanyLogoOnDashboard || PortalContext.Current.UserCompany.ShowCompanyNameOnDashboard))
+        {
+
+            <div class="col-md-12">
+
+                @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.DashboardVideoFile != null)
+                {
+                    <div class="col-md-5 col-md-offset-2">
+                        <div class="embed-responsive embed-responsive-16by9" style="position: relative; background-color: rgb(0, 0, 0);">
+                            <a data-bind="fancybox:{ helpers:{ media:{} }, autoSize: true, fitToView: true, aspectRatio: true }, attr:{ title:''}">
+                                <video class="embed-responsive-item video-thumbnail">
+                                    <source src="@Url.Action("Get", "Upload", new { Area = "", id = PortalContext.Current.UserCompany.DashboardVideoFile.Id, mainContext = true })" type="video/mp4" />
+                                    Your browser does not support the HTML 5 video tag.
+                                </video>
+                                <i class="glyphicon glyphicon-play-circle play-circle"></i>
+                                <div class="content center-block">
+                                    <video controls="controls" style="max-width: 100%; max-height: 100%">
+                                        <source src="@Url.Action("Get", "Upload", new { Area = "", id = PortalContext.Current.UserCompany.DashboardVideoFile.Id, mainContext = true })" type="video/mp4" />
+                                        Your browser does not support the HTML 5 video tag.
+                                    </video>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardVideoTitle))
+                        {
+                            <h1>@PortalContext.Current.UserCompany.DashboardVideoTitle</h1>
+                        }
+                        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardVideoDescription))
+                        {
+                            <p>@PortalContext.Current.UserCompany.DashboardVideoDescription</p>
+                        }
+                    </div>
+                    <div class="col-md-1"></div>
+                }
+                else if (PortalContext.Current.UserCompany.ShowCompanyLogoOnDashboard)
+                {
+                    if (!string.IsNullOrEmpty(PortalContext.Current.LogoFileName))
+                    {
+                        <img src="@(Url.Content("~/LogoImages/CustomerLogo/" + PortalContext.Current.UserCompany.LogoImageUrl))" class="img-responsive company-logo center-block" />
+                    }
+                    else if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.CustomerConfigurations.Count > 0
+                             && PortalContext.Current.UserCompany.CustomerConfigurations.Any(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))))
+                    {
+                        var dashboardImage = PortalContext.Current.UserCompany.CustomerConfigurations.Where(x => x.Type == Domain.Models.CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault().UploadModel;
+                        <img src="data:image/png;base64,@Convert.ToBase64String(dashboardImage.Data)" class="img-responsive center-block company-logo" />
+                    }
+                    else
+                    {
+                        <img class="img-responsive center-block company-logo" src="@(Url.Content("~/Content/images/logo.png"))" alt="@AppSettings.CompanyName" />
+                    }
+                }
+                else if (PortalContext.Current.UserCompany.ShowCompanyNameOnDashboard)
+                {
+                    <h3 class="page-header" style="text-align: center; font-size: 34px; margin-top: 10px;">@PortalContext.Current.UserCompany.ClientSystemName</h3>
+                }
+            </div>
+            <div class="col-md-12">
+                <br />
+                <hr />
+            </div>
+        }
+    </div>
+    <div class="row menu-row">
+        @if (Thread.CurrentPrincipal.IsInAdminRole() && PortalContext.Current.UserCompany.EnableVirtualClassRoom)
+        {
+        <div class="col-md-12">
+            @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentApprover.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ContentCreator.ToString()))
+            {
+                if (Html.CanAccess<DocumentController>(a => a.Index(null)))
+                {
+                    <div class="col-lg-3 menu-tile build" id="build">
+                        <a href="@Url.Action("Index", "Document", new { Area = "" })">
+                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Build], true)" class="img-responsive" id="categoryId" />
+                            <h4>Build</h4>
+                        </a>
+                    </div>
+                }
+
+            }
+
+            @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.Publisher.ToString()))
+            {
+                if (Html.CanAccess<SendController>(a => a.Index()))
+                {
+                    <div class="col-lg-3 @(!Html.CanAccess<DocumentController>(a => a.Index(null)) ? tile_offset : string.Empty) menu-tile send" id="send">
+                        <a href="@Url.Action("Index", "Send", new { Area = "" })">
+                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Send], true)" class="img-responsive" id="categoryId" />
+                            <h4>Send</h4>
+                        </a>
+                    </div>
+                }
+            }
+            @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.Reporter.ToString()))
+            {
+                if (Html.CanAccess<HomeController>(m => m.AdminReports()))
+                {
+                    <div class="col-lg-3 text-center menu-tile track" id="track">
+                        <a href="javascript:void(0)" data-bind="click: trackDropdown">
+                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Track], true)" class="img-responsive" id="categoryId" />
+                            <h4>Track</h4>
+                        </a>
+                    </div>
+                }
+
+            }
+            @if (roles.Contains(Ramp.Contracts.Security.Role.CustomerAdmin.ToString()) || roles.Contains(Ramp.Contracts.Security.Role.ManageVirtualMeetings.ToString()))
+            {
+                if (Html.CanAccess<VirtualMeetingController>(a => a.Index()))
+                {
+                    <div class="col-lg-3 menu-tile" id="vm">
+                        <a href="@Url.Action("Index", "VirtualMeeting", new { Area = "" })">
+                            <img src="~/Content/images/vm.png" class="img-responsive" id="categoryId" />
+                            <h4>Virtual Meetings</h4>
+                        </a>
+                    </div>
+                }
+            }
+
+
+        </div>
+        }
+        else
+        {
+            <div class="col-md-12">
+                @if (Html.CanAccess<DocumentController>(a => a.Index(null)))
+                {
+                    <div class="@tile_col @tile_offset menu-tile build" id="build">
+                        <a href="@Url.Action("Index", "Document", new {Area = ""})">
+                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Build], true)" class="img-responsive" tooltip id="categoryId" />
+                            <h4 title="Manage Categories">Build</h4>
+                        </a>
+                    </div>
+                }
+                @if (Html.CanAccess<SendController>(a => a.Index()))
+                {
+                    <div class="@tile_col @(!Html.CanAccess<DocumentController>(a => a.Index(null)) ? tile_offset : string.Empty) menu-tile send" id="send">
+                        <a href="@Url.Action("Index", "Send", new {Area = ""})">
+                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Send], true)" class="img-responsive" id="categoryId" />
+                            <h4>Send</h4>
+                        </a>
+                    </div>
+                }
+                @if (Html.CanAccess<HomeController>(m => m.AdminReports()))
+                {
+                    <div class="@tile_col text-center menu-tile track" id="track">
+                        <a href="javascript:void(0)" data-bind="click: trackDropdown">
+                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Track], true)" class="img-responsive" id="categoryId" />
+                            <h4>Track</h4>
+                        </a>
+                    </div>
+                }
+
+
+            </div>
+        }
+
+
+    </div>
+</div>
+
+<div class="quote-div">
+    <div class="col-xs-8 col-md-6 col-lg-4 col-xs-offset-2 col-md-offset-3 col-lg-offset-4 text-center">
+        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardQuoteText))
+        {
+            <p style="font-style: italic;">"@PortalContext.Current.UserCompany.DashboardQuoteText"</p>
+        }
+        @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.DashboardQuoteAuthor))
+        {
+            <p style="text-transform: uppercase; margin-bottom: 0;  font-weight: bold;">- @PortalContext.Current.UserCompany.DashboardQuoteAuthor -</p>
+        }
+    </div>
+</div>
+
+<script>
+
+
+    $(document).ready(function(){
+        $('#build').tooltip({ title: "Click here to manage documents and categories.", delay: 500 });
+        $('#send').tooltip({ title: "Click here to assign, unassign or reassign documents to users within your portal.", delay: 500 });
+        $('#track').tooltip({ title: "Click here to view a list of comprehensive of reports.", delay: 500 });
+        $('#vm').tooltip({ title: "Click here to participate or manage Virtual Meetings within your portal.", delay: 500 });
+
+
+});
+
+
+
+
+    @*$(document).ready(function () {
+        positionQuoteDiv();
+
+        console.log("check  cccc");
+        //get users and groups from ad every 5 minute
+        setInterval(() => {
+        console.log("inside timetouy")
+
+            url1 = '@Url.Action("ImportUsers", "UserMgmt", new { Area = "UserManagement"})';
+            $.ajax({
+                type: "GET",
+                url: url1,
+                success: function (data) {
+                    //if (data.success) {
+                    //    notif({
+                    //        msg: "<b>Success :</b> Users imported successfully.",
+                    //        type: "success",
+                    //    });
+                    //} else {
+                    //    notif({
+                    //        msg: "<b>Error :</b> Users import failed.",
+                    //        type: "error",
+                    //    });
+                    //}
+                },
+                error: function (data) {
+                    //notif({
+                    //    msg: "<b>Error :</b> Users import failed.",
+                    //    type: "error",
+                    //});
+                }
+            });
+
+
+
+            url2 = '@Url.Action("ImportGroups", "UserMgmt", new { Area = "UserManagement"})';
+            $.ajax({
+                type: "GET",
+                url: url2,
+                success: function (data) {
+                    //if (data.success) {
+                    //    notif({
+                    //        msg: "<b>Success :</b> Groups imported successfully.",
+                    //        type: "success",
+                    //    });
+                    //} else {
+                    //    notif({
+                    //        msg: "<b>Error :</b> Groups import failed.",
+                    //        type: "error",
+                    //    });
+                    //}
+                },
+                error: function (data) {
+                    //notif({
+                    //    msg: "<b>Error :</b> Groups import failed.",
+                    //    type: "error",
+                    //});
+                }
+            });
+
+        }, 5000)
+
+    });*@
+    $(window).resize(function () { positionQuoteDiv(); });
+
+
+    function positionQuoteDiv() {
+        $('.quote-div').css({
+            marginTop: 0
+        });
+        var quoteDivHeight = $('.quote-div').height() + parseInt($('.quote-div').css('paddingTop').replace('px', '')) + parseInt($('.quote-div').css('paddingBottom').replace('px', ''));
+        var quoteDivTop = $('.quote-div').position().top;
+        var footerTop = $('footer').position().top;
+        $('.quote-div').css({
+            marginTop: Math.max(0, footerTop - (quoteDivHeight + quoteDivTop))
+        });
+    }
+
+    var Controller = function () {
+        var self = this;
+        self.trackDropdown = function (data, event) {
+            event.stopPropagation();
+            if ($('#trackDropdown').find('.dropdown-menu').is(':hidden')) {
+                $('#trackDropdown').find('.dropdown-toggle').dropdown('toggle');
+            }
+        };
+    };
+    var vm = new Controller();
+    ko.applyBindings(vm, document.getElementsByTagName('body')[0]);
+</script>

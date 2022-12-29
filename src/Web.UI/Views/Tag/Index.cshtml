@@ -1,0 +1,293 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@model  IEnumerable<TrainingLabelListModel>
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<style>
+    .requiredTxt {
+        border: solid red;
+    }
+
+    .required {
+        color: red;
+    }
+
+    .errorClass {
+        border: 2px solid #a94442;
+    }
+
+    .cursor {
+        cursor: pointer;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-sm-12 ">
+            <div class="panel panel-info">
+                <div class="panel-heading clearfix" style="line-height: 34px;">
+                  Tags
+                    <a id="AddLableClass" style="border-left: solid 1px; padding-left: 0.5em; padding-right: 0.5em; margin-left: 0.5em; cursor: pointer"><i class="glyphicon glyphicon-plus"></i></a>
+                    <div class="pull-right">
+                        <form class="form-inline">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="txtSearch" placeholder="Tag Search" data-bind="" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button" id="btnSearch"><span class="glyphicon glyphicon-search"></span></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="table-responsive" id="divLabelList">
+
+                    @Html.Partial("~/Views/Tag/_TrainingLabelList.cshtml", Model)
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+    <div class="modal fade" id="addLabelModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch ">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="heading"></h4>
+                </div>
+               
+                <div class="modal-body" id="divAddLabel">
+                    
+                    <p>Enter your tag details below</p><br>
+                    <input type="hidden" id="hdnId" />
+                    <div class="form-group">
+                       
+                        <span class="required">*</span> <label class="control-label">Tag Name</label>
+                        <input type="text" class="form-control" style="min-width:100%;" id="txtName" name="Name" />
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Tag Description</label>
+                        <textarea class="form-control" id="txtDescription" rows="4" cols="50" ></textarea>
+                        @*<input type="text" class="form-control" style="min-width: 100%;" id="txtDescription" />*@
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnAddLabel" class="btn btn-primary" value="Save">Save</button>
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Cancel</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="DeleteLabelModal" role="dialog" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalSearch">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Are you sure you want to delete?</h4>
+                </div>
+                <div class="modal-body" id="divCancelMeeting">
+                    <span>Are you sure to delete the <strong><span id="spnLabelName"></span></strong> tag?</span>
+                    <input type="hidden" id="hdnDeleteId" />
+                </div>
+                <div class="modal-footer">
+                    <div class="text-right">
+                        <div class="btn-group">
+                            <button type="button" id="btnDeleteLabel" class="btn btn-primary" value="Delete">Delete</button>
+                            <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default" value="Cancel">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+    function fnAddEditLabel(id) {
+        var label = $.get("@Url.Action("AddEditTrainingLabel", "Tag", new { Area = "" })/"+id);
+
+        label.done(function (data) {
+            
+            if (data.Name != "" && data.Name != null && data.Name != undefined) {
+                    $('#hdnId').val(data.Id);
+                $('#txtName').val(data.Name);
+                $('#txtName').attr('disabled', 'disabled');
+                $('#txtName').attr('readonly', 'readonly');
+                    $('#heading').text('Update Tag');
+                    $('#txtDescription').val(data.Description);
+                } else {
+                $('#heading').text('Add a tag');
+                $('#hdnId').val("");
+                $('#txtName').removeAttr('disabled', 'disabled');
+                $('#txtName').removeAttr('readonly', 'readonly');
+                $('#txtName').val("");
+                $('#txtDescription').val("");
+                }
+                $('#addLabelModal').modal('show');
+
+                });
+            label.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            label.always(function () {
+
+                });
+
+    }
+    function fnCheckDuplicateTag() {
+         var tagName = $('#txtName').val();
+                 var label = $.get("@Url.Action("CheckDuplicateTag", "Tag", new { Area = "" })", {
+                     tagName: tagName
+                });
+
+            label.done(function (data) {
+
+                if (data == true || data == 'true' || data == 'True') {
+                    $('#txtName').addClass('DuplicateTage');
+                    notif({ msg: "<b>Warning :Tage with same name is already exist</b> ", type: "error", multiline: true });
+                    
+                } else {
+                    $('#txtName').removeClass('DuplicateTage');
+                }
+                   
+                });
+
+                label.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+    }
+
+    $(function () {
+        
+        $('#txtName').blur(function () {
+            fnCheckDuplicateTag();
+        });
+
+        $('#btnSearch').click(function () {
+            var searchText = $('#txtSearch').val();
+                 var label = $.post("@Url.Action("FilterTags", "Tag", new { Area = "" })", {
+                     searchText: searchText
+                });
+
+                label.done(function (data) {
+                    $('#divLabelList').html(data);
+                   
+                });
+
+                label.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+        });
+
+        /**********Show the modal to Add the Label**************/
+        $(document).on('click', '#AddLableClass', function () {
+            fnAddEditLabel("");
+
+        });
+
+         /**********Show the modal to Edit the Label**************/
+        $(document).on('click', '.EditLabelCss', function(){
+            var id = $(this).attr('id');
+            fnAddEditLabel(id);
+        });
+
+        /****************check the name is entered or not********************/
+        $(document).on('blur', '#txtName', function () {
+            var name = $('#txtName').val();
+            if (name === null || name === "" || name === undefined) {
+                $('#txtName').addClass('requiredTxt');
+            } else {
+                $('#txtName').removeClass('requiredTxt');
+            }
+        });
+        /**************This one is used to delete Label***************/
+        $(document).on('click', '#btnDeleteLabel', function () {
+           var id= $('#hdnDeleteId').val();
+            var label = $.post("@Url.Action("DeleteTrainingLabel", "Tag", new { Area = "" })/"+id);
+
+                label.done(function (data) {
+                    $('#divLabelList').html(data);
+                    $('#DeleteLabelModal').modal('hide');
+                    notif({ msg: "<b>Success :</b> Your tag has been deleted successfully", type: "success", multiline: true });
+                });
+
+                label.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+                });
+        });
+
+
+        $(document).on('click', '.DeleteCss', function () {
+            var id = $(this).attr('id');
+            $('#hdnDeleteId').val(id);
+             $('#spnLabelName').text($(this).attr('role'));
+            $('#DeleteLabelModal').modal('show');
+        });
+
+
+        /*****************this is used to add/edit the label***********/
+        $(document).on('click', '#btnAddLabel', function () {
+            var check = true;
+            var msg = "created";
+            var id = $('#hdnId').val();
+            if (id !== null && id !== "" && id !== undefined) {
+                msg="update"
+            }
+           var name = $('#txtName').val();
+            var description = $('#txtDescription').val();
+            if (name === null || name === "" || name === undefined) {
+                $('#txtName').addClass('requiredTxt');
+                check = false;
+            } else {
+                $('#txtName').removeClass('requiredTxt');
+                if ($('#txtName').hasClass('DuplicateTage')) {
+                    check = false;
+                } else {
+                    check = true;
+                }
+
+            }
+
+            if (!check) {
+                notif({
+                    msg: "<b>Error :</b> Please ensure that you enter a unique tag name .",
+                    type: "error",
+                    multiline: true
+                });
+                return false;
+            } else {
+
+            var label = $.post("@Url.Action("AddEditTrainingLabel", "Tag", new { Area = "" })", {
+                id: id, name: name, description: description
+                });
+
+                label.done(function (data) {
+                    $('#divLabelList').html(data);
+                    $('#addLabelModal').modal('hide');
+
+                    notif({ msg: "<b>Success :</b> You tag has been " + msg+" successfully", type: "success", multiline: true });
+                });
+
+                label.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            }
+        });
+
+    });
+</script>

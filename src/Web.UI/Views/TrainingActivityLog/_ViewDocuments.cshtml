@@ -1,0 +1,519 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Domain.Enums
+@using Domain.Customer.Models
+@model Ramp.Contracts.ViewModel.TrainingActivityModel
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel-info">
+
+
+            <div class="panel-body">
+                @using (Ajax.BeginForm("CreateOrUpdateTrainingActivity", "TrainingActivityLog", new AjaxOptions { OnComplete = "fnclose();", HttpMethod = "POST" }, new { @id = "frmTrainingActivity" })) {
+              
+                    <div class="col-lg-12">
+                        
+                        <div class="hidden" id="inputs"></div>
+                        <ul class="nav nav-tabs">
+                            <li role="button" class="active DocCss" id="liDocument"><a>Documents</a></li>
+                            <li role="button" id="liInvoice" class="DocCss"><a>Invoices</a></li>
+                        </ul>
+                        <div class="panel panel-info">
+                            <div class="panel-body">
+                                <div class="table-responsive" data-bind="style:{'max-height': $root.getHeight}">
+                                    <table class="table-striped" style="width:100%">
+                                        <!-- ko if:ko.unwrap($root.documentsTab) -->
+                                        <!-- ko ifnot:ko.unwrap($root.data.Documents).length > 0 -->
+                                        <tbody class="DocumentCss">
+                                            <tr class="text-center"><td colspan="3">No Documents Uploaded</td></tr>
+                                        </tbody>
+                                        <!-- /ko -->
+                                        <!-- ko if:ko.unwrap($root.data.Documents).length > 0-->
+                                        <tbody class="DocumentCss" data-bind="foreach:$root.data.Documents">
+                                            <!-- ko if:ko.unwrap(InProcess) -->
+                                            <tr class="row">
+                                                <td colspan="3" class="col-sm-12">
+                                                    <div class="progress">
+                                                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                                            <div class="progress-bar progress-bar-success" data-bind="style:{width:Progress}"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                            <!-- ko ifnot:ko.unwrap(InProcess) -->
+                                            <tr class="row">
+                                                <td class="col-sm-2">
+                                                    <img class="img-responsive center-block" data-bind="attr:{src: ThumbnailUrl}" style="max-height:50px" />
+                                                </td>
+                                                <td class="col-sm-7"><input type="text" class="form-control" data-bind="textInput:Description"></td>
+                                                <td class="col-sm-3">
+                                                    <div class="row btn-group btn-group-sm">
+                                                        <a class="btn btn-default" data-bind="attr:{href:Url}" target="_blank"><span class="glyphicon glyphicon-download"></span></a>
+                                                        
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                        </tbody>
+                                        <!-- /ko -->
+                                        <!-- /ko -->
+                                        <!-- ko ifnot: ko.unwrap($root.documentsTab) -->
+                                        <!-- ko with:$root.data.ExternalTrainingActivityDetail -->
+                                        <!-- ko ifnot:ko.unwrap(Invoices).length > 0 -->
+                                        <tbody class="ExternalInvoiceCss">
+                                            <tr class="text-center"><td colspan="3">No Invoices Uploaded</td></tr>
+                                        </tbody>
+                                        <!-- /ko -->
+                                        <!-- ko if:ko.unwrap(Invoices).length > 0-->
+                                        <tbody class="ExternalInvoiceCss" data-bind="foreach: Invoices">
+                                            <!-- ko if:ko.unwrap(InProcess) -->
+                                            <tr class="row">
+                                                <td colspan="3" class="col-sm-12">
+                                                    <div class="progress">
+                                                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                                            <div class="progress-bar progress-bar-success" data-bind="style:{width:Progress}"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                            <!-- ko ifnot:ko.unwrap(InProcess) -->
+                                            <tr class="row">
+                                                <td class="col-sm-2">
+                                                    <img class="img-responsive center-block" data-bind="attr:{src: ThumbnailUrl}" style="max-height:50px" />
+                                                </td>
+                                                <td class="col-sm-7"><input class="form-control" type="text" data-bind="textInput:Description"></td>
+                                                <td class="col-sm-3">
+                                                    <div class="row btn-group btn-group-sm">
+                                                        <a class="btn btn-default" data-bind="attr:{href:Url}" target="_blank"><span class="glyphicon glyphicon-download"></span></a>
+                                                        <button class="btn btn-default" data-bind="click:$root.upload.delete.invoice"><span class="glyphicon glyphicon-trash" style="color:red"></span></button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                        </tbody>
+                                        <!-- /ko -->
+                                        <!-- /ko -->
+                                        <!-- ko with:$root.data.BursaryTrainingActivityDetail -->
+                                        <!-- ko ifnot:ko.unwrap(Invoices).length > 0 -->
+                                        <tbody class="BursaryInvoiceCss">
+                                            <tr class="text-center"><td colspan="3">No Invoices Uploaded</td></tr>
+                                        </tbody>
+                                        <!-- /ko -->
+                                        <!-- ko if:ko.unwrap(Invoices).length > 0-->
+                                        <tbody class="BursaryInvoiceCss" data-bind="foreach: Invoices">
+                                            <!-- ko if:ko.unwrap(InProcess) -->
+                                            <tr class="row">
+                                                <td colspan="3" class="col-sm-12">
+                                                    <div class="progress">
+                                                        <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                                            <div class="progress-bar progress-bar-success" data-bind="style:{width:Progress}"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                            <!-- ko ifnot:ko.unwrap(InProcess) -->
+                                            <tr class="row">
+                                                <td class="col-sm-2">
+                                                    <img class="img-responsive center-block" data-bind="attr:{src: ThumbnailUrl}" style="max-height:50px" />
+                                                </td>
+                                                <td class="col-sm-7"><input type="text" class="form-control" data-bind="textInput:Description" /></td>
+                                                <td class="btn-group btn-group-sm">
+                                                    <a class="btn btn-default" data-bind="attr:{href:Url}" target="_blank"><span class="glyphicon glyphicon-download"></span></a>
+                                                    <button class="btn btn-default" data-bind="click:$root.upload.delete.invoice"><span class="glyphicon glyphicon-trash" style="color:red"></span></button>
+                                                </td>
+                                            </tr>
+                                            <!-- /ko -->
+                                        </tbody>
+                                        <!-- /ko-->
+                                        <!-- /ko-->
+                                        <!-- /ko -->
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <div class="text-right">
+                            <div class="btn-group">
+                                <button type="button" id="btnCancel" data-dismiss="modal" class="btn btn-default closeCss" value="Cancel">Close</button>
+                            </div>
+                        </div>
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    $('.DocCss').click(function () {
+
+        $('.DocCss').each(function () {
+            $(this).removeClass('active');
+        });
+
+        var id = $(this).attr('id');
+        if (id === 'liDocument') {
+            vm.documentsTab(true);
+        } else {
+            vm.documentsTab(false);
+        }
+        $(this).addClass('active');
+        $('.BursaryInvoiceCss').each(function () {
+            $(this).show();
+        });
+        $('.ExternalInvoiceCss').each(function () {
+            $(this).hide();
+        });
+
+    });
+
+    $('#divExternalTrainingProvider').hide();
+    $('#divExternalTrainingProvider').hide();
+    //upload document logic
+
+     var vm = app.data.crudController(@Html.ToJson(Model),@Html.ToJson((IDictionary<string,string>)ViewBag.Links),@Html.ToJson((string)ViewBag.Mode));
+    _init();
+
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+
+    function _utils_array_find(list, comparer) {
+        var model = null;
+        $.each(ko.isObservable(list) ? ko.unwrap(list) : list, function () {
+            if (comparer(ko.unwrap(this)))
+                model = this;
+        });
+        return model;
+    }
+    function _utils_array_remove(entry, list, comparer) {
+        var model = null;
+
+        entry = ko.isObservable(entry) ? ko.unwrap(entry) : entry;
+        $.each(ko.isObservable(list) ? ko.unwrap(list) : list, function () {
+            if (comparer(ko.unwrap(this)))
+                model = this;
+        });
+        if (!model)
+            return;
+        ko.isObservable(list) ? list.remove(model) : list.splice(list.indexOf(model),1);
+    }
+    function _utils_array_sync(entries, observableArray) {
+        observableArray.removeAll();
+        $.each(ko.unwrap(entries), function () {
+            var observable = !ko.isObservable(this) ? ko.observable(this) : this;
+            observableArray.push(observable);
+        });
+    }
+    function _utils_array_copy(entries, array) {
+        array.splice(0, array.length);
+        $.each(entries, function () {
+            array.push(this);
+        });
+    }
+    function _utils_array_async_fromUrl(actionUrl) {
+        return $.ajax({
+            method: 'get',
+            url: actionUrl
+        });
+    }
+    function _utils_validate_email(email) {
+        var re = /^(([^<>()\[\]\\.,;:\s@@"]+(\.[^<>()\[\]\\.,;:\s@@"]+)*)|(".+"))@@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+    }
+    function _utils_observable_clone(observable) {
+        return ko.mapping.fromJS(ko.mapping.toJS(observable));
+    }
+    function _utils() {
+        return {
+            array: {
+                find: _utils_array_find,
+                remove: _utils_array_remove,
+                sync: _utils_array_sync,
+                copy : _utils_array_copy,
+                async: {
+                    fromUrl : _utils_array_async_fromUrl
+                }
+            },
+            validate: {
+                email: _utils_validate_email
+            },
+            observable: {
+                clone : _utils_observable_clone
+            }
+        };
+    }
+    function _trainingActivityType_current() {
+        if (ko.unwrap(vm.data.TrainingActivityType == null || ko.unwrap(vm.data.TrainingActivityType) == undefined)) {
+            var t = window.location.href.substring(window.location.href.indexOf('TrainingActivityType'));
+            t = t.substring(t.indexOf('=') + 1);
+            return t;
+        }
+        else
+            return ko.unwrap(vm.data.TrainingActivityType).toString();
+    }
+    function _trainingActivityType_from_description(desc) {
+        var match = vm.utils.array.find(vm.trainingActivityType.list(), function (x) { return x.Text === desc || x.Value === desc; });
+        return match ? match.Value.toString() : null;
+    }
+    function _trainingActivityType_executeDelegateOn(targetType, delegate) {
+        if (vm.trainingActivityType.current() === vm.trainingActivityType.from.description(targetType))
+            delegate();
+    }
+    function _trainingActivityType() {
+        return {
+            current: _trainingActivityType_current,
+            from: {
+                description: _trainingActivityType_from_description,
+            },
+            executeDelegateOn: _trainingActivityType_executeDelegateOn,
+            list: _trainingActivityType_list
+        }
+    }
+
+    function _upload_options() {
+
+        return {
+            showProgress: false,
+            url: "@Url.Action("POST", "Upload", new { Area = "" })",
+            before: _upload_eventHandlers_onBeforeUpload,
+            success: _upload_eventHandlers_onUploadSuccess,
+            error: _upload_eventHandlers_onUploadError,
+            onProgress: _upload_eventHandlers_onUploadProgress,
+            autoupload: false
+        };
+    }
+    function _upload_eventHandlers_onBeforeUpload(element, fileName, valueProperty) {
+        var result = false;
+        var ext = fileName.substring(fileName.lastIndexOf('.') + 1).toUpperCase();
+        var acceptedImageFileTypes = [
+            "PNG",
+            "JPEG",
+            "JPG",
+            "GIF",
+            "BMP"
+        ];
+        var acceptedDocumentfileTypes = [
+            "PPSX",
+            "PPS",
+            "DOC",
+            "DOCX",
+            "XLS",
+            "XLSX",
+            "PPT",
+            "PPTX",
+            "PDF"
+        ];
+        var accepted = false;
+        if (ko.unwrap(vm.documentsTab)) {
+
+            accepted = vm.utils.array.find(acceptedDocumentfileTypes, function(extension) { return extension.toString() === ext; });
+        } else {
+            accepted = vm.utils.array.find(acceptedDocumentfileTypes, function(extension) { return extension.toString() === ext; });
+            if (!accepted)
+                accepted = vm.utils.array.find(acceptedImageFileTypes, function(extension) { return extension.toString() === ext; });
+        }
+        if (accepted) {
+            ko.unwrap(valueProperty).Type(vm.upload.type.from.description(ko.unwrap(vm.documentsTab) ? 'Training Activity Document' : 'Training Activity Invoice'));
+            ko.unwrap(valueProperty).InProcess(true);
+            ko.unwrap(valueProperty).Progress(0 + '%');
+            if (vm.documentsTab()) {
+                vm.data.Documents.push(valueProperty);
+                //console.log(ko.unwrap(valueProperty));
+            } else {
+                console.log(ko.unwrap(valueProperty));
+
+                var type = $("#TrainingActivityType option:selected").text();
+                if (type === 'External') {
+                    vm.data.ExternalTrainingActivityDetail.Invoices.push(valueProperty);
+                }
+                if (type === 'Bursary') {
+                    vm.data.BursaryTrainingActivityDetail.Invoices.push(valueProperty);
+                }
+                vm.trainingActivityType.executeDelegateOn('External', function () {
+                    vm.data.ExternalTrainingActivityDetail().Invoices.push(valueProperty);
+
+                });
+                vm.trainingActivityType.executeDelegateOn('Bursary', function () { vm.data.BursaryTrainingActivityDetail().Invoices.push(valueProperty); });
+            }
+            result = true;
+        } else {
+            notif({ type: 'error', msg: 'Please select a Document To Upload' });
+        }
+        return result;
+    }
+    var uploadId = new Array();
+    var BursaryInvoiceId = new Array();
+    var ExternalInvoiceId = new Array();
+    function _upload_eventHandlers_onUploadSuccess(data, textStatus, xhr, valueProperty) {
+
+        var type = $("#TrainingActivityType option:selected").text();
+        if (type === 'External' && !vm.documentsTab()) {
+            ExternalInvoiceId.push(ko.unwrap(data).Id);
+            ExternalInvoiceId = $.unique(ExternalInvoiceId);
+            $('#ExternalInvoiceIds').val(ExternalInvoiceId.toString());
+        }
+        else if (type === 'Bursary' && !vm.documentsTab()) {
+            BursaryInvoiceId.push(ko.unwrap(data).Id);
+            BursaryInvoiceId = $.unique(BursaryInvoiceId);
+            $('#BursaryInvoiceIds').val(BursaryInvoiceId.toString());
+        } else {
+            uploadId.push(ko.unwrap(data).Id);
+            uploadId = $.unique(uploadId);
+            $('#UploadIds').val(uploadId.toString());
+        }
+
+        var filename = valueProperty().Description();
+        var ext = filename.substring(filename.lastIndexOf('.'));
+        valueProperty().Description(filename.replace(ext, ''));
+    }
+    function _upload_eventHandlers_onUploadError(valueProperty) {
+
+    }
+    function _upload_open(data) {
+
+        var newElement = $('<input data-bind="fileUpload:new ko.observable(),fileuploadOptions:vm.upload.options,valueProperty:new vm.upload.model()" class="upload hidden" type="file" name="files[]" accept="pdf" />');
+        $(newElement).appendTo('#inputs');
+        ko.applyBindingsToNode(newElement[0], null, data);
+        $(newElement).click();
+    }
+    function _upload_type_from_description(desc) {
+        var match = vm.utils.array.find(vm.upload.type.list(), function (x) { return x.Text === desc || x.Value === desc; });
+        return match ? match.Value.toString() : null;
+    }
+    function _upload_eventHandlers_onUploadProgress(event, position, total, percentage, fileName, valueProperty, submitEvent, valueAccessor, container) {
+        valueProperty().Progress(percentage + "%");
+        valueProperty().Size(total);
+    }
+    function _upload_delete_document(doc) {
+
+        vm.upload.delete.fromUrl(doc)
+            .then(function (data) { if (data) { vm.utils.array.remove(doc, vm.data.Documents, function (x) { return ko.unwrap(x.Id) == ko.unwrap(doc.Id); }); } else { notif({ type: 'error', msg: 'Delete Failed' }); } }, function (msg) { notif({ type: 'error', msg: 'Delete Failed' }); });
+    }
+    function _upload_delete_invoice(inv) {
+        vm.upload.delete.fromUrl(inv).then(function (data) {
+            if (data) {
+                vm.trainingActivityType.executeDelegateOn('External', function () {
+                    vm.utils.array.remove(inv, vm.data.ExternalTrainingActivityDetail().Invoices, function (x) { return ko.unwrap(x.Id) == ko.unwrap(inv.Id); });
+                });
+                vm.trainingActivityType.executeDelegateOn('Bursary', function () {
+                    vm.utils.array.remove(inv, vm.data.BursaryTrainingActivityDetail().Invoices, function (x) { return ko.unwrap(x.Id) == ko.unwrap(inv.Id); });
+                });
+            }
+            else {
+                notif({ type: 'error', msg: 'Delete Failed' });
+            }
+        }, function (msg) { notif({ type: 'error', msg: 'Delete Failed' }); });
+    }
+    function _upload_delete_fromUrl(upload){
+        console.log(ko.unwrap(upload.Id));
+        uploadId.splice($.inArray(ko.unwrap(upload.Id), uploadId), 1);
+        console.log("after delete " + uploadId);
+        $('#UploadIds').val(uploadId.toString());
+        console.log($('#UploadIds').val());
+
+        return $.ajax({
+            method: 'delete',
+            url: ko.unwrap(upload.DeleteUrl)
+        });
+    }
+    function _upload_model(type) {
+        var temp = vm.template.upload;
+        temp.Type(type);
+        return new ko.observable(temp);
+    }
+    function _upload() {
+        return {
+            options: _upload_options(),
+            eventHandlers: {
+                onBeforeUpload: _upload_eventHandlers_onBeforeUpload,
+                onUploadSuccess: _upload_eventHandlers_onUploadSuccess,
+                onUploadError: _upload_eventHandlers_onUploadError
+            },
+            open: _upload_open,
+            type: {
+                list: _upload_type_list,
+                from: {
+                    description: _upload_type_from_description
+                }
+            },
+            delete: {
+                document: _upload_delete_document,
+                invoice: _upload_delete_invoice,
+                fromUrl : _upload_delete_fromUrl
+            },
+            model : _upload_model
+        };
+    }
+
+    function _cache_externalTrainingProviders_refresh() {
+        vm.cache.externalTrainingProviders.data(!vm.cache.externalTrainingProviders.data());
+    }
+    function _cache() {
+        return {
+            externalTrainingProviders: {
+                data : ko.observable(false),
+                refresh: _cache_externalTrainingProviders_refresh
+            }
+        };
+    }
+
+     function _trainingActivityType_list() {
+        return [
+            { Value: @Html.ToJson((int)TrainingActivityType.Bursary), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.Bursary)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.External), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.External)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.Internal), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.Internal)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.MentoringAndCoaching), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.MentoringAndCoaching)) },
+            { Value: @Html.ToJson((int)TrainingActivityType.ToolboxTalk), Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<TrainingActivityType>(TrainingActivityType.ToolboxTalk)) }
+        ];
+    }
+    function _upload_type_list() {
+        return [
+            { Value: @Html.ToJson((int)FileUploadType.TrainingActivityDocument),Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<FileUploadType>(FileUploadType.TrainingActivityDocument)) },
+            { Value: @Html.ToJson((int)FileUploadType.TrainingActivityInvoice),Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<FileUploadType>(FileUploadType.TrainingActivityInvoice)) }
+        ];
+    }
+
+    function _upload_type_list() {
+        return [
+            { Value: @Html.ToJson((int)FileUploadType.TrainingActivityDocument),Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<FileUploadType>(FileUploadType.TrainingActivityDocument)) },
+            { Value: @Html.ToJson((int)FileUploadType.TrainingActivityInvoice),Text: @Html.ToJson(VirtuaCon.EnumUtility.GetFriendlyName<FileUploadType>(FileUploadType.TrainingActivityInvoice)) }
+        ];
+    }
+    function _init() {
+        vm.trainingActivityType = _trainingActivityType();
+        vm.utils = _utils();
+        vm.upload = _upload();
+        vm.cache = _cache();
+
+        //observables
+        vm.documentsTab = ko.observable(true);
+        vm.modalHeader = ko.observable();
+        vm.users = ko.observableArray();
+        vm.userSearch = ko.observable();
+        vm.uploadModel = ko.observable();
+
+
+        vm.template = {
+            upload: ko.mapping.fromJS(@Html.ToJson(new FileUploadResultViewModel())),
+            externalTrainingProvider: ko.mapping.fromJS(@Html.ToJson(new ExternalTrainingProviderModel())),
+            trainingLabel: ko.mapping.fromJS(@Html.ToJson(new TrainingLabelModel()))
+        };
+
+        //computed observables
+        vm.showInvoices = ko.computed(function () { return ko.unwrap(vm.data.ExternalTrainingActivityDetail) || ko.unwrap(vm.data.BursaryTrainingActivityDetail); });
+        vm.getHeight = ko.computed(function () { return ko.unwrap(vm.data.BursaryTrainingActivityDetail) ? '431px' : '345px'; });
+
+    };
+
+</script>
+

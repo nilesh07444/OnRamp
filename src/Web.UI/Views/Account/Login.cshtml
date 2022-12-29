@@ -1,0 +1,395 @@
+﻿@model Ramp.Contracts.CommandParameter.Login.LoginUserCommandParameter
+@using Web.UI.Code.Extensions
+@using Domain.Models
+@{
+    var companySiteTitle = ViewData["Title"] == null ? "OnRamp Training Portal" : ViewData["Title"];
+    var portalContext = Html.GetPortalContext();
+    var loginImageUrl = Url.Content("~/Content/images/Login/onramp_login.png");
+    var loginLogoUrl = Url.Content("~/images/logo.png");
+    var companywebsite = AppSettings.Urls.Marketting.AsUrl();
+    if (portalContext != null && portalContext.UserCompany != null) {
+        if (!string.IsNullOrWhiteSpace(portalContext.UserCompany.WebsiteAddress)) {
+            companywebsite = !portalContext.UserCompany.WebsiteAddress.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase) ? string.Format("http://{0}", portalContext.UserCompany.WebsiteAddress) : portalContext.UserCompany.WebsiteAddress;
+        }
+        if (portalContext.UserCompany.CustomerConfigurations.Count > 0) {
+            var customerConfiguration = portalContext.UserCompany.CustomerConfigurations;
+            var loginImage = customerConfiguration.Where(x => x.Type == CustomerConfigurationType.LoginLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault();
+            var loginLogo = customerConfiguration.Where(x => x.Type == CustomerConfigurationType.DashboardLogo && (!x.Deleted.HasValue || (x.Deleted.HasValue && !x.Deleted.Value))).OrderBy(x => x.Version).LastOrDefault();
+            if (loginImage != null && loginImage.UploadModel != null) {
+                loginImageUrl = "data:image/png;base64," + Convert.ToBase64String(loginImage.UploadModel.Data);
+            }
+            if (loginLogo != null && loginLogo.UploadModel != null) {
+                loginLogoUrl = "data:image/png;base64," + Convert.ToBase64String(loginLogo.UploadModel.Data);
+            }
+        }
+    }
+    Layout = null;
+
+
+
+
+
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && !string.IsNullOrEmpty(PortalContext.Current.UserCompany.CompanySiteTitle)) {
+        companySiteTitle = PortalContext.Current.UserCompany.CompanySiteTitle;
+    }
+
+
+
+
+
+
+
+    var version = System.Reflection.Assembly.GetAssembly(typeof(Web.UI.App_Start.RampSecurityConfig)).GetName().Version.ToString();
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title id="spnTitle">@companySiteTitle</title>
+    @Html.Partial("_NotifyPartial")
+    @Styles.Render("~/bundles/css")
+    <link href="~/Content/admin.css?v=@version" rel="stylesheet" />
+
+
+
+    @Scripts.Render("~/bundles/js")
+    <style>
+        .password input[type="password"], .username input {
+            padding-right: 30px;
+            border-radius: 0;
+        }
+          .requiredTxt {
+            border: solid red;
+        }
+
+
+    .modal-login {
+		max-width: 450px;
+	}
+
+    .modal-login .modal-content {
+        padding:40px;
+		border-radius: 50px;
+	}
+	.modal-login .modal-header {
+		border-bottom: none;
+        position: relative;
+        justify-content: center;
+	}
+
+    .modal-backdrop{
+       backdrop-filter: blur(5px);
+       background-color: rgba(0, 0, 0, 0.58);
+    }
+    .modal-backdrop.in{
+       opacity: 1 !important;
+    }
+
+
+    @Html.Raw(portalContext.EmbedCss())
+        .splashImage {
+            background: url(@loginImageUrl) no-repeat center top;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+        .password, .username {
+            position: relative;
+            width: 100%;
+        }
+        .password input[type="password"], .username input {
+            padding-right: 30px;
+        }
+        .password .glyphicon, .username .glyphicon {
+            right: 15px;
+            position: absolute;
+            top: 10px;
+            cursor: pointer;
+        }
+
+
+
+
+    </style>
+</head>
+
+<body class="container-fluid" id="login">
+
+    <div class="login-logo-col splashImage">
+    </div>
+
+
+    <div id="loginmodal" class="modal show fade padding:30px;">
+        <div class="modal-dialog modal-login">
+            <div class="modal-content" style="margin-top:20% !important;">
+
+                <div class="login-col">
+
+                    <a href="@companywebsite" target="_blank" title="Click here for more info">
+                        <img class="onramp-logo center-block img-responsive" src="@loginLogoUrl" />
+                    </a>
+                    <br />
+                    <div class="form ">
+                        @using (Html.BeginForm("Login", "Account", new { ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form", @class = "login-form" })) {
+                            @Html.AntiForgeryToken()
+                            <div class="row">
+                                <div>
+                                    <div class="username">
+                                        @Html.TextBoxFor(x => x.Email, new { @type = "email", @class = "form-control requiredClass", @placeholder = "Email Address", style = "max-width:none" })
+                                        <span class="glyphicon glyphicon-envelope"></span>
+                                    </div>
+                                    <br>
+
+                                    <div class="password">
+                                        <input type="password" name="Password" id="password" class="form-control requiredClass" placeholder="Password" style="max-width:none" />
+                                        <span id="passwordToggle" class="glyphicon glyphicon-eye-open"></span>
+                                    </div>
+                                    <br>
+
+
+                                    @if (Convert.ToBoolean(Session["DEV"]) == true) {
+                                        <div class="form-group">
+                                            @Html.DropDownListFor(m => m.SelectedCompany, Model.Companies, new { @class = "form-control", style = "max-width:none;width:100%" })
+                                        </div>
+                                    }
+                                <div class="self-sign-up-option">
+                                    @if (PortalContext.Current != null && PortalContext.Current.UserCompany != null && PortalContext.Current.UserCompany.IsForSelfSignUp)
+                                    {
+                                        <div class="forgot-password-link text-right">
+                                            @Html.ActionLink("I forgot my password", "LostPassword")
+                                        </div>
+                                        <p>&nbsp;</p>
+                                        <div class="text-center">
+                                            <input type="submit" onclick="return checkValidation();" value="Login" class="btn btn-lg btn-primary center-block btn-block" style="max-width:none;width:100%" />
+                                            <br />
+                                            <input type="button" onclick="window.location.href = '@Url.Action("CustomerUserSelfSignUp", "CustomerMgmt", new { Area = "CustomerManagement", companyId = PortalContext.Current.UserCompany.Id.ToString() })'" class="btn btn-lg btn-primary center-block btn-block" value="Sign Up" style="max-width:none;width:100%" />
+                                        </div>
+
+                                    }
+                                    else if (true)
+                                    {
+                                        <div class="forgot-password-link text-right">
+                                            @Html.ActionLink("I forgot my password", "LostPassword")
+                                        </div>
+                                        <p>&nbsp;</p>
+
+
+                                    }
+
+                                    <div class="text-center">
+                                        <input type="submit" onclick="return checkValidation();" value="Login" class="btn center-block btn-lg btn-primary btn-block" style="max-width:none;width:100%" />
+
+                                    </div>
+
+                                </div>
+                                    @*@Html.ValidationSummary(true)
+                                        @Html.ValidationMessage("CustomError")*@
+                                    @if (HttpContext.Current.Session["LOGIN_FAILED"] != null) {
+
+                                        @:<script>notif({ msg: "<b>Warning :</b> Invalid username or password.", type: "error", multiline: true, });</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                        Session["LOGIN_FAILED"] = null;
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+
+
+
+
+
+
+
+
+
+                    <br />  <br />
+                    <div class="row footer">
+                        <span class="small pull-left" style="color:#27B899" id="text">Powered By OnRamp</span>
+                        <img class="onramp-logo-mini img-responsive pull-right" id="logo" src="@Url.Content("~/images/logo.png")" />
+                    </div>
+
+                </div>
+
+
+
+            </div>
+
+        </div>
+    </div>
+
+    @if (ViewData["Message"] != null) {
+
+        if (Convert.ToString(ViewData["Message"]) == "true" || Convert.ToString(ViewData["Message"]) == "True") {
+            @:<script>notif({ msg: "<b>Success :</b> Self sign up account activated, please login into your portal.", type: "success", multiline: true, });</script>
+        } else {
+            @:<script>notif({ msg: "<b>Success :</b> You details have been submitted for approval, Your administrator will get in contact.", type: "success", multiline: true, });</script>
+        }
+    }
+    @if (ViewData["IsActiveComp"] != null) {
+
+        @:<script>notif({ msg: "<b>Warning :</b>Portal is inactive ", type: "error", multiline: true, });</script>
+    }
+    @if (ViewData["IsActiveUser"] != null) {
+
+        @:<script>notif({ msg: "<b>Warning :</b>Account is inactive. Please contact your administrator. ", type: "error", multiline: true, });</script>
+    }
+
+
+    @if (ViewData["Success"] != null) {
+
+        @:<script>notif({ msg: "<b>Success :</b> @ViewData["Success"]", type: "success", multiline: true, });</script>
+    }
+    <script type="text/javascript">
+
+        @*$('#SelectedCompany').change(function () {
+            var companyId = $(this).val();
+            var company = $.get("@Url.Action("GetCompanyTitle", "Account", new { Area = "" })/"+companyId);
+
+            company.done(function (data) {
+                alert(data);
+                $("#spnTitle").text(data);
+            
+                });
+            company.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+                });
+            company.always(function () {
+
+                });
+        });*@
+
+        $('#loginmodal').modal({
+            backdrop: 'static',
+            keyboard: false
+        })
+
+        function checkValidation() {
+            var flag = true;
+
+            $('.requiredClass').each(function () {
+                if ($(this).hasClass('requiredTxt')) {
+                    flag = false;
+                }
+
+            });
+            if (flag == false) {
+
+                notif({ msg: "<b>Warning :</b> " + 'Please ensure that all required fields filled', type: "error", multiline: true });
+            }
+            return flag;
+
+        }
+
+        $(document).ready(function () {
+
+            localStorage.clear();
+
+            $('.requiredClass').blur(function () {
+                var val = $(this).val();
+                if (val === '' || val === null || val === undefined) {
+                    $(this).addClass('requiredTxt');
+
+                } else {
+                    $(this).removeClass('requiredTxt');
+                }
+            });
+
+
+            $('body').css('padding', 0);
+            _adjustFooter();
+            $(window).on('resize', _adjustFooter);
+            $('form').on('submit', _adjustFooter);
+            function _adjustFooter() {
+                if (($(window).height() - $('.form').height() - $('.onramp-logo').height()) < $('#footer').height() + 30) {
+                    $('#footer').removeClass('signiture');
+                } else {
+                    $('#footer').addClass('signiture');
+                }
+                return true;
+            }
+        });
+        var showPassword = false;
+        $('#passwordToggle').click(function () {
+            $('#passwordToggle').toggleClass('glyphicon-eye-open glyphicon-eye-close');
+            showPassword = !showPassword;
+            if (showPassword) {
+                $('#password').attr('type', 'text');
+            } else {
+                $('#password').attr('type', 'password');
+            }
+        });
+    </script>
+</body>
+
+
+
+</html>

@@ -1,0 +1,83 @@
+﻿@using iTextSharp.text.pdf.qrcode
+@model Ramp.Contracts.ViewModel.CompanyUserViewModel
+<div class="col-lg-12">
+    @using (Html.BeginForm("CreateOrUpdateProvisionalCompanyUser", "ProvisionalMgmt"))
+    {
+        @* @Html.AntiForgeryToken()*@
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-info">
+                    @if (Model.UserViewModel == null)
+                {
+                        <div class="panel-heading"> Create User for @Model.CompanyName</div>
+                    }
+                    else
+                    {
+
+                        <div class="panel-heading"> Edit User for @Model.CompanyName</div>
+                        @Html.HiddenFor(model => model.UserViewModel.Id)
+                    }
+
+                    @*<div class="panel-heading"> Create User for @Model.CompanyName</div>*@
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                @Html.ValidationSummary(true)
+                                @Html.HiddenFor(model => model.CompanyId)
+                                <div class="form-group">
+                                    @Html.Label("Full Name")
+                                    @Html.TextBoxFor(model => model.UserViewModel.FullName, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.UserViewModel.FullName)
+                                </div>
+                                <div class="form-group">
+                                    @Html.Label("ID Number")
+                                    @Html.TextBoxFor(model => model.UserViewModel.IDNumber, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.UserViewModel.IDNumber)
+                                </div>
+                                <div class="form-group">
+                                    @Html.Label("Contact Number")
+                                    @Html.TextBoxFor(model => model.UserViewModel.ContactNumber, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.UserViewModel.ContactNumber)
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Email Address")
+                                    @Html.TextBoxFor(model => model.UserViewModel.EmailAddress, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.UserViewModel.EmailAddress)
+                                </div>
+
+                                @if (Convert.ToBoolean(Session["EditForm"]) == true)
+                                {
+                                    @*<div> Edit </div>*@
+                                }
+                                else
+                                {
+                                    @*<div> Create </div>*@
+                                    <div class="form-group">
+                                        @Html.Label("Password")
+                                        @Html.PasswordFor(model => model.UserViewModel.Password, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.UserViewModel.Password)
+                                    </div>
+
+                                    <div class="form-group">
+                                        @Html.Label("Confirm Password")
+                                        @Html.PasswordFor(model => model.UserViewModel.ConfirmPassword, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.UserViewModel.ConfirmPassword)
+                                    </div>
+                                }
+                                <div class="form-group">
+                                    @Html.Label("Mobile Number")
+                                    @Html.TextBoxFor(model => model.UserViewModel.MobileNumber, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.UserViewModel.MobileNumber)
+                                </div>
+
+                                <input type="submit" value="Save" class="btn btn-default" />
+                                @*<input type="submit" value="Clear" class="btn btn-default" />*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

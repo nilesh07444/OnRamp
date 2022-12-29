@@ -1,0 +1,137 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Ramp.Security.Authorization
+
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole() || Thread.CurrentPrincipal.IsInResellerRole())
+    {
+        Layout = Url.Content("~/Views/Shared/_Layout.cshtml");
+    }
+    else
+    {
+        Layout = Url.Content("~/Views/Shared/_LayoutStandardUser.cshtml");
+    }
+}
+
+
+
+@*<link href="~/Content/erorpage.css" rel="stylesheet" />*@
+<link href="~/Content/ErrorPage.css" rel="stylesheet" />
+<link href="~/Content/jquery.cssemoticons.css" rel="stylesheet" />
+@*<link href="~/Content/font.css" rel="stylesheet" />*@
+
+<script src="~/Scripts/ErrorPageJs/jquery.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Scripts/ErrorPageJs/custom.js"></script>
+<script src="~/Scripts/ErrorPageJs/missing.js"></script>
+<script src="~/Scripts/ErrorPageJs/placeholders.js"></script>
+<script src="~/Scripts/jquery.cssemoticons.js"></script>
+ 
+
+<style type="text/css">
+    .nav > li {
+        position: relative;
+        display: block;
+        float: left;
+    }
+
+    #page-wrapper {
+        /*width:450px;*/
+        min-height: 450px;
+    }
+</style>
+<div>
+    <div class="container" @*style="max-width: 1165px; "*@>
+        <div id="wrapper">
+            <header class="clearfix">
+                <div class="row">
+                    <div class="col-md-5 col-sm-5">
+                        <p style="position: absolute; ">
+                            <a href="/">
+                                <img src="@Url.Content("~/Content/images/logo.png")" style="width: 210px; margin-left: 15px; margin-top:-2px;">
+                                @*<img src="/images/powered.PNG" style="width: 210px; margin-left:15px; ">*@
+                            </a>
+                        </p>
+                    </div>
+
+                </div>
+                <!--end-of-row-->
+            </header>
+            <article>
+
+                <!-- Tab panes -->
+                <div class="tab-content-wrapper">
+                    <div class="tb-content active" id="home">
+                        <div class="box">
+                            <span class="section-icon" style="background-color: #1fbba6;"><i class="fa fa-chain-broken fa-2x"></i></span>
+                            <h1>Error</h1>
+                            <h4>Sorry - Somethimg went wrong!</h4>
+                            <p>
+                                The OnRamp Technical Team has been automatically notified of this issue and will investigate. 
+                                <br />
+                                Our sincere apologies for any inconvenience caused. <span class="css-emoticon animated-emoticon">:(</span>
+                            </p>
+                        </div>
+                    </div>
+                    <!--end-of-tab-content-->
+
+                    <div class="tb-content" id="subscribe" style="display: none;">
+                        <div class="box">
+                            <span class="section-icon"><i class="fa fa-plus-circle fa-2x"></i></span>
+                            <h4>Subscribe For Our E-Newsletter</h4>
+                            <p>Join our email list to receive updates, notifications, news, events and more...</p>
+                        </div>
+                        <form action="form/subscribe.php" method="post" id="subscribe-form" class="form-dark">
+                            <div class="input-group">
+                                <input type="email" id="emailSubscribe" name="emailSubscribe" placeholder="Enter your email address...">
+                                <input type="submit" id="subscribe-submit" name="subscribe-submit" value="">
+                            </div>
+                        </form>
+                    </div>
+                    <!--end-of-tab-content-->
+
+                    <div class="tb-content" id="contact" style="display: none;">
+                        <div class="box">
+                            <span class="section-icon"><i class="fa fa-envelope fa-2x"></i></span>
+                            <h4>Contact</h4>
+                            <p>
+                                Call Us: <strong>333.555.1212</strong> OR <br>
+                                Send us a message if you have any questions.
+                            </p>
+                        </div>
+                        <form id="contact-form" method="post" action="form/contact.php" class="form-dark">
+                            <div class="field-wrapper">
+                                <div class="row">
+                                    <div class="col-md-12 form-row">
+                                        <input type="text" class="form-control" id="name" name="name" placeholder="Your Name">
+                                    </div>
+                                    <div class="col-md-12 form-row">
+                                        <input type="email" class="form-control" id="email" name="email" placeholder="Your Email">
+                                    </div>
+                                </div>
+                                <div class="form-row clearfix">
+                                    <textarea cols="60" rows="5" id="comment" name="comment" class="form-control" placeholder="Please write us where you find broken link on our website..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-custom btn-lg" id="contact-submit" name="contact-submit"> <span class="glyphicon glyphicon-send"></span> Send </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!--end-of-tab-content-->
+
+            </article>
+        </div>
+        <!--end-of-wrapper-->
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+
+        $($('#TourCheckBox').parent()).css('top', '14px');
+    });
+</script>

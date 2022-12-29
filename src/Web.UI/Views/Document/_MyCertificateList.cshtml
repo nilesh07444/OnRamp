@@ -1,0 +1,151 @@
+﻿@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+
+@model List<PointsStatementViewModel.DataItem>
+<head>
+    <style>
+        /*#table-wrapper {
+            position: relative;
+        }
+
+        #table-scroll {
+            height: 250px;
+            overflow: auto;
+            margin-top: 20px;
+        }
+
+        #table-wrapper table {
+            width: 100%;
+        }*/
+
+        
+
+        .loading {
+            color: red;
+        }
+
+    </style>
+    
+</head>
+<div class="panel panel-info" id="table-wrapper">
+    @*<div class="panel-heading"><strong>Test</strong> : <span data-bind="text:Title">@ViewBag.TotalScore</span></div>*@
+    <div class="panel-body" id="table-scroll"  style="height: 250px;overflow: auto; margin-top: 20px;" >
+        <div id="dvtbl">
+            <table class="table table-hover table-fixed scrollpane" id="statement">
+                <thead>
+                    <tr>
+                        <th class="EmployeeCodeCss">Employee Code</th>
+                        <th class="UserCss">User</th>
+                        <th class="CategoryCss">Category</th>
+                        <th class="DocumentTypeCss">Document Type</th>
+                        <th class="TitleCss">Title</th>
+                        <th class="DateCss">Date</th>
+                        @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments) {
+                            <th class="AccessCss">Access</th>
+                        }
+                        <th class="ResultCss">Result</th>
+                        <th class="PointsCss">Points</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tbody">
+                    @foreach (var data in Model) {
+                        <tr>
+                            <td class="EmployeeCodeCss">@data.User.EmployeeNo</td>
+                            <td class="UserCss">@data.User.FullName.Trim()</td>
+                            <td class="CategoryCss">@data.Category.Trim()</td>
+                            <td class="DocumentTypeCss">@(VirtuaCon.EnumUtility.GetFriendlyName<DocumentType>(data.DocumentType))</td>
+                            <td class="TitleCss">@data.DocumentTitle.Trim()</td>
+                            <td class="DateCss">@data.Date</td>
+
+                            @if (PortalContext.Current.UserCompany.EnableGlobalAccessDocuments) {
+                                if (@data.IsGlobalAccessed) {
+                                    <td class="AccessCss">Global</td>
+                                } else {
+                                    <td class="AccessCss">Assigned</td>
+                                }
+                            }
+
+                            @if (data.Result == PointsStatementResult.Failed || data.Result == PointsStatementResult.No) {
+                                <td class="danger ResultCss">@(VirtuaCon.EnumUtility.GetFriendlyName<PointsStatementResult>(data.Result))</td>
+                            } else {
+                                <td class="ResultCss">@(VirtuaCon.EnumUtility.GetFriendlyName<PointsStatementResult>(data.Result))</td>
+                            }
+                            <td class="PointsCss">
+                                @data.Points
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <input type="button" value="click" id="btnClick" />
+</div>
+<script>
+    function GetCertificate(count, pagesize) {
+        console.log("Get Certificate Called")
+        var virtualClass = $.get("@Url.Action("GetCertificateList", "Document", new { Area = "" })", {
+            startIndex: parseInt(count), pageSize: parseInt(pagesize)
+        });
+
+        virtualClass.done(function (data) {
+            //console.log("data...", data)
+            //$("#divMyCertificate").html(data);
+           
+            if (data != null && data != undefined && data.length > 0) {
+                for (var i = 0; i < data.length; i++) {
+                    var tr;
+                    tr = $('<tr>');
+                    tr.append("<td>" + data[i].User.EmployeeNo + "</td>");
+                    tr.append("<td>" + data[i].User.FullName + "</td>");
+                    tr.append("<td>" + data[i].Category + "</td>");
+                    tr.append("<td>" + data[i].DocumentType+"</td>");
+                   
+                    tr.append("<td>" + data[i].DocumentTitle + "</td>");
+                    tr.append("<td>" + data[i].Date + "</td>");
+
+                    tr.append("<td>" + 'Access' + "</td>");
+                     tr.append("<td>" + 'Passed' + "</td>");
+                    tr.append("<td>" + data[i].Points + "</td>");
+
+                    tr.append('</tr>')
+                    $('#tbody').append(tr);
+                  
+                }
+            }
+
+            });
+            virtualClass.fail(function (jqXHR, textStatus, errorThrown) {
+                    console.error(errorThrown);
+
+            });
+            virtualClass.always(function () {
+
+            });
+    }
+
+    $(document).ready(function () {
+        var initialCount = 1;
+
+        //$('#btnClick').click(function () {
+        //    initialCount = initialCount + 1
+        //    GetCertificate(initialCount, 10)
+        //});
+
+        $("#table-scroll").scroll(function () {
+            var $this = $(this);
+            var $results = $("#statement");
+
+            if ($this.scrollTop() + $this.height()== $results.height()) {
+                initialCount = initialCount + 1
+                GetCertificate(initialCount, 10);
+            }
+        });
+
+       
+
+
+    });
+</script>

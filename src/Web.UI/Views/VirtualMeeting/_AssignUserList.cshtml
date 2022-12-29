@@ -1,0 +1,26 @@
+﻿@model List<Ramp.Contracts.ViewModel.UserModelShort>
+  
+
+  @foreach (var item in Model) {
+        <tr>
+            <td style="min-width: 30px;">@item.Name</td>
+            <td class="text-center">
+                <input type="checkbox" name="chk" class="UserCss" id="@item.Id" />
+            </td>
+        </tr>
+
+
+    }
+
+<script>
+    $(function () {
+        assignAddUsers = [];
+        $('#tblAssignUsers').dataTable({
+            bDeferRender: false,
+            bDestroy: true,
+            bFilter: true,
+            bPaginate: false
+        });
+        $('#tblAssignUsers_length').hide();
+    });
+</script>

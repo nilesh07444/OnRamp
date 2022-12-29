@@ -1,0 +1,72 @@
+﻿@model Ramp.Contracts.Events.CustomerManagement.CustomerUserSelfSignedUpApprovedEvent
+
+@{
+    Layout = null;
+    var headerPath = Url.Content(AppSettings.Urls.HeaderImageLogoUrl);
+    var footerPath = Url.Content(AppSettings.Urls.FooterImageLogoUrl);
+    var loginLink = AppSettings.Urls.ResolveUrl("~Account/Login", Model.CompanyViewModel);
+
+    var loginLinkDescription = AppSettings.Urls.ResolveUrl("~", Model.CompanyViewModel);
+    var supportEmailLink = "support@onramp.training";
+    var notificationheader = "#27b899";
+    var notificationfooter = "#27b899";
+
+    if (PortalContext.Current != null && PortalContext.Current.UserCompany.CustomColours != null)
+    {
+        notificationheader = PortalContext.Current.UserCompany.CustomColours.HeaderColour;
+        notificationfooter = PortalContext.Current.UserCompany.CustomColours.FooterColour;
+    }
+
+
+
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <style>
+
+    .headerstyle {
+     background: @notificationheader;
+     height:40px;
+    }
+    .footerstyle {
+        background: @notificationfooter;
+        height: 40px;
+    }
+
+    </style>
+
+</head>
+<body>
+    <div class="headerstyle"></div>
+    <br />
+    <br />
+    <p>
+        Hi <b>@Model.UserViewModel.FirstName</b>,
+    </p>
+    <p>Welcome to @Model.CompanyViewModel.CompanyName !</p>
+
+
+    <p>A user profileen created for you as follows:</p>
+    <table>
+        <tr><td><b>Username:</b></td><td>@Model.UserViewModel.EmailAddress</td></tr>
+        <tr><td><b>Password:</b></td><td>@Model.UserViewModel.Password</td></tr>
+    </table>
+
+
+
+
+    To log in, please head over to this link: <a href="@loginLink">@loginLinkDescription</a>
+    </p>You will be able to change your password after log in for the first time.<p>
+    <p>
+        If you have any questions, please contact the OnRamp Support Team - email: <a href="mailto:@supportEmailLink">@supportEmailLink</a>.
+    </p>
+    <br />
+    <br />
+    <div class="footerstyle"></div>
+
+</body>
+</html>

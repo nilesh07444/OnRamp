@@ -1,0 +1,266 @@
+﻿@model Ramp.Contracts.ViewModel.TrainingGuideViewModel
+@using Ramp.Security.Authorization
+@using Common.Web
+@using Web.UI.Code.AreaReferencesManagement
+@using Web.UI.Code.Extensions
+@using System.Threading
+@{
+    if (Thread.CurrentPrincipal.IsInGlobalAdminRole())
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+    }
+    ViewBag.Title = "OnRAMP Online Training Platform";
+    var numberNorm = 0;
+    if (Model.TraningGuideChapters.First() != null && Model.TraningGuideChapters.First().ChapterNumber == 0)
+    {
+        numberNorm = 1;
+    }
+}
+
+<div class="row preview">
+    <div class="col-lg-12">
+        <div class="col-lg-3">
+            <div id="divContent">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4>CONTENTS</h4>
+                    </div>
+                    <div class="panel-footer panel-primary">
+                        <table>
+                            <tbody data-bind="foreach: details.TraningGuideChapters">
+                                <tr>
+                                    <td><span data-bind="text:ChapterNumber() + @numberNorm"></span></td>
+                                    <td>&nbsp;<span class="anchor" data-bind="click:$root.currentChapter.bind(),text:$root.truncate(ChapterName,30),css:{'active-chapter' : $root.isCurrentChapter($data)}"></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4>FEEDBACK</h4>
+                    </div>
+                    <div class="panel-footer panel-primary">
+                        <select class="form-control" data-bind="options: feedbackOptions,
+                                                                value: feedbackOption"></select>
+                        <p></p>
+                        <textarea class="form-control" data-bind="value: feedbackMessage" rows="7"></textarea>
+                        <p></p>
+                        <button class="btn btn-success" type="button" data-bind="click: sendFeedback">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9 chapter">
+            <h1 class="lead" data-bind="text:details.Title().toUpperCase()"></h1>
+            <h4><strong><span class="pageHeading_ref">PLAYBOOK REF: </span><span data-bind="text:details.ReferenceId"></span></strong></h4>
+            <div class="well">
+                <p data-bind="text:details.Description"></p>
+            </div>
+            <div class="input-group">
+                <label>View Mode</label>
+                <span class="btn-group-sm">
+                    <button type="button" class="btn btn-default" data-bind="click:$root.setPreviewModePortrait.bind(),css : {'btn-primary' : !$root.StorybookMode()}">Portrait</button>
+                    <button type="button" class="btn btn-default" data-bind="click:$root.setPreviewModeLandscape.bind() ,css : {'btn-primary' : $root.StorybookMode()}">Storybook</button>
+                    
+                </span>
+            </div>
+            <br />
+            <!-- ko if:ko.unwrap($root.StorybookMode) -->
+            <div class="pull-right">
+                <button class="btn btn-default" data-bind="click:$root.previousChapter.bind(),disable:$root.isCover">Prev</button>
+                <button class="btn btn-primary" data-bind="click:$root.nextChapter.bind(),disable:$root.isLastChapter">Next</button>
+            </div>
+            <br />
+            <!-- /ko -->
+            <!-- ko if:$root.showCover() -->
+            <!-- ko if:details.CoverPictureVM-->
+            <!-- ko with:details.CoverPictureVM -->
+            <div class="text-center">
+                <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                    <img class="img-responsive" data-bind="attr:{src:Url,title:Description}" style="margin-left:auto;margin-right:auto" />
+                </a>
+            </div>
+            <!-- /ko -->
+            <!-- /ko -->
+            <!-- /ko -->
+            <br />
+            <!-- ko foreach:details.TraningGuideChapters -->
+            <div class="panel panel-info" data-bind="attr:{id:ChapterNumber},visible:$root.showChapter($data)">
+                <div class="panel-heading hidden-xs">
+                    <div class="heading pull-left">
+                        <h4 class="chapterNumber" data-bind="text:ChapterNumber() + @numberNorm"></h4>&nbsp;
+                        <p class="chapterName" data-bind="text:$root.truncate(ChapterName,90)"></p>
+                    </div>
+
+                    <div class="btn-group pull-right hidden-sm">
+                        <a class="btn btn-default" data-bind="visible:Attachments().length, click:toggleAttachments, css:{ 'btn-info':showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:showAttachments() ? 'Hide Attachments' : 'Show Attachments'"></span>&nbsp;<span class="badge" data-bind="text:Attachments().length"></span></a>
+                    </div>
+                    <div class="btn-group pull-right visible-sm">
+                        <a class="btn btn-default" data-bind="visible:Attachments().length, click:toggleAttachments, css:{ 'btn-info':showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:showAttachments() ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:Attachments().length"></span></a>
+                    </div>
+                    <span class="clearfix"></span>
+                </div>
+                <div class="panel-heading visible-xs">
+                    <div class="heading text-center">
+                        <h4 class="chapterNumber" data-bind="text:ChapterNumber() + @numberNorm"></h4>&nbsp;
+                    </div>
+                    <span class="clearfix"></span>
+                </div>
+                <div class="panel-heading visible-xs">
+                    <div class="heading">
+                        <span class="chapterName" data-bind="text:ChapterName"></span>
+                    </div>
+                    <span class="clearfix"></span>
+                </div>
+                <div class="panel-heading visible-xs text-center">
+                    <div class="btn-group">
+                        <a class="btn btn-default" data-bind="visible:Attachments().length, click:toggleAttachments, css:{ 'btn-info':showAttachments }"><span class="glyphicon glyphicon-paperclip"></span>&nbsp;<span data-bind="text:showAttachments() ? 'Hide' : 'Show'"></span>&nbsp;<span class="badge" data-bind="text:Attachments().length"></span></a>
+                    </div>
+                </div>
+                <div class="collapse" style="position: relative" data-bind="attr:{ id:'attachments_'+ChapterNumber() }, slideVisible:showAttachments">
+
+                    <div data-bind="foreach:Attachments" style="padding: 5px">
+                        <div class="pull-left text-center" style="margin-left: 15px;width: 115px; ">
+                            <div style="height: 100px;">
+                                <!-- ko if:Type().indexOf('image') === 0 -->
+                                <a data-bind="fancybox:{ autoSize:true }, attr:{ href:Url, title:Description }" class="fancybox.image">
+                                    <img class="img-responsive attachment img-thumbnail" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                </a>
+                                <!-- /ko -->
+                                <!-- ko if:Type().indexOf('video') === 0 -->
+                                <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                                    <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                    <div class="content center-block">
+                                        <video controls height="320" width="600">
+                                            <source data-bind="attr:{ src:Url, type:Type }" />
+                                            Your browser does not support the HTML 5 video tag.
+                                        </video>
+                                    </div>
+                                </a>
+                                <!-- /ko -->
+                                <!-- ko if:Type().indexOf('audio') === 0 -->
+                                <a data-bind="fancybox:{ helpers:{ media:{} }}, attr:{ title:Description }" class="fancybox.iframe">
+                                    <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description}" />
+                                    <div class="content center-block">
+                                        <audio controls style="width:100%">
+                                            <source data-bind="attr:{ src:Url, type:Type }" />
+                                            Your browser does not support the HTML 5 audio tag.
+                                        </audio>
+                                    </div>
+                                </a>
+                                <!-- /ko -->
+                                <!-- ko ifnot:(Type().indexOf('image') === 0 || Type().indexOf('video') === 0 || Type().indexOf('audio') === 0)-->
+                                <!-- ko if:!Embeded() -->
+                                <img class="img-responsive attachment" data-bind="attr:{src:ThumbnailUrl,title:Description},click:previewUpload.bind($data,$parent)" />
+                                <!-- /ko -->
+                                <!-- /ko -->
+                                <!-- ko if:Embeded() -->
+                                <!-- ko if:Type() === 'Youtube' -->
+                                <a data-bind="fancybox:true, attr:{title:Url, href:Url}" class="fancybox.iframe">
+                                    <img src='@Url.Action("Resolve", "Image", new { area="", relativePath="~/Content/images/youTube.png", width="100", height="100" })' border="0" />
+                                </a>
+                                <!-- /ko -->
+                                <!-- ko if:Type() == 'Vimeo' -->
+                                <a data-bind="fancybox:true, attr:{title:Url, href:Url}" class="fancybox.iframe">
+                                    <img src='@Url.Action("Resolve", "Image", new { area="", relativePath="~/Content/images/vimeo.png", width="100", height="100" })' border="0" />
+                                </a>
+                                <!-- /ko -->
+                                <!-- /ko -->
+                            </div>
+                            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                                <small data-bind="text:Description"></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <hr />
+                </div>
+
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12 chapter-content">
+                            <!-- ko if:ChapterContent -->
+                            <div class="content-tools" data-bind="contentTools:{query:'',identifier:'name',value:ChapterContent},identifier:TraningGuideChapterId,html:ChapterContent" data-editable></div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- ko if:ko.unwrap($root.ShowTakeTest)-->
+            <!-- ko if:ko.unwrap($root.details.TrainingTestId) != '00000000-0000-0000-0000-000000000000'-->
+            <div class="panel panel-info">
+                <div class="panel-heading hidden-xs">
+                    <div class="heading">
+                        The End
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="btn-group-lg">
+                        <button type="button" class="btn btn-primary center-block" data-bind="click:$root.takeTest.bind()">Take Test</button>
+                    </div>
+                </div>
+            </div>
+            <!-- /ko -->
+            <!-- /ko -->
+            <!-- ko if:ko.unwrap($root.StorybookMode) -->
+            <div class="pull-right bottom_nav">
+                <button class="btn btn-default" data-bind="click:$root.previousChapter.bind(),disable:$root.isCover">Prev</button>
+                <button class="btn btn-primary" data-bind="click:$root.nextChapter.bind(),disable:$root.isLastChapter">Next</button>
+            </div>
+            <!-- /ko -->
+        </div>
+                </div>
+            </div>
+            @Styles.Render(ManageTrainingGuidesStyles.PreviewByReferenceIdStylesVirtualPath)
+            @Scripts.Render(ManageTrainingGuidesScripts.PreviewByReferenceIdScriptsVirtualPath)
+            <script>
+    window.setTimeout(function(){
+        var vm = new Controller(app, {
+            data: @Html.ToJson((object)Model),
+            validation: @Html.JsonKnockoutValidationFor()
+            } ,@Html.ToJson((object)ViewBag),
+            {   openFile:'@Url.Action("Preview", "Upload", new { Area = "" })',
+                index: '@Url.Action("Index")',
+                takeTrainingTest : '@Url.Action("TakeTrainingTest", "ManageTrainingTest", new { Area = "ManageTrainingTest" })'
+            });
+        vm.takeTest = function () {
+            var id = ko.unwrap(vm.details.TrainingTestId);
+            if (id)
+                window.location.href = vm.links.takeTrainingTest + '/?trainingTestId=' + id;
+        };
+        $.each(vm.details.TraningGuideChapters(), function(i, chapter) {
+            chapter.toggleAttachments = function(chap) {
+                chap.showAttachments(!chap.showAttachments());
+            };
+            chapter.showAttachments = ko.observable(false);
+        });
+
+        ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+        if (!ko.unwrap(vm.details.CoverPictureVM))
+            vm.nextChapter();
+        $.each(vm.details.TraningGuideChapters(),function(){
+            var chapter = this;
+            $.each(chapter.Attachments(),function(){
+                var attachment = this;
+                chapter.AttachmentPreview(attachment);
+                return false;
+            });
+        });
+
+        $('.content-tools a').on('click',function(event){
+            window.open($(this).attr('href'),"");
+            return false;
+        });
+        $('#main-wrapper').css('padding-top', '120px');
+        window.addEventListener('scroll', EnsureCenterPlacement);
+    }, 500);
+    function EnsureCenterPlacement() {
+      
+    }
+            </script>

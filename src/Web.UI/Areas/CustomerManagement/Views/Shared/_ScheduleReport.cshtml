@@ -1,0 +1,1304 @@
+﻿@using Common.Web
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@using System.Threading
+@using Domain.Customer
+@using Common.Enums
+@using Common.Web
+@using Web.UI.Code.AreaReferencesManagement
+@using Common.Web
+@using Common.Web
+@using Domain.Customer
+@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@{
+    Layout = null;
+}
+<script src="~/Scripts/knockout.js"></script>
+<link href="~/Scripts/themes/bootstrap-multiselect.css" rel="stylesheet" />
+<script src="~/Scripts/themes/bootstrap-multiselect.js"></script>
+
+<div class="modal-body" id="divScheduleReportContainer">
+    <div class="row" id="AdminRoles1" data-bind="with: vmSR">
+        <div class="col-lg-offset-1 col-lg-10">
+            <br />
+            <input type="hidden" id="reportID" />
+            <p>Please enter your schedule details below.</p><br />
+            <div class="form-group">
+                <span class="required">* </span>@Html.Label("Schedule Name"):<br>
+                <input id="inp_Name" class="form-control" type="text" data-bind="textInput: ScheduledName" />
+
+            </div>
+
+            <div class="form-group">
+                <span class="required">* </span>@Html.Label("Recipients"):<br>
+
+                <input id="inp_recepients" class="form-control" type="text" data-bind="textInput: Recipients" />
+
+            </div>
+
+            <span class="required"></span>@Html.Label("Report")<br>
+            <div id="ReportType" class="form-group">
+                <select id="ddlReorts" class="form-control">
+                    <option value="1"> Document Feedback Report</option>
+                    @*<option value="2">Focus Area Report</option>*@
+                    <option value="3"> Interaction Report</option>
+                    <option value="4"> Points Statement Report </option>
+                    <option value="5"> User Activity & Performance Report </option>
+                    <option value="6">Activity Book Submission Report</option>
+                    <option value="7">Custom document submission report</option>
+                    @*<option value="8">User Login Report</option>*@
+                    <option value="9">Virtual Meeting Attendance Report</option>
+                    <option value="10">Document Audit Report</option>
+                    <option value="11">Training Activity Report</option>
+
+                </select>
+            </div>
+
+
+
+            <div class="form-group">
+                <span> @Html.Label("Report Parameter"):</span><br>
+
+                <div id="Document_Report" data-bind="if: vmSR.selectedReport() == 1">
+
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Document Type")
+                        </div>
+                        <select class="form-control" id="ddlDocumentType13" multiple title="Document Types" data-bind="options: vmSR.documentTypes ,optionsValue: 'id', selectedOptions: vmSR.selectedDocumentTypes, optionsText: 'name',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="control-label query">
+                            @Html.Label("Document")
+                        </div>
+                        <select class="form-control" id="ddlDocument11" multiple title="Documents" data-bind="options: vmSR.documents ,optionsValue: 'Id', optionsText: 'Title', selectedOptions: vmSR.selectedDocuments, multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+
+                </div>
+
+                <div class="form-group" id="Area_Report1" data-bind="if: vmSR.selectedReport() == 2">
+                    <div class="control-label query">
+                        <label><b><span style="color:red">*</span></b> Test :</label>
+                    </div>
+                    <select class="form-control query" data-bind="options: vmSR.testDropDown,
+                                                     optionsText: 'Text',
+                                                     optionsValue:'Value',
+                                                     optionsCaption: 'Select',
+                                                     value: vmSR.selectedTest"></select>
+
+
+                </div>
+
+                <div id="Interaction_Report" data-bind="if: vmSR.selectedReport() == 3">
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Document Type")
+                        </div>
+                        <select class="form-control" id="ddlDocumentType13" multiple title="Document Types" data-bind="options: vmSR.documentTypes ,optionsValue: 'id', selectedOptions: vmSR.selectedDocumentTypes, optionsText: 'name',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <label>Groups</label>
+                        </div>
+                        <br />
+                        <select class="form-control" id="ddlDocumentType14" multiple title="Document Types" data-bind="options: vmSR.groupsDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedGroups, optionsText: 'Text',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <label>Categories</label>
+                        </div>
+                        <br />
+
+                        <select class="form-control" id="ddlDocumentType1" multiple title="Document Types" data-bind="options: vmSR.categoryDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedCategories, optionsText: 'Text',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                </div>
+
+                <div id="Points_Report" data-bind="if: vmSR.selectedReport() == 4">
+
+                    <div class="form-group">
+                        <span style="color:red">*</span>    @Html.Label("User")<br />
+                        <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vmSR.users ,optionsValue: 'Id', selectedOptions: vmSR.selectedUsers, optionsText: 'FullName',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <label>Groups</label>
+                        </div>
+                        <br />
+                        <select class="form-control" id="ddlGroups" multiple title="Document Types" data-bind="options: vmSR.groupsDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedGroups, optionsText: 'Text',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        @Html.Label("Tags")<br />
+                        <div class="input-group">
+                            <select class="form-control" id="ddlDocumentType2" multiple title="Document Types" data-bind="options: vmSR.TrainingLabelListDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedTrainingLabelList, optionsText: 'Text', multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("Category")<br />
+                        <select class="form-control" id="ddlDocumentType3" multiple title="Document Types" data-bind="options: vmSR.categoryDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedCategories, optionsText: 'Text',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("Document Type")<br />
+
+                        <select class="form-control" id="ddlDocumentType5" multiple title="Document Types" data-bind="options: vmSR.documentTypes ,optionsValue: 'id', selectedOptions: vmSR.selectedDocumentTypes, optionsText: 'name',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("Global Access")<br />
+                        <select class="form-control" id="ddlDocumentType6" multiple title="Document Types" data-bind="options: vmSR.GlobalAccess ,optionsValue: 'Value', selectedOptions: vmSR.selectedGlobalAccess, optionsText: 'Key',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+                </div>
+
+                <div id="UserActivity_Report" data-bind="if: vmSR.selectedReport() == 5">
+                    <div class="form-group">
+                        <span style="color:red">*</span>    @Html.Label("User")<br />
+                        <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vmSR.users ,optionsValue: 'Id', selectedOptions: vmSR.selectedUsers, optionsText: 'FullName',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <label>Groups</label>
+                        </div>
+                        <br />
+                        <select class="form-control" id="ddlGroups" multiple title="Document Types" data-bind="options: vmSR.groupsDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedGroups, optionsText: 'Text',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        @Html.Label("Tags")<br />
+                        <div class="input-group">
+                            <select class="form-control" id="ddlDocumentType7" multiple title="Document Types" data-bind="options: vmSR.TrainingLabelListDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedTrainingLabelList, optionsText: 'Text', multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="ActivityBookSubmission_Report" data-bind="if: vmSR.selectedReport() == 6">
+                    <div class="form-group">
+                        <label><span style="color:red">*</span> Activity Book</label><br />
+                        <select class="form-control" id="ddlDocumentType8" multiple title="Document Types" data-bind="options: vmSR.TrainingActivityChecklistDropDown ,optionsValue: 'Id', selectedOptions: vmSR.selectedTrainingActivityChecklist, optionsText: 'Value', multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status</label> <br />
+                        <select id="status-multiselect-demo" class="form-control">
+                            @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(ChecklistSubmissionStatus)))
+                            {
+                                <option value="@item.Key">@item.Value</option>
+                            }
+                        </select>
+
+
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("Access") <br />
+                        <select id="status-multiselect-access" class="form-control">
+                            @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(GlobalAccess)))
+                            {
+                                <option value="@item.Key">@item.Value</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div id="ActivityBookSubmission_Report" data-bind="if: vmSR.selectedReport() == 7">
+                    <div class="form-group">
+                        <label><span style="color:red">*</span> Custom Document</label><br />
+                        <select class="form-control" id="ddlDocumentType8" multiple title="Document Types" data-bind="options: vmSR.CustomDocumentPublishedDropDown ,optionsValue: 'Id', selectedOptions: vmSR.selectedCustomDocumentPublished, optionsText: 'Value', multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status</label> <br />
+                        <select id="status-multiselect-demo" class="form-control">
+                            @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(ChecklistSubmissionStatus)))
+                            {
+                                <option value="@item.Key">@item.Value</option>
+                            }
+                        </select>
+
+
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("Access") <br />
+                        <select id="status-multiselect-access" class="form-control">
+                            @foreach (var item in EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(GlobalAccess)))
+                            {
+                                <option value="@item.Key">@item.Value</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+
+                @*<div id="UserCorrospondance_Report" data-bind="if: vmSR.selectedReport() == 7">
+                    <div class="form-group">
+                        <span style="color:red">*</span>    @Html.Label("User")<br />
+                        <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vmSR.users ,optionsValue: 'Id', selectedOptions: vmSR.selectedUsers, optionsText: 'FullName',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <label>Groups</label>
+                        </div>
+                        <br />
+                        <select class="form-control" id="ddlGroups" multiple title="Document Types" data-bind="options: vmSR.groupsDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedGroups, optionsText: 'Text',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                </div>*@
+
+                <div id="UserLogin_Report" data-bind="if: vmSR.selectedReport() == 8">
+                    <div class="form-group">
+                        <span style="color:red">*</span>    @Html.Label("User")<br />
+                        <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vmSR.users ,optionsValue: 'Id', selectedOptions: vmSR.selectedUsers, optionsText: 'FullName',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+                </div>
+
+                <div id="VirtualMeeting_Report" data-bind="if: vmSR.selectedReport() == 9">
+                    <div class="form-group">
+                        <span style="color:red"><b>*</b></span>
+                        @Html.Label("Meeting Room")<br>
+
+                        <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vmSR.VitualMeetingDropDown ,optionsValue: 'Id', selectedOptions: vmSR.selectedVitualMeeting, optionsText: 'VirtualClassRoomName',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("Attendance Status")<br>
+
+
+                        <select id="ddlAttendanceStatus" class="form-control">
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div id="DocumentAudit_Report" data-bind="if: vmSR.selectedReport() == 10">
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Document Type")
+                        </div>
+                        <select class="form-control" id="ddlDocumentType9" multiple title="Document Types" data-bind="options: vmSR.documentTypes ,optionsValue: 'id', selectedOptions: vmSR.selectedDocumentTypes, optionsText: 'name',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="control-label query">
+                            <span style="color:red"><b>*</b></span>
+                            @Html.Label("Document")
+                        </div>
+                        <select class="form-control" id="ddlDocument" multiple title="Documents" data-bind="options: vmSR.documents ,optionsValue: 'Id', optionsText: 'Title', selectedOptions: vmSR.selectedDocuments, multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                    </div>
+                </div>
+
+                <div id="TrainingActivity_Report" data-bind="if: vmSR.selectedReport() == 11">
+
+                    <div class="form-group">
+                        <span>Trainers</span>
+                        <div class="input-group">
+                            <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vmSR.users ,optionsValue: 'Id', selectedOptions: vmSR.selectedUsers, optionsText: 'FullName',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Trainees </label>
+                        <div class="input-group">
+                            <select class="form-control" id="users" multiple title="Document Types" data-bind="options: vmSR.users ,optionsValue: 'Id', selectedOptions: vmSR.selectedUsers, optionsText: 'FullName',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <span class="required">*</span>
+                        <label>Type: </label>
+                        <div class="input-group">
+                            <select class="form-control" id="ddlDocumentType11" multiple title="Document Types" data-bind="options: vmSR.TrainingActivityTypeDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedTrainingActivityType, optionsText: 'Text',multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label> Training Labels</label>
+                        <div class="i111111111110nput-group">
+                            <select class="form-control" id="ddlDocumentType12" multiple title="Document Types" data-bind="options: vmSR.TrainingLabelListDropDown ,optionsValue: 'Value', selectedOptions: vmSR.selectedTrainingLabelList, optionsText: 'Text', multiselect: {
+          includeSelectAllOption: true,
+        buttonWidth: 300,
+                  enableFiltering: false,
+                  maxHeight: 300
+        }"></select>
+                        </div>
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+            <div id="divOccurance" class="form-group">
+                <span class="required"></span>@Html.Label("Occurance")<br>
+                <span>
+                    <input id="Occurance" type="radio" name="Group1" value="Daily" data-bind="checked: vmSR.SelectedOccurences" /> Daily
+                </span>
+                <span>
+                    <input id="Occurance" type="radio" name="Group1" value="Monthly" data-bind="checked: vmSR.SelectedOccurences" /> Monthly
+                </span><br>
+
+
+
+
+            </div>
+
+            @*<div class="form-group">
+                    <label><span style="color:red"><b>*</b></span>Time</label>
+
+                    <div id="toDate" class="input-group" >
+                        <input data-bind="datepicker: vmSR.fromDate" id="txtStartDate" type="text" class="form-control cssDatePicker" style="max-width: none" autocomplete="off" />
+                        <span class="input-group-addon">
+                            <i class="fa fa-calendar"></i>
+                        </span>
+                    </div>
+                </div>*@
+
+
+
+
+            <div class="modal-footer">
+                <div class="text-right">
+                    <div class="btn-group">
+                        <input type="button" id="testCheck" value="Send email" class="btn btn-primary" />
+                        <input type="button" id="btnSaveSR" value="Save" class="btn btn-primary" />
+                        <input type="button" id="btnCancel1" value="Cancel" class="btn" data-dismiss="modal" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var Data_Valid = false
+
+    function checkDataValidation() {
+        var x = document.getElementById("inp_Name");
+        var y = document.getElementById("inp_recepients");
+        if (x.value == '' || x.value == null || x.value == undefined || x.value.length == 0 ) {
+            x.classList.add('requiredTxt');
+
+            Data_Valid = false;
+        } else {
+            x.classList.remove('requiredTxt');
+
+            Data_Valid = true;
+        }
+
+
+    }
+
+    $("#btnSaveSR").click((data) => {
+        checkDataValidation()
+        // checkCBValidation();
+        var model1 = {
+            "Id": $('#reportID').val(),
+            "ScheduleName": null,
+            "RecipientsList": null,
+            "ReportAssignedId" : null,
+            "Occurences": null,
+            "Status":true,
+            //"ScheduleTime": null,
+            "IsDeleted": false,
+            "Params":null
+        };
+
+
+
+        //////////////////////////////////////////////////////////
+        var parameters = [];
+
+        if (vmSR.selectedDocumentTypes()) {
+            if (vmSR.selectedDocumentTypes().length > 0) {
+                console.log('inside 1');
+                parameters.push({
+                    'name': 'DocumentType', 'value': vmSR.selectedDocumentTypes().toString()
+                });
+            }
+        }
+        if (vmSR.selectedDocuments()) {
+            if (vmSR.selectedDocuments().length > 0) {
+                console.log('inside 2');
+                parameters.push({
+                    'name': 'Documents', 'value': vmSR.selectedDocuments().toString()
+                });
+            }
+        }
+        if (vmSR.selectedTest()) {
+            if (vmSR.selectedTest().length > 0) {
+                parameters.push({
+                    'name': 'Tests', 'value': vmSR.selectedTest().toString()
+                });
+            }
+        }
+        if (vmSR.selectedGroups()) {
+            if (vmSR.selectedGroups().length > 0) {
+                parameters.push({
+                    'name': 'Groups', 'value': vmSR.selectedGroups().toString()
+                });
+            }
+        }
+        if (vmSR.selectedCategories()) {
+            if (vmSR.selectedCategories().length > 0) {
+                parameters.push({
+                    'name': 'Categories', 'value': vmSR.selectedCategories().toString()
+                });
+            }
+        }
+        if (vmSR.selectedUsers()) {
+            if (vmSR.selectedUsers().length > 0) {
+                parameters.push({
+                    'name': 'Users', 'value': vmSR.selectedUsers().toString()
+                });
+            }
+        }
+        if (vmSR.selectedTags()) {
+            if (vmSR.selectedTags().length > 0) {
+                parameters.push({
+                    'name': 'Tags', 'value': vmSR.selectedTags().toString()
+                });
+            }
+        }
+        if (vmSR.selectedTrainingActivityChecklist()) {
+            if (vmSR.selectedTrainingActivityChecklist().length > 0) {
+                parameters.push({
+                    'name': 'ActivityBook', 'value': vmSR.selectedTrainingActivityChecklist().toString()
+                });
+            }
+        }
+        if (vmSR.selectedCustomDocumentPublished()) {
+            if (vmSR.selectedCustomDocumentPublished().length > 0) {
+                parameters.push({
+                    'name': 'CustomDocument', 'value': vmSR.selectedCustomDocumentPublished().toString()
+                });
+            }
+        }
+        if (vmSR.selectedVitualMeeting()) {
+            if (vmSR.selectedVitualMeeting().length > 0) {
+                parameters.push({
+                    'name': 'MeetingRoom', 'value': vmSR.selectedVitualMeeting().toString()
+                });
+            }
+        }
+        /////////////////////////////////////////////////////////
+
+
+
+
+        model1.ScheduleName = document.getElementById("inp_Name").value;
+        model1.RecipientsList = document.getElementById("inp_recepients").value;
+       // model1.ScheduleTime = document.getElementById("txtStartDate").value;
+        model1.ReportAssignedId = selfSR.selectedReport();
+        model1.Occurences = selfSR.SelectedOccurences();
+        model1.Params = parameters;
+        model1.Status = true;
+        console.log("data to api ", model1);
+
+        console.log("save clicked ", model1);
+        if (Data_Valid) {
+
+            $.ajax({
+                type: "POST",
+                url: "/CustomerManagement/CustomerMgmt/AddEditScheduleReport",
+                data: model1,
+                success: (data) => {
+                    if (data.success) {
+                        notif({
+                            msg: "<b>Success :</b> Report Added .",
+                            type: "success",
+                        });
+                        setTimeout(() => { location.reload(); }, 500)
+
+                    } else {
+                        notif({
+                            msg: 'Some thing went wrong',
+                            type: 'error'
+                        });
+                    }
+                },
+            });
+
+            //$.post("/CustomerManagement/CustomerMgmt/AddEditScheduleReport",
+            //    {
+            //        data: model1
+            //    }
+            //)
+            //    .done((data) => {
+            //        console.log("data 1 ", data);
+            //        if (data.success) {
+            //            notif({
+            //                msg: "<b>Success :</b> Schedule Added Scuccessfully.",
+            //                type: "success",
+            //            });
+            //            $("#addScheduleReportModal").modal("hide");
+            //            setTimeout(() => { location.reload(); }, 500)
+            //        } else {
+            //            notif({
+            //                msg: 'Some error Occured',
+            //                type: 'error'
+            //            });
+            //        }
+            //    })
+            //    .fail((data) => {
+            //        console.log("data 2 ", data)
+            //        notif({
+            //            msg: 'Some error Occured',
+            //            type: 'error'
+            //        });
+            //    })
+
+        }
+        else {
+            console.log("Validation fails ", Data_Valid);
+            //console.log("cbCheck ", cbCheck);
+        }
+
+
+    })
+
+    $("#btnCancel1").click(() => {
+        $("#addScheduleReportModal").modal("hide");
+    })
+
+    $('#txtStartDate').datetimepicker();
+
+    function addHours(date, hours) {
+        return new Date(date.getTime() + hours * 3600000);
+    }
+
+    $("#testCheck").click(() => {
+
+        console.log("inside testCheck")
+
+        if (vmSR.SelectedOccurences() == 'Daily') {
+            vmSR.fromDate(new Date().toISOString());
+            vmSR.toDate(new Date().toISOString())
+        }
+        else if (vmSR.SelectedOccurences() == 'Monthly') {
+            var firstDayOfMonth = new Date();
+            firstDayOfMonth.setDate(1);
+            firstDayOfMonth.setMonth(firstDayOfMonth.getMonth() - 1);
+
+            var LastDayOfMonth = new Date(firstDayOfMonth);
+            LastDayOfMonth.setDate(0);
+            LastDayOfMonth.setMonth(firstDayOfMonth.getMonth());
+
+
+            vmSR.fromDate(new Date(firstDayOfMonth).toISOString());
+            vmSR.toDate(new Date(LastDayOfMonth).toISOString())
+        }
+        //string trainingLabels, string[] groupIds, string[] categoryIds, DocumentType[] documentTypes, DateTime ? fromDate, DateTime ? toDate
+        @*if (vmSR.selectedReport() == 3) {
+        url = '@Url.Action("InteractionReportData", "InteractionReport", new { Area = "Reporting" })';
+        }*@
+        switch (vmSR.selectedReport() ) {
+            case 1:
+                url = '@Url.Action("ContentFeedbackData", "Feedback", new { Area = "" })';
+
+                var docTypes = [];
+                $.each(ko.unwrap(selfSR.selectedDocumentTypes), function (key, value) {
+                    docTypes.push(value);
+                });
+
+                data = {
+                    documentTypes: docTypes,
+                }
+
+                selfSR.downloadFeedbackReport();
+
+                break;
+            case 2:
+                url = '@Url.Action("FocusAreaReportQuery", "ManageTrainingTest", new { Area = "ManageTrainingTest" })';
+
+                url = url + '?TestId=' + vmSR.selectedTest();
+
+                data = null;
+
+                break;
+            case 3:
+
+
+                url = '@Url.Action("InteractionReportData", "InteractionReport", new { Area = "Reporting" })';
+
+                data = {
+                    trainingLabels: vmSR.selectedTrainingLabelList,
+                    groupIds: vmSR.selectedGroups,
+                    categoryIds: vmSR.selectedCategories,
+                    documentTypes: vmSR.selectedDocumentTypes,
+                    fromDate: vmSR.fromDate(),
+                    toDate: vmSR.toDate()
+                }
+
+                selfSR.downloadInteractionReport(data);
+                break;
+            case 4:
+                url = '@Url.Action("PointsStatement", "Reporting", new { Area = "" })';
+                url = url + '?Length=15'
+
+                let users = [];
+                $.each(ko.unwrap(selfSR.selectedUsers), function (key, value) {
+                    users.push(value);
+                });
+                data = {
+                        ToggleFilter: null,
+                        UserIds: users,
+                        CategoryId: null,
+                        FromDate: null,
+                        ToDate: null,
+                        UserId: null,
+                }
+                selfSR.downloadPointsStatementReport()
+                break;
+            case 5:
+                url = '@Url.Action("GetUserDetails", "UserActivityAndPerformanceReport", new { Area = "Reporting" })';
+                selfSR.downloadUserActivityAndPerformanceReport();
+                break;
+            case 6:
+                url = '@Url.Action("GetActivitybookDetails", "ActivitybookSubmissionReport", new { Area = "Reporting" })';
+
+                let cIds = [];
+                $.each(ko.unwrap(selfSR.selectedTrainingActivityChecklist), function (key, value) {
+                    cIds.push(value);
+                });
+
+                data = {
+                    CheckListIds: cIds
+                }
+                selfSR.downloadActivitybookSubmissionReport();
+                break;
+            case 7:
+                selfSR.downloadCustomDocumentSubmissionReport();
+
+                break;
+             case 8:
+                url = '@Url.Action("GetUserActivities", "ManagerUser", new { Area = "Configurations" })';
+                url = url + '?Length=14';
+
+                data = {
+                    userId: vmSR.selectedUsers()[0],
+                    fromDate: null,
+                    toDate: null,
+                    selectedOption: "CompanyUsers"
+                }
+                break;
+             case 9:
+                url = '@Url.Action("GetMeeting", "MeetingReport", new { Area = "Reporting" })';
+
+                data = {
+                    meetingIds: vmSR.selectedVitualMeeting(),
+                    status: null,
+                    startDate: null,
+                    endDate: null
+                }
+                selfSR.downloadMeetingReport();
+                break;
+             case 10:
+                url = '@Url.Action("GetDocumentAudits", "DocumentAudit", new { Area = "Reporting" })';
+                data = {
+                    documents: vmSR.selectedDocuments(),
+                    startDate:null,
+                    endDate: null,
+                }
+                selfSR.downloadAuditReport();
+                break;
+             case 11:
+                url = '@Url.Action("GetUserCorrespondence", "ManagerUser", new { Area = "Configurations" })';
+
+                selfSR.downloadTrainingActivityReport();
+                break;
+
+        }
+
+        if (vmSR.selectedReport() != 2) {
+            //$.ajax({
+            //    type: "POST",
+            //    url: url,
+            //    data: data,
+            //    success: function (res) {
+            //        // location.reload();
+            //        console.log("reposne from api ", res)
+            //    },
+            //    error: function (err) {
+            //        console.log("err from api ", err)
+            //    }
+            //})
+        }
+        if (vmSR.selectedReport() == 2) {
+            //$.ajax({
+            //    type: "GET",
+            //    url: url,
+            //    success: function (res) {
+            //        // location.reload();
+            //        console.log("reposne from api ", res)
+            //    },
+            //    error: function (err) {
+            //        console.log("err from api ", err)
+            //    }
+            //})
+        }
+
+    });
+
+    //$('.date').datetimepicker();
+    var vmSR = {
+        ScheduledName: ko.observable(),
+        Recipients: ko.observable(),
+        Id: ko.observable()
+    }
+    var selfSR = vmSR;
+    var currentValue = 0;
+    selfSR.enums = {
+            documentType: @Html.ToJson(PortalContext.Current.UserCompany.EnableChecklistDocument? EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentType)) : EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(DocumentWithoutType))),
+            feedbackType: @Html.ToJson(EnumUtilityExtensions.GetEnumFriendlyNamesDictionary(typeof(UserFeedbackContentType)))
+        };
+
+    selfSR.documentTypes = $.map(selfSR.enums.documentType,
+        function (i, index) {
+            if (index != 0 && index != 5 && index != 2) {
+                return {
+                    id: index,
+                    name: i
+                };
+            }
+        }).reverse();
+
+
+
+    selfSR.documents = ko.observableArray([]);
+
+    selfSR.selectedDocuments = ko.observableArray([]);
+
+    selfSR.selectedDocumentTypes = ko.observableArray([]);
+
+    selfSR.selectedDocumentTypes.subscribe(function (changes) {
+        var docTypes = [];
+            $.each(ko.unwrap(selfSR.selectedDocumentTypes), function (key, value) {
+                docTypes.push(value);
+            });
+
+            if (docTypes !== []) {
+                $.ajax({
+                    method: 'POST',
+                    url: '@Url.Action("DocumentsByType", "Document", new {Area = ""})',
+                    data: {
+                        documentTypes: docTypes
+                    }
+                }).done(function (data) {
+                    selfSR.documents(data);
+                    console.log(ko.unwrap(selfSR.documents));
+                });
+            }
+        }, null, 'arrayChange');
+
+    selfSR.selectedReport = ko.observable(1);
+
+    //Focus Area report
+    selfSR.testDropDown = ko.observableArray([]);
+
+    selfSR.selectedTest = ko.observableArray([]);
+
+    console.log("ViewBag.TestDropDown ", @Html.Raw(Json.Encode(ViewBag.TestDropDown)));
+    selfSR.testDropDown(@Html.Raw(Json.Encode(ViewBag.TestDropDown)));
+
+    $('#ddlReorts').change(function () {
+
+        vmSR.selectedDocumentTypes([]);
+        vmSR.selectedDocuments([]);
+        vmSR.selectedTest([]);
+
+        vmSR.selectedGroups(null);
+        vmSR.selectedCategories(null);
+
+        vmSR.selectedUsers([]);
+
+        vmSR.selectedTrainingActivityChecklist(null);
+        vmSR.selectedVitualMeeting(null);
+
+        let data = $(this).val()
+        console.log('change ', data);
+        if (data == 1) {
+            selfSR.selectedReport(1);
+
+        }
+        else if(data == 2){
+            selfSR.selectedReport(2);
+        }
+        else if (data == 3) {
+            selfSR.selectedReport(3);
+        }
+        else if (data == 4) {
+            selfSR.selectedReport(4);
+        }
+        else if (data == 5) {
+            selfSR.selectedReport(5);
+        }
+        else if (data == 6) {
+            selfSR.selectedReport(6);
+        }
+        else if (data == 7) {
+            selfSR.selectedReport(7);
+        }
+        else if (data == 8) {
+            selfSR.selectedReport(8);
+        }
+        else if (data == 9) {
+            selfSR.selectedReport(9);
+        }
+        else if (data == 10) {
+            selfSR.selectedReport(10);
+        }
+        else if (data == 11) {
+            selfSR.selectedReport(11);
+        }
+        else  {
+            selfSR.selectedReport(0);
+        }
+    });
+
+
+    selfSR.groupsDropDown = ko.observableArray([]);
+    selfSR.selectedGroups = ko.observableArray();
+
+    selfSR.categoryDropDown = ko.observableArray([]);
+    selfSR.selectedCategories = ko.observableArray();
+
+    selfSR.groupsDropDown(@Html.Raw(Json.Encode(ViewBag.Groups)));
+    selfSR.categoryDropDown(@Html.Raw(Json.Encode(ViewBag.Categories)));
+
+    selfSR.users = ko.observableArray(@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Users)));
+    selfSR.selectedUsers = ko.observableArray([]);
+
+    selfSR.PointReportData = ko.observable();
+
+    selfSR.PointReportData(@Html.Raw(ViewBag.PointReportData));
+
+    console.log("PointReportData ",selfSR.PointReportData())
+
+    //selfSR.users(selfSR.PointReportData().Users);
+
+    selfSR.Tags = ko.observableArray([]);
+    selfSR.selectedTags = ko.observableArray([]);
+
+    //selfSR.Tags(selfSR.PointReportData().TrainingLabelDict);
+
+    selfSR.GlobalAccess = ko.observableArray([]);
+    selfSR.selectedGlobalAccess = ko.observableArray([]);
+//    selfSR.GlobalAccess(selfSR.PointReportData().GlobalAccessDict)
+
+
+    selfSR.VitualMeetingDropDown = ko.observableArray([]);
+    selfSR.selectedVitualMeeting = ko.observableArray();
+
+    selfSR.VitualMeetingDropDown(@Html.Raw(Json.Encode(ViewBag.VirtualMeetings)));
+
+    selfSR.TrainingLabelListDropDown = ko.observableArray([]);
+    selfSR.selectedTrainingLabelList = ko.observableArray();
+
+    selfSR.TrainingLabelListDropDown(@Html.Raw(Json.Encode(ViewBag.TrainingLabelList)));
+
+    selfSR.TrainingActivityTypeDropDown = ko.observableArray([]);
+    selfSR.selectedTrainingActivityType = ko.observableArray();
+
+    selfSR.TrainingActivityTypeDropDown(@Html.Raw(Json.Encode(ViewBag.TrainingActivityTypeList)));
+
+    selfSR.TrainingActivityChecklistDropDown = ko.observableArray([]);
+    selfSR.selectedTrainingActivityChecklist = ko.observableArray();
+
+    selfSR.TrainingActivityChecklistDropDown(@Html.Raw(Json.Encode(ViewBag.ActivityCheckLists)));
+
+   selfSR.CustomDocumentPublishedDropDown = ko.observableArray([]);
+    selfSR.selectedCustomDocumentPublished  = ko.observableArray();
+
+    selfSR.CustomDocumentPublishedDropDown(@Html.Raw(Json.Encode(ViewBag.CustomDocumentPublished)));
+
+  selfSR.fromDate = ko.observable();
+    selfSR.toDate = ko.observable();
+    //selfSR.fromDate.subscribe(function (newValue) {
+    //    $('#toDate').data('DateTimePicker').minDate(new Date(newValue));
+    //    selfSR.hasData(false);
+    //});
+
+
+    selfSR.SelectedOccurences = ko.observable("Daily");
+
+    function checkValidation() {
+
+        var x = document.getElementById("inp_Name");
+        var y = document.getElementById("inp_recepients");
+        if (x.value === '' || x.value === null || x.value === undefined || x.value.length == 0 || y.value === '' || y.value === null || y.value === undefined || y.value.length == 0) {
+            x.classList.add('requiredTxt');
+            y.classList.add('requiredTxt');
+            Data_Valid = false;
+        } else {
+            x.classList.remove('requiredTxt');
+            y.classList.remove('requiredTxt');
+            Data_Valid = true;
+        }
+
+        // return check;
+    }
+
+    //region for reposting downloads
+
+
+    selfSR.downloadFeedbackReport = function () {
+
+            if (selfSR.selectedDocumentTypes().length === 0) {
+                notif({
+                    type: 'warning',
+                    msg: 'Please select at least 1 document type'
+                });
+                return;
+                  }
+                  var docs = [];
+                  $.each(ko.unwrap(selfSR.selectedDocuments), function (key, value) {
+                      var res = $.grep(ko.unwrap(selfSR.documents), function (v) {
+                          return v.Id == value;
+                      });
+
+                      docs.push({ DocumentId: value, DocumentType: res[0].DocumentType });
+                  });
+            var url = '@Url.Action("DownloadEXCEL", "Feedback", new { Area = "" })',
+                params = {
+                        FromDate: null,
+                        ToDate: null,
+                        Text: null,
+                        DocumentTypes: selfSR.selectedDocumentTypes().map(function(value) {
+                            return value;
+                        }),
+                        FeedbackTypes: null,
+                    Documents: null,
+                    ScheduleName: selfSR.ScheduledName(),
+                    Recepients: selfSR.Recipients()
+                    };
+                  callDownload(url, params,'POST');
+        };
+
+
+    selfSR.downloadInteractionReport = function (params) {
+
+
+        var url = '@Url.Content("/Reporting/InteractionReport/DownloadEXCEL")?' +
+            $.param({
+                trainingLabels: vmSR.selectedTrainingLabelList,
+                groupIds: vmSR.selectedGroups,
+                categoryIds: vmSR.selectedCategories,
+                documentTypes: vmSR.selectedDocumentTypes,
+                fromDate: vmSR.fromDate(),
+                toDate: vmSR.toDate(),
+                ScheduleName: selfSR.ScheduledName(),
+                Recepients: selfSR.Recipients()
+            },
+                true);
+
+        callDownload(url, null, 'GET')
+    }
+
+    selfSR.downloadCustomDocumentSubmissionReport= function () {
+        let cIds = [];
+        $.each(ko.unwrap(selfSR.selectedCustomDocumentPublished), function (key, value) {
+            cIds.push(value);
+        });
+         
+        var url = '@Url.Content("/Reporting/CustomDocumentSubmissionReport/DownloadSummaryEXCEL")' + '?' + $.param({
+            ToggleFilter: 'User Name,Viewed,Date Assigned,Date Viewed,Checks Completed,Date Submitted,Status,Access,Group',
+            CustomDocumentIds: cIds,
+            CustomDocumentId: ko.toJS(cIds),
+            ScheduleName: selfSR.ScheduledName(),
+            Recepients: selfSR.Recipients()
+        }, true);
+        callDownload(url, null, 'GET');
+    }
+    selfSR.downloadActivitybookSubmissionReport  = function () {
+        let cIds = [];
+        $.each(ko.unwrap(selfSR.selectedTrainingActivityChecklist), function (key, value) {
+            cIds.push(value);
+        });
+        var url = '@Url.Content("/Reporting/ActivitybookSubmissionReport/DownloadSummaryEXCEL")' + '?' + $.param({
+            ToggleFilter: 'User Name,Viewed,Date Assigned,Date Viewed,Checks Completed,Date Submitted,Status,Access,Group',
+            CheckListIds: cIds,
+            CheckListId: ko.toJS(cIds),
+            ScheduleName: selfSR.ScheduledName(),
+            Recepients: selfSR.Recipients()
+        }, true);
+        callDownload(url, null, 'GET');
+    }
+    selfSR.downloadMeetingReport = function () {
+
+         var url = '@Url.Content("/Reporting/MeetingReport/ExportMeeting")' + '?'+ $.param({
+             MeetingIds: vmSR.selectedVitualMeeting(),
+             ToggleFilter: 'User Name,Attendance,Date Joined',
+             ScheduleName: selfSR.ScheduledName(),
+             Recepients: selfSR.Recipients()
+         }, true);
+
+        callDownload(url, null, 'GET');
+    }
+
+    selfSR.downloadAuditReport = function () {
+        
+        var docs = [];
+        $.each(ko.unwrap(selfSR.selectedDocuments), function (key, value) {
+            var res = $.grep(ko.unwrap(selfSR.documents), function (v) {
+                return v.Id == value;
+            });
+
+            docs.push({ DocumentId: value, DocumentType: res[0].DocumentType });
+        });
+
+        var url = '@Url.Content("/Reporting/DocumentAudit/ExportDocumentAudit")' + '?' + $.param({
+            DocumentList: selfSR.selectedDocuments(), ScheduleName: selfSR.ScheduledName(),
+            Recepients: selfSR.Recipients() }, true);
+        callDownload(url, null, 'GET');
+    }
+
+    selfSR.downloadTrainingActivityReport = function () {
+        
+
+                var url = '@Url.Content("/Reporting/TrainingActivitylogReport/DownloadExcelLog")' + '?' + $.param({
+                    fromDate: vmSR.fromDate(),
+                    toDate: vmSR.toDate(),
+                    Trainees: vmSR.selectedUsers(),
+                    Trainers: vmSR.selectedUsers(),
+                    TrainingLables: vmSR.selectedTrainingLabelList(),
+
+                    TrainingType: vmSR.selectedTrainingActivityType(),
+                     ScheduleName: selfSR.ScheduledName(),
+                    Recepients: selfSR.Recipients(),
+                    UriBase: '@AppSettings.Urls.ResolveUrl("~" + Url.Action("/Reporting/TrainingActivitylogReport/TrainingActivityLogReport"))'
+                }, true);
+          callDownload(url, null, 'GET');
+    }
+
+    selfSR.downloadPointsStatementReport = function () {
+           var url = '@Url.Content("/Reporting/PointsStatement/DownloadEXCELZip")?' +$.param({
+               ToggleFilter: "Employee Code,User,Category,Document Type,Title,Date,Access,Result,Points",
+               UserIds: ko.unwrap(vmSR.selectedUsers),
+               GroupId: ko.unwrap(vmSR.selectedGroups),
+
+               CategoryId: ko.unwrap(vmSR.selectedCategories) ,
+               DocumentTypes: ko.unwrap(vmSR.selectedDocumentTypes),
+               ScheduleName: selfSR.ScheduledName(),
+               Recepients: selfSR.Recipients(),
+               FromDate: vmSR.fromDate(),
+               ToDate: vmSR.toDate(),
+               UserId: ko.unwrap(vmSR.selectedUsers)
+                }, true);
+
+        callDownload(url, null, 'GET');
+    }
+    selfSR.downloadUserActivityAndPerformanceReport = function () {
+
+
+                var url = '@Url.Content("/Reporting/UserActivityAndPerformanceReport/ZipUAP")' + '?'+ $.param({
+                    FromDate: vmSR.fromDate(),
+                    ToDate: vmSR.toDate(),
+                    UserIds: ko.unwrap(vmSR.selectedUsers),
+                    GroupIds: ko.unwrap(vmSR.selectedGroups),
+                    ScheduleName: selfSR.ScheduledName(),
+                    Recepients: selfSR.Recipients(),
+
+
+                    UriBase: '@AppSettings.Urls.ResolveUrl("~" + Url.Action("/Reporting/UserActivityAndPerformanceReport/IndividualReport"))'
+                }, true);
+                $("#progressModal").modal('show');
+
+
+
+        callDownload(url, null, 'GET');
+    }
+    function callDownload(url, params,MethodType) {
+        var request = new XMLHttpRequest();
+        request.open(MethodType, url);
+        request.setRequestHeader('Content-type', 'application/json');
+        request.responseType = 'blob';
+        request.onload = function () {
+            var userAgent = window.navigator.userAgent;
+            var allowBlob = userAgent.indexOf('Chrome') > -1 || userAgent.indexOf('Firefox') > -1;
+            if (!allowBlob) {
+                window.navigator.msSaveBlob(this.response,
+                    this.getResponseHeader('filename') || "download-" + $.now());
+            } else {
+                //var url = window.URL.createObjectURL(this.response);
+                //var a = document.createElement("a");
+                //document.body.appendChild(a);
+                //a.href = url;
+                //a.download = this.getResponseHeader('filename') || "download-" + $.now();
+                //a.click();
+                //window.setTimeout(function () { document.body.removeChild(a); }, 500);
+            }
+        }
+        request.onreadystatechange = function () {
+            if (this.readyState === 4) {
+                $('#LoadingImageDiv').hide();
+                $("#addScheduleReportModal").modal('hide');
+            }
+        };
+        $('#LoadingImageDiv').show();
+        if (MethodType != 'GET') {
+            request.send(JSON.stringify(params));
+        }
+        else {
+            request.send();
+
+
+        }
+    }
+
+    ko.applyBindings(vmSR, document.getElementById('divScheduleReportContainer'));
+</script>
++

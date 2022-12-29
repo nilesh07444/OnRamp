@@ -1,0 +1,29 @@
+﻿
+@model List<Ramp.Contracts.ViewModel.TrainingActivityModel>
+<table class="table table-hover table-fixed">
+    <thead>
+        <tr>
+            <th class="col-md-2 TitleCss">Title</th>
+            <th class="col-md-2 DiscriptionCss">Description</th>
+            <th class="col-md-2 TypeCss">Type</th>
+            <th class="col-md-2 CostImplicationCss">Cost Implication</th>
+            <th class="col-md-1 RewardrCss">Reward Points</th>
+            <th class="col-md-2 FromCss">From</th>
+            <th class="col-md-1 ToCss">To</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach:results">
+        @foreach (var item in Model) {
+            <tr>
+                <td class="TitleCss" >@item.Title</td>
+                <td class="DiscriptionCss" >@item.Description</td>
+                <td class="TypeCss" >@item.TrainingActivityType.ToString()</td>
+                <td class="CostImplicationCss" >@item.CostImplication</td>
+                <td class="RewardrCss" >@item.RewardPoints</td>
+                <td class="FromCss" >@item.From.Value.ToLocalTime()</td>
+                <td class="ToCss">@item.To.Value.ToLocalTime()</td>
+            </tr>
+        }
+
+    </tbody>
+</table>

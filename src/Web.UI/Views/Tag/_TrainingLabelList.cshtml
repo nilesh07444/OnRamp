@@ -1,0 +1,60 @@
+﻿@using Ramp.Contracts.ViewModel
+@using Web.UI.Code.Extensions
+@model  IEnumerable<TrainingLabelListModel>
+<table id="tblTrainingLabel"class="table.dataTable table-hover table-fixed">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.ToList()) {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td class="tooltip-demo">
+                 
+                    <button class="btn btn-default btn-option EditLabelCss" id="@item.Id" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;">
+                        <div id="et"> <span class="glyphicon glyphicon-pencil"></span><a style="text-decoration:none;color:#262626;" class="action" href="javascript:void(0)"> Edit</a></div>
+                    </button>
+                    
+                        <button class="btn btn-default btn-option DeleteCss" role="@item.Name" id="@item.Id" style="color:#262626; background-color:#f9f9f9; font-size: 12px; border-radius: 0px; padding: 1px 5px; line-height: 1.5;">
+                            <div id="dt">  <span class="glyphicon glyphicon-trash"></span><a style="text-decoration:none;color:#262626;" class="action " href="javascript:void(0)"> Delete</a></div>
+</button>
+                     
+
+</td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+<script>
+
+            $(document).ready(function(){
+        $('#AddLableClass').tooltip({ title: "Click here to create a tag.", delay: 500 }); 
+        $('#et').tooltip({ title: "Click here to edit a tag.", delay: 500 }); 
+        $('#dt').tooltip({ title: "Click here to delete the tag.", delay: 500 }); 
+
+
+});
+
+
+
+
+
+
+
+    $(function () {
+        $('#tblTrainingLabel').dataTable({
+            bDeferRender: false,
+            bDestroy: true,
+            bFilter: false,
+            bPaginate: false
+        });
+        $('#tblTrainingLabel_info').hide();
+    });
+     
+</script>

@@ -1,0 +1,82 @@
+﻿@using Web.UI.Code.Extensions
+@using Ramp.Contracts.ViewModel
+@using Common.Web
+@using Common.Collections
+@model IPaged<BEECertificateListModel>
+
+@{
+    Layout = "~/Views/Shared/_LayoutStandardUser.cshtml";
+}
+<div class="row">
+    <div class="col-lg-12">
+        <h3 class="page-header">BEE Certificate Management</h3>
+        <button class="btn btn-default" href="javascript:void(0)" data-bind="click:$root.editCertificate.bind()">Add</button>
+        <br />
+        <div class="panel panel-info">
+            <div class="panel-heading">BEE Certificates</div>
+            <div class="panel-body">
+                <!-- ko if:data.Items().length > 0 -->
+                <div class="table-responsive">
+                    <div id="dataTables-example_wrapper" class="dataTables_wrapper form-inline" role="grid">
+                        <table id="dataTables-example" class="table table-striped table-bordered table-hover dataTable no-footer" aria-describedby="dataTables-example_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Year
+                                    </th>
+                                    <th class="" tabindex="0" aria-controls="dataTables-example" rowspan="1" colspan="1" style="width: 185px;" aria-label="Rendering engine: activate to sort column ascending">
+                                        Options
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach:data.Items">
+                                <tr class="gradeA odd">
+                                    <td data-bind="text:Year"></td>
+                                    <td class="tooltip-demo">
+                                        <a href="javascript:void(0)" data-bind="click : $root.editCertificate.bind()"
+                                           class="action" data-toggle="tooltip" data-placement="top" title="Edit">
+                                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Edit],true)" class="img-circle" />
+                                        </a>
+                                        <a href="javascript:void(0)" data-bind="confirm: {message : 'Are you sure?',delegate : $root.delete,model : $data}" class="action" data-toggle="tooltip" data-placement="top" title="Delete">
+                                            <img src="@Url.GetImageFromId(PortalContext.Current.Icons[Domain.Models.IconType.Delete],true)" class="img-circle" />
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- ko if:data.Items().length === 0 -->
+                <h3>No Certificates</h3>
+                <!-- /ko -->
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    @{
+        (ViewBag.Links as IDictionary<string, string>)["edit"] = Url.Action("Edit", "BEECertificate", new { Area = "", Id = "{0}", ExternalTrainingProviderId = "{1}" });
+        (ViewBag.Links as IDictionary<string, string>)["index"] = Url.Action("Index", "BEECertificate", new { Area = "", ExternalTrainingProviderId = "{0}" });
+        (ViewBag.Links as IDictionary<string, string>).Add("externalTrainingProviderIndex", Url.Action("Index", "ExternalTrainingProvider", new { Area = "" }));
+
+    }
+    var vm = new app.data.listController(@Html.ToJson(Model),@Html.ToJson((IDictionary<string,string>)ViewBag.Links),@Html.ToJson((string)ViewBag.Mode));
+    if (window.location.href.indexOf('ExternalTrainingProviderId=') < 0)
+        window.location.href = vm.links.externalTrainingProviderIndex;
+    vm.editCertificate = function (listModel) {
+        var providerId = window.location.href.substring(window.location.href.indexOf('ExternalTrainingProviderId'));
+        providerId = providerId.substring(providerId.indexOf('=') + 1);
+        if (ko.unwrap(listModel.Id))
+            window.location.href = vm.links.edit.replace('%7B0%7D', ko.unwrap(listModel.Id)).replace('%7B1%7D', providerId);
+        else
+            window.location.href = vm.links.edit.replace('%7B0%7D', '').replace('%7B1%7D', providerId);
+    }
+    ko.applyBindings(vm,document.getElementsByTagName('body')[0]);
+    window.vm = vm;
+    $(function () {
+        $('#dataTables-example').DataTable();
+        var provider = window.location.href.substring(window.location.href.indexOf('ExternalTrainingProviderId'));
+        vm.links.index = vm.links.index.replace('ExternalTrainingProviderId=%7B0%7D', provider);
+    });
+</script>
