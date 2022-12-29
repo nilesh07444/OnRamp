@@ -1,0 +1,10 @@
+*.nupkg
+*.dll
+*.pdb
+*.xdt
+bin
+obj
+packages 
+.vs/* 
+/.vs
+Images
